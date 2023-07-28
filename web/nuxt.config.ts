@@ -176,7 +176,7 @@ export default defineNuxtConfig({
     runtimeConfig: {
         public: {
             projectId: process.env.ProjectId,
-            issuerUrl: process.env.IssuerUrl || "https://issuer.demo.walt-test.cloud"
+            issuerUrl: process.env.IssuerUrl ?? "http://localhost:8080"
         }
     },
 
