@@ -1,1 +1,1 @@
-# walt.id wallet2
+# walt.id wallet

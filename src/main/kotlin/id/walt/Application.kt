@@ -21,7 +21,7 @@ import kotlin.io.path.absolutePathString
 private val log = KotlinLogging.logger { }
 
 fun main(args: Array<String>) {
-    log.info { "Starting walt.id wallet2..." }
+    log.info { "Starting walt.id wallet..." }
 
     log.debug { "Running in path: ${Path(".").absolutePathString()}" }
 

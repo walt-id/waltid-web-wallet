@@ -13,7 +13,7 @@ services:
     extra_hosts:
       - "$HOSTNAME:host-gateway"
   wallet-backend:
-    image: waltid/wallet2-backend:latest
+    image: waltid/wallet-backend:latest
     volumes:
       - ./wallet-backend:/waltid-web-wallet/config
   wallet-frontend:

@@ -1,4 +1,4 @@
-console.log("walt.id wallet2 service worker run")
+console.log("walt.id wallet service worker run")
 
 self.addEventListener('install', () => {
     console.log("Service worker installing")
