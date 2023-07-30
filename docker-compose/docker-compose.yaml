@@ -1,0 +1,43 @@
+services:
+  walletkit:
+    image: waltid/walletkit:latest  # backend docker image
+    command:
+      - run
+    environment:
+      WALTID_DATA_ROOT: /waltid-walletkit/data-root
+      WALTID_WALLET_BACKEND_BIND_ADDRESS: 0.0.0.0
+      WALTID_WALLET_BACKEND_PORT: "${WALLETKIT_PORT}"
+      EXTERNAL_HOSTNAME: $HOSTNAME
+    volumes:
+      - ./walletkit:/waltid-walletkit/data-root # data store volume incl. config files.
+    extra_hosts:
+      - "$HOSTNAME:host-gateway"
+  wallet-backend:
+    image: waltid/wallet2-backend:latest
+    volumes:
+      - ./wallet-backend:/waltid-web-wallet/config
+  wallet-frontend:
+    image: waltid/wallet-frontend:latest
+    environment:
+      NUXT_PUBLIC_ISSUER_URL: "http://localhost:8000"
+  issuer-portal:
+    image: waltid/ssikit-issuer-portal:latest
+  verifier-portal:
+    image: waltid/ssikit-verifier-portal:latest
+  ingress:
+    image: nginx:1.15.10-alpine
+    ports:
+      - target: 3000
+        published: 3000 # wallet-frontend
+        protocol: tcp
+        mode: host
+      - target: 8000
+        published: 8000 # issuer-portal
+        protocol: tcp
+        mode: host
+      - target: 8001
+        published: 8001 # verifier-portal
+        protocol: tcp
+        mode: host
+    volumes:
+      - ./ingress.conf:/etc/nginx/conf.d/default.conf # API gateway configuration
