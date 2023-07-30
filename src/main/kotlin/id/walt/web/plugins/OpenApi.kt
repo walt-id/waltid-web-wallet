@@ -13,9 +13,9 @@ fun Application.configureOpenApi() {
             forwardRoot = true
         }
         info {
-            title = "walt.id wallet2 API"
+            title = "walt.id wallet API"
             version = "latest"
-            description = "Interact with the wallet2 backend"
+            description = "Interact with the wallet backend"
         }
         server {
             url = "http://localhost:4545"
