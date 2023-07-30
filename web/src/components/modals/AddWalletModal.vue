@@ -74,7 +74,8 @@ const ecosystems = [
   "ethereum",
   "tezos",
   "flow",
-  "near"
+  "near",
+    "algorand"
 ]
 
 async function addWallet(){

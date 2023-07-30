@@ -20,6 +20,8 @@ class NftKitNftService : NftService {
         "flow" -> FlowChain.values()
         "near" -> NearChain.values()
         "polkadot" -> PolkadotParachain.values()
+        "algorand" -> AlgorandChain.values()
+
         else -> null
     }?.let {
         it.map { ChainDataTransferObject(it.name.uppercase(), ecosystem) }
