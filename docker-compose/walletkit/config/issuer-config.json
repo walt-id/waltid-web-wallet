@@ -1,4 +1,15 @@
 {
+  "credentialTypes": [
+    "VerifiableId",
+    "VerifiableDiploma",
+    "ParticipantCredential",
+    "OpenBadgeCredential",
+    "Europass",
+    "GaiaxCredential",
+    "ProofOfResidence",
+    "VerifiableVaccinationCertificate",
+    "VerifiableAttestation"
+  ],
   "issuerUiUrl": "http://$EXTERNAL_HOSTNAME:8000",
   "issuerApiUrl": "http://$EXTERNAL_HOSTNAME:8000/issuer-api/default",
   "issuerClientName": "walt.id Issuer Portal",

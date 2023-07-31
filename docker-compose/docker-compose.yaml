@@ -15,7 +15,8 @@ services:
   wallet-backend:
     image: waltid/wallet-backend:latest
     volumes:
-      - ./wallet-backend:/waltid-web-wallet/config
+      - ./wallet-backend/config:/waltid-web-wallet/config
+      - ./wallet-backend/walt.yaml:/waltid-web-wallet/walt.yaml
   wallet-frontend:
     image: waltid/wallet-frontend:latest
     environment:

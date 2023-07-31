@@ -1,0 +1,50 @@
+hikariDataSource:
+  jdbcUrl: jdbc:sqlite:data/walt.db
+  maximumPoolSize: 5
+  autoCommit: false
+  dataSource:
+    journalMode: WAL
+    fullColumnNames: false
+
+azureKeyVaultConfig:
+  baseURL:
+  id:
+  secret:
+
+providers:
+  ethereum: "ethereum"
+  goerli: "https://eth-goerli.g.alchemy.com/v2/<alchemy-api-key>"
+  sepolia: "https://eth-sepolia.g.alchemy.com/v2/<alchemy-api-key>"
+  polygon: "https://polygon-mainnet.g.alchemy.com/v2/<alchemy-api-key>"
+  mumbai: "https://polygon-mumbai.g.alchemy.com/v2/<alchemy-api-key>"
+  astar: "https://evm.astar.network"
+  moonbeam: "https://rpc.api.moonbeam.network"
+  unique: "https://rpc.unique.network"
+  opal: "https://rpc-opal.unique.network"
+
+privateKey: "<eth-account-key>"
+
+keys:
+  <eth-wallet-address>: "<eth-wallet-private-key>"
+
+
+indexersUrl:
+  uniqueUrl: "https://api-unique.uniquescan.io/v1/graphql"
+  opalUrl: "https://api-opal.uniquescan.io/v1/graphql"
+
+
+polkadotAccounts:
+  - seed: "<polkadot-account-seed>"
+    seedPassword: "<polkadot-account-seed-password"
+
+
+
+
+apiKeys:
+  ethereumBlockExplorer: "<explorer-api-key>"
+  polygonBlockExplorer: "<explorer-api-key>"
+  alchemy: "<alchemy-api-key>"
+  nftstorage: "<ipfs-account-private-key>"
+  subscan: ""
+
+tezosBackendServer: "http://nftkit-js:80"
