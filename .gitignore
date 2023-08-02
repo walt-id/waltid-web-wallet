@@ -40,4 +40,4 @@ web/node_modules
 *.db
 
 ### Config ###
-/k8s/
+#/k8s/
