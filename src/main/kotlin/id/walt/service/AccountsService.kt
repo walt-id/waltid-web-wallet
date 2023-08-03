@@ -1,6 +1,7 @@
 package id.walt.service
 
 import de.mkammerer.argon2.Argon2Factory
+import id.walt.db.models.AccountWallets
 import id.walt.db.models.Accounts
 import id.walt.db.models.Emails
 import id.walt.db.models.Wallets
@@ -10,6 +11,7 @@ import id.walt.web.generateToken
 import id.walt.web.model.AddressLoginRequest
 import id.walt.web.model.EmailLoginRequest
 import id.walt.web.model.LoginRequest
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -59,8 +61,13 @@ object AccountsService {
                     it[this.address] = request.address
                     it[ecosystem] = request.ecosystem
                 }.value
-            }?.let { uuid ->
-                Accounts.insertAndGetId { it[wallet] = uuid }.value
+            }?.let { walletId ->
+                Accounts.insertAndGetId { it[wallet] = walletId }.value.also { accountId ->
+                    AccountWallets.insert {
+                        it[account] = accountId
+                        it[wallet] = walletId
+                    }
+                }
             }
         } ?: throw IllegalArgumentException("Account already exists.")
     }.fold(onSuccess = {
