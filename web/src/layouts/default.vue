@@ -260,6 +260,7 @@ const {status, data, signIn, signOut} = useAuth()
 async function logout() {
     console.log("logout")
     user.value = {}
+    localStorage.clear();
     await signOut({callbackUrl: '/login'})
 }
 
