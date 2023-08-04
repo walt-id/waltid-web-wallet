@@ -40,10 +40,7 @@ object AccountsService {
             (Accounts innerJoin Emails).select { Emails.email eq request.username }.takeIf {
                 it.none()
             }?.let {
-                Emails.insertAndGetId {
-                    it[email] = request.username
-                    it[password] = hash
-                }.value
+                getOrInsertEmailAddress(request.username, hash)
             }?.let { uuid ->
                 Accounts.insertAndGetId { it[email] = uuid }.value
             }
@@ -57,10 +54,7 @@ object AccountsService {
             (Accounts innerJoin Wallets).select { Wallets.address eq request.address }.takeIf {
                 it.none()
             }?.let {
-                Wallets.insertAndGetId {
-                    it[this.address] = request.address
-                    it[ecosystem] = request.ecosystem
-                }.value
+                getOrInsertWalletAddress(request.address, request.ecosystem)
             }?.let { walletId ->
                 Accounts.insertAndGetId { it[wallet] = walletId }.value.also { accountId ->
                     AccountWallets.insert {
@@ -118,6 +112,28 @@ object AccountsService {
     private fun hashPassword(password: ByteArray) = Argon2Factory.create().run {
         hash(10, 65536, 1, password).also {
             wipeArray(password)
+        }
+    }
+
+    private fun getOrInsertEmailAddress(email: String, password: String): UUID = transaction {
+        Emails.select { Emails.email eq email }.firstOrNull()?.let {
+            it[Emails.id]
+        }?.value ?: let {
+            Emails.insertAndGetId {
+                it[Emails.email] = email
+                it[Emails.password] = password
+            }.value
+        }
+    }
+
+    private fun getOrInsertWalletAddress(address: String, ecosystem: String): UUID = transaction {
+        Wallets.select { Wallets.address eq address }.firstOrNull()?.let {
+            it[Wallets.id]
+        }?.value ?: let {
+            Wallets.insertAndGetId {
+                it[this.address] = address
+                it[this.ecosystem] = ecosystem
+            }.value
         }
     }
 }
