@@ -1,7 +1,7 @@
 package id.walt.web
 
-import id.walt.service.AccountsService
 import id.walt.service.WalletServiceManager
+import id.walt.service.account.AccountsService
 import id.walt.utils.RandomUtils
 import id.walt.web.model.EmailLoginRequest
 import id.walt.web.model.LoginRequest
