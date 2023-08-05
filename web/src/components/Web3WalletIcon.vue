@@ -5,6 +5,7 @@
         <img src="/svg/tezos.svg" v-if="ecosystem === 'tezos'" alt="tezoz" aria-hidden="true" class="h-5 w-full" fill="currentColor"/>
         <img src="/svg/near.svg" v-if="ecosystem === 'near'" alt="near" aria-hidden="true" class="h-5 w-full" fill="currentColor"/>
         <img src="/svg/flow.svg" v-if="ecosystem === 'flow'" alt="flow" aria-hidden="true" class="h-5 w-full" fill="currentColor"/>
+        <img src="/svg/algorand-algo-logo.png" v-if="ecosystem === 'algorand'" alt="algorand" aria-hidden="true" class="h-5 w-full" fill="currentColor"/>
     </div>
 </template>
 
