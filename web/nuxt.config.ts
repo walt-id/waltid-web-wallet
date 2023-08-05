@@ -187,6 +187,9 @@ export default defineNuxtConfig({
         }
     },
     ssr: false,
+    css: [
+        "@near-wallet-selector/modal-ui/styles.css",
+    ],
 
     // i18n: {
     //     lazy: true,

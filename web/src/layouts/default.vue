@@ -251,15 +251,36 @@ import {
 import {ChevronDownIcon, MagnifyingGlassIcon,} from '@heroicons/vue/20/solid'
 import {useUserStore} from "~/stores/user";
 import { storeToRefs } from 'pinia'
+import * as nearAPI from "near-api-js";
+
 
 const userStore = useUserStore()
 const { user } = storeToRefs(userStore)
 
 const {status, data, signIn, signOut} = useAuth()
-
+const { connect, keyStores, WalletConnection } = nearAPI;
 async function logout() {
-    console.log("logout")
+
+  const connectionConfig = {
+    networkId: "testnet",
+    keyStore: new keyStores.BrowserLocalStorageKeyStore(),
+    nodeUrl: "https://rpc.testnet.near.org",
+    walletUrl: "https://wallet.testnet.near.org",
+    helperUrl: "https://helper.testnet.near.org",
+    explorerUrl: "https://explorer.testnet.near.org",
+  };
+
+// connect to NEAR
+  const nearConnection = await connect(connectionConfig);
+
+  const walletConnection = new WalletConnection(nearConnection , "waltid");
+  localStorage.clear();
+  console.log("logout")
     user.value = {}
+   walletConnection.signOut();
+
+
+
     await signOut({callbackUrl: '/login'})
 }
 

@@ -182,6 +182,7 @@ import useModalStore from "~/stores/useModalStore";
 import {useUserStore} from "~/stores/user";
 import { storeToRefs } from 'pinia';
 
+
 const store = useModalStore();
 
 const isLogin = ref(false)
@@ -225,6 +226,9 @@ async function login() {
     // }
 }
 
+
+
+
 function closeModal() {
     error.value = {}
 }
@@ -234,6 +238,7 @@ function openWeb3(){
     store.openModal({
         component: ConnectWalletModal,
     })
+
 }
 
 definePageMeta({
