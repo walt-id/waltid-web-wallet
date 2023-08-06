@@ -74,6 +74,9 @@ dependencies:
   '@pinia/nuxt':
     specifier: ^0.4.11
     version: 0.4.11(rollup@2.79.1)(typescript@5.0.4)(vue@3.3.4)
+  '@randlabs/myalgo-connect':
+    specifier: ^1.4.2
+    version: 1.4.2
   '@tailwindcss/aspect-ratio':
     specifier: 0.4.2
     version: 0.4.2(tailwindcss@3.3.2)
@@ -3692,6 +3695,16 @@ packages:
   /@polka/url@1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
     dev: true
+
+  /@randlabs/communication-bridge@1.0.1:
+    resolution: {integrity: sha512-CzS0U8IFfXNK7QaJFE4pjbxDGfPjbXBEsEaCn9FN15F+ouSAEUQkva3Gl66hrkBZOGexKFEWMwUHIDKpZ2hfVg==}
+    dev: false
+
+  /@randlabs/myalgo-connect@1.4.2:
+    resolution: {integrity: sha512-K9hEyUi7G8tqOp7kWIALJLVbGCByhilcy6123WfcorxWwiE1sbQupPyIU5f3YdQK6wMjBsyTWiLW52ZBMp7sXA==}
+    dependencies:
+      '@randlabs/communication-bridge': 1.0.1
+    dev: false
 
   /@rollup/plugin-alias@5.0.0(rollup@3.25.1):
     resolution: {integrity: sha512-l9hY5chSCjuFRPsnRm16twWBiSApl2uYFLsepQYwtBuAxNMQ/1dJqADld40P0Jkqm65GRTLy/AC6hnpVebtLsA==}

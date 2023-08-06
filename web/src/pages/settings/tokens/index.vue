@@ -180,8 +180,10 @@ function connectAccount() {
 
 function openDetailPage(nft){
     console.log(`detail request received: ${nft.id}`)
+    console.log(nft)
     navigateTo(`tokens/${selectedAccount.value.id}/${nft.chain}/${nft.contract}/${nft.id}${nft.collectionId ? "?collectionId=" + nft.collectionId : ""}`)
 }
+
 
 
 useHead({
