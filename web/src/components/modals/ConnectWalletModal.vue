@@ -18,7 +18,7 @@
 
             <div>
                 <a class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-                    href="#" @click="nearWallet"> <img aria-hidden="true" class="h-5 w-5" fill="currentColor" src="/svg/near.svg" /> <span
+                    href="#" @click="loginWithNear"> <img aria-hidden="true" class="h-5 w-5" fill="currentColor" src="/svg/near.svg" /> <span
                         class="ml-1 text-gray-800 font-semibold h-5">NEAR</span> </a>
             </div>
           <div>
@@ -56,7 +56,6 @@ import {setupNeth} from "@near-wallet-selector/neth";
 import {setupModal} from "@near-wallet-selector/modal-ui";
 import {setupWalletSelector} from "@near-wallet-selector/core";
 
-import { watch, onMounted } from 'vue';
 const store = useModalStore();
 const isLogin = ref(false)
 const error = ref({})
@@ -91,31 +90,10 @@ async function connectToMyAlgo() {
         }
       })
   isLogin.value = true
-  //   } catch (err) {
-//     console.error(err);
-//   }
+
 }
 
 
-
-
-
-let emailInput = ""
-let passwordInput = ""
-
-
-
-
-onMounted(() => {
-  loginWithNear(); // Call openWeb3 when the component is mounted
-});
-
-watch(isLogin, (newValue, oldValue) => {
-  if (newValue) {
-    loginWithNear(); // Call openWeb3 whenever the value of isLogin changes to true
-  }
-});
-// ...
 function comingSoon(){
     store.openModal({
             component: ActionResultModal,
@@ -127,9 +105,9 @@ function comingSoon(){
         });
 }
 
-async function nearWallet(){
- store.closeModal();
 
+async function loginWithNear() {
+  store.closeModal();
   const selector = await setupWalletSelector({
     network: "testnet",
     modules: [
@@ -147,53 +125,93 @@ async function nearWallet(){
       setupCoin98Wallet(),
       setupOptoWallet(),
       setupNeth(),
-
-
     ],
   });
+
   const modal = setupModal(selector, {
-    description: "connect to a wallet",
-    title: "Connect to a wallet"
+    contractId: "", methodNames: undefined, theme: undefined,
+    description: "connect to a wallet"
   });
   modal.show();
 
 
-}
-
-async function loginWithNear() {
-
-  const selector = await setupWalletSelector({
-    network: "testnet",
-    modules: [
-      setupNearWallet(),
-      setupMyNearWallet(),
-      setupSender(),
-      setupHereWallet(),
-      setupMathWallet(),
-      setupNightly(),
-      setupMeteorWallet(),
-      setupNarwallets(),
-      setupWelldoneWallet(),
-      setupLedger(),
-      setupNearFi(),
-      setupCoin98Wallet(),
-      setupOptoWallet(),
-      setupNeth(),
 
 
-    ],
-  });
-  const activeAccount = selector.store.getState().accounts.find(
-      (account: any) => account.active
-  )
-  if (selector.isSignedIn()) {
-    user.value = {
-      id: activeAccount?.accountId || "",
-      username: activeAccount?.accountId || ""
-    }
-    isLogin.value = true
-    await signIn({address: activeAccount?.accountId || "", ecosystem: "near", type: "address"}, {callbackUrl: '/settings/tokens'})
+    modal.on("onHide" , async (event) => {
 
-  }
-}
+      console.log("event", event)
+      if (event.hideReason == "wallet-navigation") {
+
+          const isSignedIn = selector.isSignedIn();
+
+          if ( isSignedIn) {
+            const selectedAccount = selector.store.getState().accounts[0].accountId;
+
+
+            const userData = {
+              address: selectedAccount,
+              username: selectedAccount,
+              ecosystem: "near",
+            };
+
+            user.value = {
+              id: userData.address ,
+              username: userData.username,
+            }
+
+            try {
+              await signIn(
+                  {
+                    address: userData.address,
+                    ecosystem: userData.ecosystem,
+                    type: "address",
+                  },
+                  { callbackUrl: '/settings/tokens' }
+              );
+              store.closeModal();
+
+              isLogin.value = true;
+            } catch (error) {
+              // Handle any errors that might occur during the signIn process
+              console.error("Error during signIn:", error);
+            }
+          } else {
+            console.log("No account selected");
+          }
+      }
+  });}
+
+
+
+// const userData = {
+//   address: selectedAccount.accountId,
+//   username: selectedAccount.accountId,
+//   ecosystem: "near",
+// };
+// user.value = {
+//   id: userData.address ,
+//   username: userData.username,
+// }
+// try {
+//   await signIn(
+//       {
+//         address: userData.address,
+//         ecosystem: userData.ecosystem,
+//         type: "address",
+//       },
+//       { callbackUrl: '/settings/tokens' }
+//   );
+//   store.closeModal();
+//
+//   isLogin.value = true;
+// } catch (error) {
+//   // Handle any errors that might occur during the signIn process
+//   console.error("Error during signIn:", error);
+// }
+// } else {
+//   console.log("No account selected");
+// }
+//
+// }
+
 </script>
