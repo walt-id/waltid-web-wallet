@@ -30,8 +30,8 @@ dependencies:
     specifier: ^8.2.1
     version: 8.2.1(near-api-js@2.1.4)
   '@near-wallet-selector/meteor-wallet':
-    specifier: ^8.2.1
-    version: 8.2.1(near-api-js@2.1.4)
+    specifier: ^8.3.0
+    version: 8.3.0(near-api-js@2.1.4)
   '@near-wallet-selector/modal-ui':
     specifier: ^8.2.1
     version: 8.2.1(near-api-js@2.1.4)
@@ -2955,6 +2955,18 @@ packages:
       rxjs: 7.8.1
     dev: false
 
+  /@near-wallet-selector/core@8.3.0(near-api-js@2.1.4):
+    resolution: {integrity: sha512-9xQt8fPuQHoR53GQfUHNbrvDFqPD5DE7+AdI1YluAra9sY39W5CboeWbd4yvIqf8E810+Kb9HcFBxLSR6wFifw==}
+    peerDependencies:
+      near-api-js: ^1.0.0 || ^2.0.0
+    dependencies:
+      borsh: 0.7.0
+      events: 3.3.0
+      js-sha256: 0.9.0
+      near-api-js: 2.1.4
+      rxjs: 7.8.1
+    dev: false
+
   /@near-wallet-selector/default-wallets@8.1.4(near-api-js@2.1.4):
     resolution: {integrity: sha512-rdMHGLl+AiMQjPbydHh+tp8CHb+aMqYycOvdtZJPSc3x1VJ7AHUutgM5xWPbNnpUUN8ozhMnidI+1NaMO7+IRQ==}
     deprecated: Package no longer supported. The package no longer holds a list of default wallets please install specific wallet packages from https://www.npmjs.com/org/near-wallet-selector
@@ -3005,14 +3017,14 @@ packages:
       near-api-js: 2.1.4
     dev: false
 
-  /@near-wallet-selector/meteor-wallet@8.2.1(near-api-js@2.1.4):
-    resolution: {integrity: sha512-zoMb3X6TV3dj2ZYqIBNjveU+0aBI/sd4MMgQKYlq7s1QWwsfPYYvQ+Yn1TFIkykei04Ie3UYB47isykHka0wQg==}
+  /@near-wallet-selector/meteor-wallet@8.3.0(near-api-js@2.1.4):
+    resolution: {integrity: sha512-sEJjYB9xYWYbUZy6xSq/dVtnUM4kwXM0VmRNJeK3VU9CgaBDt+I0E4ci4RrNweUdTbMUqpzyWoKEbIyHayxVvQ==}
     peerDependencies:
       near-api-js: ^1.0.0 || ^2.0.0
     dependencies:
       '@meteorwallet/sdk': 0.8.0(near-api-js@2.1.4)
-      '@near-wallet-selector/core': 8.2.1(near-api-js@2.1.4)
-      '@near-wallet-selector/wallet-utils': 8.2.1(near-api-js@2.1.4)
+      '@near-wallet-selector/core': 8.3.0(near-api-js@2.1.4)
+      '@near-wallet-selector/wallet-utils': 8.3.0(near-api-js@2.1.4)
       near-api-js: 2.1.4
     dev: false
 
@@ -3154,6 +3166,16 @@ packages:
       near-api-js: ^1.0.0 || ^2.0.0
     dependencies:
       '@near-wallet-selector/core': 8.2.1(near-api-js@2.1.4)
+      bn.js: 5.2.1
+      near-api-js: 2.1.4
+    dev: false
+
+  /@near-wallet-selector/wallet-utils@8.3.0(near-api-js@2.1.4):
+    resolution: {integrity: sha512-mvoAhdgnwqKN2viaXtmYlDqqakPd5s8xS9k7v913oaAALnFBvH8qKNyxjV9OlPURpmyBCIVZDqgqWiFXs7rLOQ==}
+    peerDependencies:
+      near-api-js: ^1.0.0 || ^2.0.0
+    dependencies:
+      '@near-wallet-selector/core': 8.3.0(near-api-js@2.1.4)
       bn.js: 5.2.1
       near-api-js: 2.1.4
     dev: false
