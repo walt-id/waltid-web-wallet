@@ -35,7 +35,7 @@ import CloseButton from "./CloseButton.vue";
 import ActionResultModal from "~/components/modals/ActionResultModal.vue";
 import useModalStore from "~/stores/useModalStore";
 import MyAlgoConnect  from "@randlabs/myalgo-connect";
-import {useUserStore} from "~/stores/user";
+import { useUserStore } from "~/stores/user";
 import { storeToRefs } from 'pinia';
 
 
@@ -48,7 +48,8 @@ import {setupNightly} from "@near-wallet-selector/nightly";
 import {setupMeteorWallet} from "@near-wallet-selector/meteor-wallet";
 import {setupNarwallets} from "@near-wallet-selector/narwallets";
 import {setupWelldoneWallet} from "@near-wallet-selector/welldone-wallet";
-import {setupLedger} from "@near-wallet-selector/ledger";
+//TODO: generates "ReferenceError: Buffer is not defined" at runtime
+// import {setupLedger} from "@near-wallet-selector/ledger";
 import {setupNearFi} from "@near-wallet-selector/nearfi";
 import {setupCoin98Wallet} from "@near-wallet-selector/coin98-wallet";
 import {setupOptoWallet} from "@near-wallet-selector/opto-wallet";
@@ -120,7 +121,7 @@ async function loginWithNear() {
       setupMeteorWallet(),
       setupNarwallets(),
       setupWelldoneWallet(),
-      setupLedger(),
+      // setupLedger(),
       setupNearFi(),
       setupCoin98Wallet(),
       setupOptoWallet(),
@@ -179,39 +180,7 @@ async function loginWithNear() {
             console.log("No account selected");
           }
       }
-  });}
-
-
-
-// const userData = {
-//   address: selectedAccount.accountId,
-//   username: selectedAccount.accountId,
-//   ecosystem: "near",
-// };
-// user.value = {
-//   id: userData.address ,
-//   username: userData.username,
-// }
-// try {
-//   await signIn(
-//       {
-//         address: userData.address,
-//         ecosystem: userData.ecosystem,
-//         type: "address",
-//       },
-//       { callbackUrl: '/settings/tokens' }
-//   );
-//   store.closeModal();
-//
-//   isLogin.value = true;
-// } catch (error) {
-//   // Handle any errors that might occur during the signIn process
-//   console.error("Error during signIn:", error);
-// }
-// } else {
-//   console.log("No account selected");
-// }
-//
-// }
+  });
+}
 
 </script>
