@@ -4,6 +4,8 @@ plugins {
     kotlin("jvm") version "1.8.22"
     id("io.ktor.plugin") version "2.3.2"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.8.22"
+    application
+    `maven-publish`
 }
 
 group = "id.walt"
@@ -13,6 +15,34 @@ application {
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
+
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            pom {
+                name.set("walt.id Web wallet")
+                description.set("W")
+                url.set("https://walt.id")
+            }
+            from(components["java"])
+        }
+    }
+    repositories {
+        maven {
+            url = uri("https://maven.walt.id/repository/waltid/")
+            val usernameFile = File("secret_maven_username.txt")
+            val passwordFile = File("secret_maven_password.txt")
+            val secretMavenUsername = System.getenv()["MAVEN_USERNAME"] ?: if (usernameFile.isFile) { usernameFile.readLines()[0] } else { "" }
+            val secretMavenPassword = System.getenv()["MAVEN_PASSWORD"] ?: if (passwordFile.isFile) { passwordFile.readLines()[0] } else { "" }
+
+            credentials {
+                username = secretMavenUsername
+                password = secretMavenPassword
+            }
+        }
+    }
 }
 
 repositories {
@@ -25,6 +55,8 @@ repositories {
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
 }
+
+
 
 dependencies {
     // nftkit

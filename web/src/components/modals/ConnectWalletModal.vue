@@ -36,8 +36,7 @@ import ActionResultModal from "~/components/modals/ActionResultModal.vue";
 import useModalStore from "~/stores/useModalStore";
 import MyAlgoConnect  from "@randlabs/myalgo-connect";
 import {useUserStore} from "~/stores/user";
-import { storeToRefs } from 'pinia';
-
+import { storeToRefs } from 'pinia'
 
 import {setupNearWallet} from "@near-wallet-selector/near-wallet";
 import {setupMyNearWallet} from "@near-wallet-selector/my-near-wallet";
@@ -45,7 +44,6 @@ import {setupSender} from "@near-wallet-selector/sender";
 import {setupHereWallet} from "@near-wallet-selector/here-wallet";
 import {setupMathWallet} from "@near-wallet-selector/math-wallet";
 import {setupNightly} from "@near-wallet-selector/nightly";
-import {setupMeteorWallet} from "@near-wallet-selector/meteor-wallet";
 import {setupNarwallets} from "@near-wallet-selector/narwallets";
 import {setupWelldoneWallet} from "@near-wallet-selector/welldone-wallet";
 import {setupLedger} from "@near-wallet-selector/ledger";
@@ -139,7 +137,7 @@ async function nearWallet(){
       setupHereWallet(),
       setupMathWallet(),
       setupNightly(),
-      setupMeteorWallet(),
+
       setupNarwallets(),
       setupWelldoneWallet(),
       setupLedger(),
@@ -171,7 +169,6 @@ async function loginWithNear() {
       setupHereWallet(),
       setupMathWallet(),
       setupNightly(),
-      setupMeteorWallet(),
       setupNarwallets(),
       setupWelldoneWallet(),
       setupLedger(),
@@ -179,8 +176,6 @@ async function loginWithNear() {
       setupCoin98Wallet(),
       setupOptoWallet(),
       setupNeth(),
-
-
     ],
   });
   const activeAccount = selector.store.getState().accounts.find(
