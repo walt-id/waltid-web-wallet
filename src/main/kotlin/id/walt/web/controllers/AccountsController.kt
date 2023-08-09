@@ -1,6 +1,6 @@
 package id.walt.web.controllers
 
-import id.walt.service.dto.WatchedWalletDataTransferObject
+import id.walt.service.dto.LinkeddWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -20,14 +20,14 @@ fun Application.account() = walletRoute {
         get({
             response {
                 HttpStatusCode.OK to {
-                    body<List<WatchedWalletDataTransferObject>> {
+                    body<List<LinkeddWalletDataTransferObject>> {
                         description = "List of watched wallets"
                     }
                 }
             }
         }) {
             val wallet = getWalletService()
-            context.respond<List<WatchedWalletDataTransferObject>>(wallet.getWatchedWallets())
+            context.respond<List<LinkeddWalletDataTransferObject>>(wallet.getWatchedWallets())
         }
         post("watch", {
             summary = "Add a web3 wallet"
@@ -36,7 +36,7 @@ fun Application.account() = walletRoute {
             }
             response {
                 HttpStatusCode.OK to {
-                    body<WatchedWalletDataTransferObject> {
+                    body<LinkeddWalletDataTransferObject> {
                         description = "TODO"
                     }
                 }

@@ -25,6 +25,13 @@
                     <div class="flex truncate w-full">
                         <span class="text-base font-normal">{{ account.address }}</span>
                     </div>
+                    <div class="">
+                        <button type="button"
+                            class="inline-flex items-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                            @click="connectWallet">
+                            Connect
+                        </button>
+                    </div>
                 </div>
             </li>
         </ul>
@@ -36,6 +43,7 @@ import CenterMain from "~/components/CenterMain.vue";
 import {PlusIcon} from "@heroicons/vue/20/solid";
 import Web3WalletIcon from "~/components/Web3WalletIcon.vue";
 import AddWalletModal from "~/components/modals/AddWalletModal.vue";
+import ConnectWalletModal from "~/components/modals/ConnectWalletModal.vue";
 import useModalStore from "~/stores/useModalStore";
 import { useUserStore } from "~/stores/user";
 import { storeToRefs } from 'pinia'
@@ -56,6 +64,12 @@ function addWallet() {
             }
         }
     });
+}
+
+function connectWallet() {
+    modalStore.openModal({
+        component: ConnectWalletModal,
+    })
 }
 </script>
 
