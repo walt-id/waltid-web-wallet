@@ -2,8 +2,8 @@ package id.walt.service
 
 import id.walt.db.models.AccountWallets
 import id.walt.db.models.Wallets
+import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
-import id.walt.service.dto.LinkeddWalletDataTransferObject
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
@@ -17,12 +17,12 @@ object Web3WalletService {
      * Adds the wallet to the given account
      * @param accountId the account's uuid
      * @param wallet the [WalletDataTransferObject]
-     * @return the [LinkeddWalletDataTransferObject] representing the web3 wallet
+     * @return the [LinkedWalletDataTransferObject] representing the web3 wallet
      */
-    fun watch(accountId: UUID, wallet: WalletDataTransferObject): LinkeddWalletDataTransferObject =
+    fun link(accountId: UUID, wallet: WalletDataTransferObject): LinkedWalletDataTransferObject =
         getOrCreateWallet(wallet).let { walletId ->
             assignWallet(accountId, walletId)
-            LinkeddWalletDataTransferObject(walletId.toString(), wallet.address, wallet.ecosystem, false)
+            LinkedWalletDataTransferObject(walletId.toString(), wallet.address, wallet.ecosystem, false)
         }
 
     /**
@@ -30,20 +30,20 @@ object Web3WalletService {
      * @param accountId the account's uuid
      * @param walletId the wallet's address / public-key
      */
-    fun unwatch(accountId: UUID, walletId: UUID): Unit = transaction {
+    fun unlink(accountId: UUID, walletId: UUID): Unit = transaction {
         AccountWallets.deleteWhere { account eq accountId and (wallet eq walletId) }
     }
 
     /**
      * Fetches the wallets for a given account
      * @param accountId the account's uuid
-     * @return A list of [LinkeddWalletDataTransferObject]s
+     * @return A list of [LinkedWalletDataTransferObject]s
      */
-    fun getWatching(accountId: UUID) =
+    fun getLinked(accountId: UUID) =
         transaction {
             AccountWallets.select { AccountWallets.account eq accountId }.mapNotNull { aw ->
                 Wallets.select { Wallets.id eq aw[AccountWallets.wallet] }.firstOrNull()?.let { w ->
-                    LinkeddWalletDataTransferObject(
+                    LinkedWalletDataTransferObject(
                         w[Wallets.id].toString(),
                         w[Wallets.address],
                         w[Wallets.ecosystem],

@@ -1,6 +1,6 @@
 package id.walt.web.controllers
 
-import id.walt.service.dto.LinkeddWalletDataTransferObject
+import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -20,23 +20,23 @@ fun Application.account() = walletRoute {
         get({
             response {
                 HttpStatusCode.OK to {
-                    body<List<LinkeddWalletDataTransferObject>> {
+                    body<List<LinkedWalletDataTransferObject>> {
                         description = "List of watched wallets"
                     }
                 }
             }
         }) {
             val wallet = getWalletService()
-            context.respond<List<LinkeddWalletDataTransferObject>>(wallet.getWatchedWallets())
+            context.respond<List<LinkedWalletDataTransferObject>>(wallet.getLinkedWallets())
         }
-        post("watch", {
+        post("link", {
             summary = "Add a web3 wallet"
             request {
                 body<WalletDataTransferObject> { description = "Wallet address and ecosystem" }
             }
             response {
                 HttpStatusCode.OK to {
-                    body<LinkeddWalletDataTransferObject> {
+                    body<LinkedWalletDataTransferObject> {
                         description = "TODO"
                     }
                 }
@@ -44,9 +44,9 @@ fun Application.account() = walletRoute {
         }) {
             val wallet = getWalletService()
             val data = Json.decodeFromString<WalletDataTransferObject>(call.receive())
-            context.respond(wallet.watchWallet(data))
+            context.respond(wallet.linkWallet(data))
         }
-        post("unwatch", {
+        post("unlink", {
             summary = "Remove a web3 wallet"
             request {
                 body<String> { description = "Wallet id" }
@@ -57,7 +57,37 @@ fun Application.account() = walletRoute {
         }) {
             val wallet = getWalletService()
             val walletId = UUID.fromString(call.receiveText())
-            context.respond(wallet.unwatchWallet(walletId))
+            context.respond(wallet.unlinkWallet(walletId))
+        }
+        post("connect", {
+            summary = "Connect a web3 wallet"
+            request {
+                body<WalletDataTransferObject> { description = "Wallet address and ecosystem" }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    body<LinkedWalletDataTransferObject> {
+                        description = "TODO"
+                    }
+                }
+            }
+        }) {
+            val wallet = getWalletService()
+            val data = Json.decodeFromString<WalletDataTransferObject>(call.receive())
+            context.respond(wallet.connectWallet(data))
+        }
+        post("disconnect", {
+            summary = "Disconnect a web3 wallet"
+            request {
+                body<String> { description = "Wallet id" }
+            }
+            response {
+                HttpStatusCode.OK
+            }
+        }) {
+            val wallet = getWalletService()
+            val walletId = UUID.fromString(call.receiveText())
+            context.respond(wallet.disconnectWallet(walletId))
         }
     }
 }
