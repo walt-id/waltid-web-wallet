@@ -15,6 +15,7 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
+
 repositories {
     mavenCentral()
     maven("https://jitpack.io")
@@ -25,6 +26,8 @@ repositories {
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
 }
+
+
 
 dependencies {
     // nftkit

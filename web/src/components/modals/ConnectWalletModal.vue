@@ -1,33 +1,33 @@
 <template>
-    <div>
-        <CloseButton class="flex"/>
-        <p class="relative text-sm font-medium leading-6 text-gray-900 dark:text-gray-400">Sign in with Web3:</p>
+  <div>
+    <CloseButton class="flex"/>
+    <p class="relative text-sm font-medium leading-6 text-gray-900 dark:text-gray-400">Sign in with Web3:</p>
 
-        <div class="mt-2 grid grid-rows-3 gap-3">
-            <div>
-                <a class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-                    href="#" @click="comingSoon"> <img alt="Sign in with WalletConnect" aria-hidden="true" class="h-5 w-full"
-                        fill="currentColor" src="/svg/walletconnect-text.svg" /> </a>
-            </div>
+    <div class="mt-2 grid grid-rows-3 gap-3">
+      <div>
+        <a class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+           href="#" @click="comingSoon"> <img alt="Sign in with WalletConnect" aria-hidden="true" class="h-5 w-full"
+                                              fill="currentColor" src="/svg/walletconnect-text.svg" /> </a>
+      </div>
 
-            <div>
-                <a class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-                    href="#" @click="comingSoon"> <img aria-hidden="true" class="h-5 w-5" fill="currentColor" src="/svg/tezos.svg" /> <span
-                        class="ml-1 text-gray-800 font-semibold h-5">Tezos</span> </a>
-            </div>
+      <div>
+        <a class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+           href="#" @click="comingSoon"> <img aria-hidden="true" class="h-5 w-5" fill="currentColor" src="/svg/tezos.svg" /> <span
+            class="ml-1 text-gray-800 font-semibold h-5">Tezos</span> </a>
+      </div>
 
-            <div>
-                <a class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-                    href="#" @click="loginWithNear"> <img aria-hidden="true" class="h-5 w-5" fill="currentColor" src="/svg/near.svg" /> <span
-                        class="ml-1 text-gray-800 font-semibold h-5">NEAR</span> </a>
-            </div>
-          <div>
-            <a class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-               href="#" @click="connectToMyAlgo"> <img aria-hidden="true" class="h-5 w-5" fill="currentColor" src="/svg/algorand-algo-logo.svg" /> <span
-                class="ml-1 tuseUserStoreext-gray-800 font-semibold h-5">Algorand</span> </a>
-          </div>
-        </div>
+      <div>
+        <a class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+           href="#" @click="loginWithNear"> <img aria-hidden="true" class="h-5 w-5" fill="currentColor" src="/svg/near.svg" /> <span
+            class="ml-1 text-gray-800 font-semibold h-5">NEAR</span> </a>
+      </div>
+      <div>
+        <a class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+           href="#" @click="connectToMyAlgo"> <img aria-hidden="true" class="h-5 w-5" fill="currentColor" src="/svg/algorand-algo-logo.svg" /> <span
+            class="ml-1 tuseUserStoreext-gray-800 font-semibold h-5">Algorand</span> </a>
+      </div>
     </div>
+  </div>
 </template>
 <script setup lang="ts">
 
@@ -96,14 +96,14 @@ async function connectToMyAlgo() {
 
 
 function comingSoon(){
-    store.openModal({
-            component: ActionResultModal,
-            props: {
-                title: "Coming soon",
-                message: "Stay tuned for updates.",
-                isError: true
-            },
-        });
+  store.openModal({
+    component: ActionResultModal,
+    props: {
+      title: "Coming soon",
+      message: "Stay tuned for updates.",
+      isError: true
+    },
+  });
 }
 
 
@@ -138,48 +138,48 @@ async function loginWithNear() {
 
 
 
-    modal.on("onHide" , async (event) => {
+  modal.on("onHide" , async (event) => {
 
-      console.log("event", event)
-      if (event.hideReason == "wallet-navigation") {
+    console.log("event", event)
+    if (event.hideReason == "wallet-navigation") {
 
-          const isSignedIn = selector.isSignedIn();
+      const isSignedIn = selector.isSignedIn();
 
-          if ( isSignedIn) {
-            const selectedAccount = selector.store.getState().accounts[0].accountId;
+      if ( isSignedIn) {
+        const selectedAccount = selector.store.getState().accounts[0].accountId;
 
 
-            const userData = {
-              address: selectedAccount,
-              username: selectedAccount,
-              ecosystem: "near",
-            };
+        const userData = {
+          address: selectedAccount,
+          username: selectedAccount,
+          ecosystem: "near",
+        };
 
-            user.value = {
-              id: userData.address ,
-              username: userData.username,
-            }
+        user.value = {
+          id: userData.address ,
+          username: userData.username,
+        }
 
-            try {
-              await signIn(
-                  {
-                    address: userData.address,
-                    ecosystem: userData.ecosystem,
-                    type: "address",
-                  },
-                  { callbackUrl: '/settings/tokens' }
-              );
-              store.closeModal();
+        try {
+          await signIn(
+              {
+                address: userData.address,
+                ecosystem: userData.ecosystem,
+                type: "address",
+              },
+              { callbackUrl: '/settings/tokens' }
+          );
+          store.closeModal();
 
-              isLogin.value = true;
-            } catch (error) {
-              // Handle any errors that might occur during the signIn process
-              console.error("Error during signIn:", error);
-            }
-          } else {
-            console.log("No account selected");
-          }
+          isLogin.value = true;
+        } catch (error) {
+          // Handle any errors that might occur during the signIn process
+          console.error("Error during signIn:", error);
+        }
+      } else {
+        console.log("No account selected");
       }
+    }
   });
 }
 
