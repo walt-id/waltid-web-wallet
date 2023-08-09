@@ -3,7 +3,7 @@ package id.walt.service
 import id.walt.db.models.AccountWallets
 import id.walt.db.models.Wallets
 import id.walt.service.dto.WalletDataTransferObject
-import id.walt.service.dto.WatchedWalletDataTransferObject
+import id.walt.service.dto.LinkeddWalletDataTransferObject
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
@@ -17,12 +17,12 @@ object Web3WalletService {
      * Adds the wallet to the given account
      * @param accountId the account's uuid
      * @param wallet the [WalletDataTransferObject]
-     * @return the [WatchedWalletDataTransferObject] representing the web3 wallet
+     * @return the [LinkeddWalletDataTransferObject] representing the web3 wallet
      */
-    fun watch(accountId: UUID, wallet: WalletDataTransferObject): WatchedWalletDataTransferObject =
+    fun watch(accountId: UUID, wallet: WalletDataTransferObject): LinkeddWalletDataTransferObject =
         getOrCreateWallet(wallet).let { walletId ->
             assignWallet(accountId, walletId)
-            WatchedWalletDataTransferObject(walletId.toString(), wallet.address, wallet.ecosystem, false)
+            LinkeddWalletDataTransferObject(walletId.toString(), wallet.address, wallet.ecosystem, false)
         }
 
     /**
@@ -37,13 +37,13 @@ object Web3WalletService {
     /**
      * Fetches the wallets for a given account
      * @param accountId the account's uuid
-     * @return A list of [WatchedWalletDataTransferObject]s
+     * @return A list of [LinkeddWalletDataTransferObject]s
      */
     fun getWatching(accountId: UUID) =
         transaction {
             AccountWallets.select { AccountWallets.account eq accountId }.mapNotNull { aw ->
                 Wallets.select { Wallets.id eq aw[AccountWallets.wallet] }.firstOrNull()?.let { w ->
-                    WatchedWalletDataTransferObject(
+                    LinkeddWalletDataTransferObject(
                         w[Wallets.id].toString(),
                         w[Wallets.address],
                         w[Wallets.ecosystem],
