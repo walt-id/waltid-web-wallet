@@ -2,51 +2,62 @@ package id.walt.service
 
 import id.walt.db.models.AccountWallets
 import id.walt.db.models.Wallets
-import id.walt.service.dto.ConnectedWalletDataTransferObject
+import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insertAndGetId
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 object Web3WalletService {
     /**
-     * Connects the wallet to the given account
+     * Adds the wallet to the given account
      * @param accountId the account's uuid
      * @param wallet the [WalletDataTransferObject]
-     * @return the [ConnectedWalletDataTransferObject] representing the web3 wallet
+     * @return the [LinkedWalletDataTransferObject] representing the web3 wallet
      */
-    fun connect(accountId: UUID, wallet: WalletDataTransferObject): ConnectedWalletDataTransferObject =
+    fun link(accountId: UUID, wallet: WalletDataTransferObject): LinkedWalletDataTransferObject =
         getOrCreateWallet(wallet).let { walletId ->
             assignWallet(accountId, walletId)
-            ConnectedWalletDataTransferObject(walletId.toString(), wallet.address, wallet.ecosystem)
+            LinkedWalletDataTransferObject(walletId.toString(), wallet.address, wallet.ecosystem, false)
         }
 
     /**
-     * Disconnects the wallet from the given account
-     * @param accountId the account's uuid
-     * @param walletId the wallet's address / public-key
+     * Removes the wallet from the given account
+     * @param accountId the account's [UUID]
+     * @param walletId the wallet's [UUID]
      */
-    fun disconnect(accountId: UUID, walletId: UUID): Unit = transaction {
+    fun unlink(accountId: UUID, walletId: UUID): Unit = transaction {
         AccountWallets.deleteWhere { account eq accountId and (wallet eq walletId) }
     }
 
     /**
-     * Fetches the connected wallets for a given account
-     * @param accountId the account's uuid
-     * @return A list of [ConnectedWalletDataTransferObject]s
+     * Resets the owner property for the given account
+     * @param accountId the account's [UUID]
+     * @param walletId the wallet's [UUID]
      */
-    fun getConnected(accountId: UUID) =
+    fun disconnect(accountId: UUID, walletId: UUID): Unit = transaction {
+        AccountWallets.update(
+            { AccountWallets.account eq accountId and (AccountWallets.wallet eq walletId) }
+        ) {
+            it[AccountWallets.owner] = false
+        }
+    }
+
+    /**
+     * Fetches the wallets for a given account
+     * @param accountId the account's [UUID]
+     * @return A list of [LinkedWalletDataTransferObject]s
+     */
+    fun getLinked(accountId: UUID) =
         transaction {
-            AccountWallets.select { AccountWallets.account eq accountId }.mapNotNull {
-                Wallets.select { Wallets.id eq it[AccountWallets.wallet] }.firstOrNull()?.let {
-                    ConnectedWalletDataTransferObject(
-                        it[Wallets.id].toString(),
-                        it[Wallets.address],
-                        it[Wallets.ecosystem]
+            AccountWallets.select { AccountWallets.account eq accountId }.mapNotNull { aw ->
+                Wallets.select { Wallets.id eq aw[AccountWallets.wallet] }.firstOrNull()?.let { w ->
+                    LinkedWalletDataTransferObject(
+                        w[Wallets.id].toString(),
+                        w[Wallets.address],
+                        w[Wallets.ecosystem],
+                        aw[AccountWallets.owner]
                     )
                 }
             }

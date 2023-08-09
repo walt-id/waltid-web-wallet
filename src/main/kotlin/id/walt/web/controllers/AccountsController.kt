@@ -1,6 +1,6 @@
 package id.walt.web.controllers
 
-import id.walt.service.dto.ConnectedWalletDataTransferObject
+import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -20,14 +20,44 @@ fun Application.account() = walletRoute {
         get({
             response {
                 HttpStatusCode.OK to {
-                    body<List<ConnectedWalletDataTransferObject>> {
-                        description = "List of connected wallets"
+                    body<List<LinkedWalletDataTransferObject>> {
+                        description = "List of watched wallets"
                     }
                 }
             }
         }) {
             val wallet = getWalletService()
-            context.respond<List<ConnectedWalletDataTransferObject>>(wallet.getConnectedWallets())
+            context.respond<List<LinkedWalletDataTransferObject>>(wallet.getLinkedWallets())
+        }
+        post("link", {
+            summary = "Add a web3 wallet"
+            request {
+                body<WalletDataTransferObject> { description = "Wallet address and ecosystem" }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    body<LinkedWalletDataTransferObject> {
+                        description = "TODO"
+                    }
+                }
+            }
+        }) {
+            val wallet = getWalletService()
+            val data = Json.decodeFromString<WalletDataTransferObject>(call.receive())
+            context.respond(wallet.linkWallet(data))
+        }
+        post("unlink", {
+            summary = "Remove a web3 wallet"
+            request {
+                body<String> { description = "Wallet id" }
+            }
+            response {
+                HttpStatusCode.OK
+            }
+        }) {
+            val wallet = getWalletService()
+            val walletId = UUID.fromString(call.receiveText())
+            context.respond(wallet.unlinkWallet(walletId))
         }
         post("connect", {
             summary = "Connect a web3 wallet"
@@ -36,7 +66,7 @@ fun Application.account() = walletRoute {
             }
             response {
                 HttpStatusCode.OK to {
-                    body<ConnectedWalletDataTransferObject> {
+                    body<LinkedWalletDataTransferObject> {
                         description = "TODO"
                     }
                 }
@@ -47,7 +77,7 @@ fun Application.account() = walletRoute {
             context.respond(wallet.connectWallet(data))
         }
         post("disconnect", {
-            summary = "Connect a web3 wallet"
+            summary = "Disconnect a web3 wallet"
             request {
                 body<String> { description = "Wallet id" }
             }
