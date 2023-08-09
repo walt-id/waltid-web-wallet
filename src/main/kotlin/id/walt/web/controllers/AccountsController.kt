@@ -1,6 +1,6 @@
 package id.walt.web.controllers
 
-import id.walt.service.dto.ConnectedWalletDataTransferObject
+import id.walt.service.dto.WatchedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -20,23 +20,23 @@ fun Application.account() = walletRoute {
         get({
             response {
                 HttpStatusCode.OK to {
-                    body<List<ConnectedWalletDataTransferObject>> {
-                        description = "List of connected wallets"
+                    body<List<WatchedWalletDataTransferObject>> {
+                        description = "List of watched wallets"
                     }
                 }
             }
         }) {
             val wallet = getWalletService()
-            context.respond<List<ConnectedWalletDataTransferObject>>(wallet.getConnectedWallets())
+            context.respond<List<WatchedWalletDataTransferObject>>(wallet.getWatchedWallets())
         }
-        post("connect", {
-            summary = "Connect a web3 wallet"
+        post("watch", {
+            summary = "Add a web3 wallet"
             request {
                 body<WalletDataTransferObject> { description = "Wallet address and ecosystem" }
             }
             response {
                 HttpStatusCode.OK to {
-                    body<ConnectedWalletDataTransferObject> {
+                    body<WatchedWalletDataTransferObject> {
                         description = "TODO"
                     }
                 }
@@ -44,10 +44,10 @@ fun Application.account() = walletRoute {
         }) {
             val wallet = getWalletService()
             val data = Json.decodeFromString<WalletDataTransferObject>(call.receive())
-            context.respond(wallet.connectWallet(data))
+            context.respond(wallet.watchWallet(data))
         }
-        post("disconnect", {
-            summary = "Connect a web3 wallet"
+        post("unwatch", {
+            summary = "Remove a web3 wallet"
             request {
                 body<String> { description = "Wallet id" }
             }
@@ -57,7 +57,7 @@ fun Application.account() = walletRoute {
         }) {
             val wallet = getWalletService()
             val walletId = UUID.fromString(call.receiveText())
-            context.respond(wallet.disconnectWallet(walletId))
+            context.respond(wallet.unwatchWallet(walletId))
         }
     }
 }

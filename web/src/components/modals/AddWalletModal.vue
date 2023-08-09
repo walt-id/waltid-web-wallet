@@ -80,7 +80,7 @@ const ecosystems = [
 
 async function addWallet(){
   console.log(`addWallet: ${addressInput} - ${selectedEcosystem.value}`)
-  await $fetch(`/r/wallet/accounts/connect`, {
+  await $fetch(`/r/wallet/accounts/watch`, {
     method: 'POST',
     body: {
       address: addressInput,

@@ -20,6 +20,7 @@ class WalletStrategy : AccountStrategy<AddressLoginRequest> {
                     AccountWallets.insert {
                         it[account] = accountId
                         it[wallet] = walletId
+                        it[owner] = true
                     }
                 }
             }
@@ -53,6 +54,6 @@ class WalletStrategy : AccountStrategy<AddressLoginRequest> {
     private fun join(address: String) = Accounts
         .innerJoin(AccountWallets, onColumn = { Accounts.id }, otherColumn = { AccountWallets.account })
         .innerJoin(Wallets, onColumn = { Wallets.id }, otherColumn = { AccountWallets.wallet }, additionalConstraint = {
-            Wallets.address eq address
+            Wallets.address eq address and (AccountWallets.owner eq true)
         }).selectAll()
 }
