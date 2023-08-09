@@ -6,8 +6,8 @@ import id.walt.db.models.Accounts
 import id.walt.db.models.Emails
 import id.walt.db.models.WalletOperationHistories
 import id.walt.db.models.WalletOperationHistory
+import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
-import id.walt.service.dto.LinkeddWalletDataTransferObject
 import id.walt.utils.JsonUtils.toJsonPrimitive
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -278,13 +278,17 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         }
     }
 
-    override suspend fun watchWallet(wallet: WalletDataTransferObject): LinkeddWalletDataTransferObject =
-        Web3WalletService.watch(accountId, wallet)
+    override suspend fun linkWallet(wallet: WalletDataTransferObject): LinkedWalletDataTransferObject =
+        Web3WalletService.link(accountId, wallet)
 
-    override suspend fun unwatchWallet(wallet: UUID) = Web3WalletService.unwatch(accountId, wallet)
+    override suspend fun unlinkWallet(wallet: UUID) = Web3WalletService.unlink(accountId, wallet)
 
-    override suspend fun getWatchedWallets(): List<LinkeddWalletDataTransferObject> = Web3WalletService.getWatching(accountId)
-    override suspend fun connectWallet(wallet: WalletDataTransferObject): LinkeddWalletDataTransferObject {
+    override suspend fun getLinkedWallets(): List<LinkedWalletDataTransferObject> = Web3WalletService.getLinked(accountId)
+    override suspend fun connectWallet(wallet: WalletDataTransferObject): LinkedWalletDataTransferObject {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun disconnectWallet(wallet: UUID) {
         TODO("Not yet implemented")
     }
 }
