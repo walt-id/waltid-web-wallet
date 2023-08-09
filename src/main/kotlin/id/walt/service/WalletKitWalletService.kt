@@ -6,7 +6,7 @@ import id.walt.db.models.Accounts
 import id.walt.db.models.Emails
 import id.walt.db.models.WalletOperationHistories
 import id.walt.db.models.WalletOperationHistory
-import id.walt.service.dto.ConnectedWalletDataTransferObject
+import id.walt.service.dto.WatchedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.utils.JsonUtils.toJsonPrimitive
 import io.ktor.client.*
@@ -278,10 +278,10 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         }
     }
 
-    override suspend fun connectWallet(wallet: WalletDataTransferObject): ConnectedWalletDataTransferObject =
-        Web3WalletService.connect(accountId, wallet)
+    override suspend fun watchWallet(wallet: WalletDataTransferObject): WatchedWalletDataTransferObject =
+        Web3WalletService.watch(accountId, wallet)
 
-    override suspend fun disconnectWallet(wallet: UUID) = Web3WalletService.disconnect(accountId, wallet)
+    override suspend fun unwatchWallet(wallet: UUID) = Web3WalletService.unwatch(accountId, wallet)
 
-    override suspend fun getConnectedWallets(): List<ConnectedWalletDataTransferObject> = Web3WalletService.getConnected(accountId)
+    override suspend fun getWatchedWallets(): List<WatchedWalletDataTransferObject> = Web3WalletService.getWatching(accountId)
 }

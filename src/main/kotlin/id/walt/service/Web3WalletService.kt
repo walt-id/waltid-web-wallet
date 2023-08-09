@@ -2,8 +2,8 @@ package id.walt.service
 
 import id.walt.db.models.AccountWallets
 import id.walt.db.models.Wallets
-import id.walt.service.dto.ConnectedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
+import id.walt.service.dto.WatchedWalletDataTransferObject
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
@@ -14,39 +14,40 @@ import java.util.*
 
 object Web3WalletService {
     /**
-     * Connects the wallet to the given account
+     * Adds the wallet to the given account
      * @param accountId the account's uuid
      * @param wallet the [WalletDataTransferObject]
-     * @return the [ConnectedWalletDataTransferObject] representing the web3 wallet
+     * @return the [WatchedWalletDataTransferObject] representing the web3 wallet
      */
-    fun connect(accountId: UUID, wallet: WalletDataTransferObject): ConnectedWalletDataTransferObject =
+    fun watch(accountId: UUID, wallet: WalletDataTransferObject): WatchedWalletDataTransferObject =
         getOrCreateWallet(wallet).let { walletId ->
             assignWallet(accountId, walletId)
-            ConnectedWalletDataTransferObject(walletId.toString(), wallet.address, wallet.ecosystem)
+            WatchedWalletDataTransferObject(walletId.toString(), wallet.address, wallet.ecosystem, false)
         }
 
     /**
-     * Disconnects the wallet from the given account
+     * Removes the wallet from the given account
      * @param accountId the account's uuid
      * @param walletId the wallet's address / public-key
      */
-    fun disconnect(accountId: UUID, walletId: UUID): Unit = transaction {
+    fun unwatch(accountId: UUID, walletId: UUID): Unit = transaction {
         AccountWallets.deleteWhere { account eq accountId and (wallet eq walletId) }
     }
 
     /**
-     * Fetches the connected wallets for a given account
+     * Fetches the wallets for a given account
      * @param accountId the account's uuid
-     * @return A list of [ConnectedWalletDataTransferObject]s
+     * @return A list of [WatchedWalletDataTransferObject]s
      */
-    fun getConnected(accountId: UUID) =
+    fun getWatching(accountId: UUID) =
         transaction {
-            AccountWallets.select { AccountWallets.account eq accountId }.mapNotNull {
-                Wallets.select { Wallets.id eq it[AccountWallets.wallet] }.firstOrNull()?.let {
-                    ConnectedWalletDataTransferObject(
-                        it[Wallets.id].toString(),
-                        it[Wallets.address],
-                        it[Wallets.ecosystem]
+            AccountWallets.select { AccountWallets.account eq accountId }.mapNotNull { aw ->
+                Wallets.select { Wallets.id eq aw[AccountWallets.wallet] }.firstOrNull()?.let { w ->
+                    WatchedWalletDataTransferObject(
+                        w[Wallets.id].toString(),
+                        w[Wallets.address],
+                        w[Wallets.ecosystem],
+                        aw[AccountWallets.owner]
                     )
                 }
             }

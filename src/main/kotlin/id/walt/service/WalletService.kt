@@ -1,7 +1,7 @@
 package id.walt.service
 
 import id.walt.db.models.WalletOperationHistory
-import id.walt.service.dto.ConnectedWalletDataTransferObject
+import id.walt.service.dto.WatchedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.utils.JsonUtils.toJsonPrimitives
 import io.ktor.client.statement.*
@@ -39,9 +39,9 @@ abstract class WalletService(val accountId: UUID) {
     abstract suspend fun addOperationHistory(operationHistory: WalletOperationHistory)
 
     // Web3 wallets
-    abstract suspend fun connectWallet(wallet: WalletDataTransferObject): ConnectedWalletDataTransferObject
-    abstract suspend fun disconnectWallet(wallet: UUID): Unit
-    abstract suspend fun getConnectedWallets(): List<ConnectedWalletDataTransferObject>
+    abstract suspend fun watchWallet(wallet: WalletDataTransferObject): WatchedWalletDataTransferObject
+    abstract suspend fun unwatchWallet(wallet: UUID): Unit
+    abstract suspend fun getWatchedWallets(): List<WatchedWalletDataTransferObject>
 
 
     // TODO: Push
