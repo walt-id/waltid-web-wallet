@@ -4,11 +4,8 @@ import id.walt.db.models.AccountWallets
 import id.walt.db.models.Wallets
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insertAndGetId
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
@@ -27,16 +24,29 @@ object Web3WalletService {
 
     /**
      * Removes the wallet from the given account
-     * @param accountId the account's uuid
-     * @param walletId the wallet's address / public-key
+     * @param accountId the account's [UUID]
+     * @param walletId the wallet's [UUID]
      */
     fun unlink(accountId: UUID, walletId: UUID): Unit = transaction {
         AccountWallets.deleteWhere { account eq accountId and (wallet eq walletId) }
     }
 
     /**
+     * Resets the owner property for the given account
+     * @param accountId the account's [UUID]
+     * @param walletId the wallet's [UUID]
+     */
+    fun disconnect(accountId: UUID, walletId: UUID): Unit = transaction {
+        AccountWallets.update(
+            { AccountWallets.account eq accountId and (AccountWallets.wallet eq walletId) }
+        ) {
+            it[AccountWallets.owner] = false
+        }
+    }
+
+    /**
      * Fetches the wallets for a given account
-     * @param accountId the account's uuid
+     * @param accountId the account's [UUID]
      * @return A list of [LinkedWalletDataTransferObject]s
      */
     fun getLinked(accountId: UUID) =

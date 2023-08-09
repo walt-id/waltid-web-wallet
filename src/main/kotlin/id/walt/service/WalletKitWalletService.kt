@@ -288,7 +288,5 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun disconnectWallet(wallet: UUID) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun disconnectWallet(wallet: UUID) = Web3WalletService.disconnect(accountId, wallet)
 }
