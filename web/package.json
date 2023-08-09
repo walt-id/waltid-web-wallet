@@ -22,7 +22,7 @@
     "@near-wallet-selector/here-wallet": "^8.2.1",
     "@near-wallet-selector/ledger": "^8.2.1",
     "@near-wallet-selector/math-wallet": "^8.2.1",
-    "@near-wallet-selector/meteor-wallet": "^8.2.1",
+    "@near-wallet-selector/meteor-wallet": "^8.3.0",
     "@near-wallet-selector/modal-ui": "^8.2.1",
     "@near-wallet-selector/my-near-wallet": "^8.2.1",
     "@near-wallet-selector/narwallets": "^8.2.1",
