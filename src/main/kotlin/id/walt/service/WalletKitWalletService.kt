@@ -284,9 +284,8 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun unlinkWallet(wallet: UUID) = Web3WalletService.unlink(accountId, wallet)
 
     override suspend fun getLinkedWallets(): List<LinkedWalletDataTransferObject> = Web3WalletService.getLinked(accountId)
-    override suspend fun connectWallet(wallet: WalletDataTransferObject): LinkedWalletDataTransferObject {
-        TODO("Not yet implemented")
-    }
+
+    override suspend fun connectWallet(walletId: UUID) = Web3WalletService.connect(accountId, walletId)
 
     override suspend fun disconnectWallet(wallet: UUID) = Web3WalletService.disconnect(accountId, wallet)
 }

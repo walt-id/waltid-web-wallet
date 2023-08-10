@@ -16,7 +16,7 @@
         </div>
         <LoadingIndicator v-if="pending">Loading</LoadingIndicator>
         <span v-else-if="wallets && wallets.length > 0" class="font-semibold">Your connected addresses ({{ wallets.length }}):</span>
-        <h3 v-else class="mt-2 text-sm font-semibold text-gray-900">No connected addresses</h3>
+        <h3 v-else class="font-semibold">No connected addresses</h3>
         <!-- wallet-list -->
         <ul class="divide-y divide-gray-100 list-decimal border rounded-2xl mt-2 px-2" role="list">
             <li v-for="wallet in wallets" :key="wallet.id" class="flex items-center justify-between gap-x-6 py-4">
@@ -30,7 +30,7 @@
                         <button type="button"
                             :class="{ 'bg-red-500 hover:bg-red-600': wallet.owner }"
                             class="w-full rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                            @click="wallet.owner ? disconnectWallet(wallet.id) : connectWallet">
+                            @click="wallet.owner ? disconnectWallet(wallet.id) : connectWallet(wallet.id)">
                             <span v-if="wallet.owner">Disconnect</span>
                             <span v-else>Connect</span>
                         </button>
@@ -77,10 +77,12 @@ function addWallet() {
     });
 }
 
-function connectWallet() {
+function connectWallet(walletId) {
+    console.log(`Connecting wallet: ${walletId}`)
     modalStore.openModal({
         component: ConnectWalletModal,
     })
+    //TODO
 }
 
 async function disconnectWallet(walletId) {
