@@ -73,8 +73,8 @@ fun Application.account() = walletRoute {
             }
         }) {
             val wallet = getWalletService()
-            val data = Json.decodeFromString<WalletDataTransferObject>(call.receive())
-            context.respond(wallet.connectWallet(data))
+            val walletId = UUID.fromString(call.receiveText())
+            context.respond(wallet.connectWallet(walletId))
         }
         post("disconnect", {
             summary = "Disconnect a web3 wallet"
