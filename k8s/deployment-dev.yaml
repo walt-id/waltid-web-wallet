@@ -13,7 +13,7 @@ metadata:
 data:
   db.sqlite.conf: |
     hikariDataSource {
-        jdbcUrl = "jdbc:sqlite:data.db"
+        jdbcUrl = "jdbc:sqlite:/waltid-web-wallet/data/data.db"
         driverClassName = "org.sqlite.JDBC"
         username = ""
         password = ""
