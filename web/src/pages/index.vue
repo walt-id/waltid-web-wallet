@@ -152,49 +152,57 @@ if (process.client) {
     function initialiseState() {
         console.log("Service worker initializing...")
 
-        // Check if desktop notifications are supported
-        if (!('showNotification' in ServiceWorkerRegistration.prototype)) {
-            console.warn('Notifications aren\'t supported.');
+        try {
+            // Check if desktop notifications are supported
+            if (!('showNotification' in ServiceWorkerRegistration.prototype)) {
+                // console.warn('Notifications aren\'t supported.');
+                // return;
+                throw new Error('Notifications aren\'t supported.');
+            }
+
+            // Check if user has disabled notifications
+            // If a user has manually disabled notifications in his/her browser for
+            // your page previously, they will need to MANUALLY go in and turn the
+            // permission back on. In this statement you could show some UI element
+            // telling the user how to do so.
+            if (Notification.permission === 'denied') {
+                // console.warn('The user has blocked notifications.');
+                // return;
+                throw new Error('The user has blocked notifications.');
+            }
+
+            // Check if push API is supported
+            if (!('PushManager' in window)) {
+                // console.warn('Push messaging isn\'t supported.');
+                // return;
+                throw new Error('Push messaging isn\'t supported.');
+            }
+
+            navigator.serviceWorker.ready.then(function (serviceWorkerRegistration) {
+
+                // Get the push notification subscription object
+                serviceWorkerRegistration.pushManager.getSubscription().then(function (subscription) {
+
+                    // If this is the user's first visit we need to set up
+                    // a subscription to push notifications
+                    if (!subscription) {
+                        subscribe();
+
+                        return;
+                    }
+
+                    // Update the server state with the new subscription
+                    sendSubscriptionToServer(subscription);
+                })
+                    .catch(function (err) {
+                        // Handle the error - show a notification in the GUI
+                        console.warn('Error during getSubscription()', err);
+                    });
+            });
+        } catch (ex) {
+            console.warn(ex);
             return;
         }
-
-        // Check if user has disabled notifications
-        // If a user has manually disabled notifications in his/her browser for
-        // your page previously, they will need to MANUALLY go in and turn the
-        // permission back on. In this statement you could show some UI element
-        // telling the user how to do so.
-        if (Notification.permission === 'denied') {
-            console.warn('The user has blocked notifications.');
-            return;
-        }
-
-        // Check if push API is supported
-        if (!('PushManager' in window)) {
-            console.warn('Push messaging isn\'t supported.');
-            return;
-        }
-
-        navigator.serviceWorker.ready.then(function (serviceWorkerRegistration) {
-
-            // Get the push notification subscription object
-            serviceWorkerRegistration.pushManager.getSubscription().then(function (subscription) {
-
-                // If this is the user's first visit we need to set up
-                // a subscription to push notifications
-                if (!subscription) {
-                    subscribe();
-
-                    return;
-                }
-
-                // Update the server state with the new subscription
-                sendSubscriptionToServer(subscription);
-            })
-                .catch(function (err) {
-                    // Handle the error - show a notification in the GUI
-                    console.warn('Error during getSubscription()', err);
-                });
-        });
     }
 
     initialiseState()

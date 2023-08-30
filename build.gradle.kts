@@ -39,39 +39,40 @@ dependencies {
 
     /* -- KTOR -- */
 
+    val ktorVersion = "2.3.2"
     // Ktor server
-    implementation("io.ktor:ktor-server-core-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-auth-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-sessions-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-auth-jwt-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-auto-head-response-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-double-receive-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-host-common-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-status-pages-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-compression-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-cors-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-forwarded-header-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-call-logging-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-call-id-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-content-negotiation-jvm:2.3.2")
-    implementation("io.ktor:ktor-server-cio-jvm:2.3.2")
+    implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-auth-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-sessions-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-auto-head-response-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-double-receive-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-host-common-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-status-pages-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-compression-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-cors-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-forwarded-header-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-logging-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-id-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-cio-jvm:$ktorVersion")
 
     // Ktor server external libs
     implementation("io.github.smiley4:ktor-swagger-ui:2.2.0")
 
     // Ktor client
-    implementation("io.ktor:ktor-client-core-jvm:2.3.2")
-    implementation("io.ktor:ktor-client-serialization-jvm:2.3.2")
-    implementation("io.ktor:ktor-client-content-negotiation:2.3.2")
-    implementation("io.ktor:ktor-client-json-jvm:2.3.2")
-    implementation("io.ktor:ktor-client-cio-jvm:2.3.2")
-    implementation("io.ktor:ktor-client-logging-jvm:2.3.2")
-    implementation("io.ktor:ktor-client-cio-jvm:2.3.2")
+    implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-client-json-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio-jvm:$ktorVersion")
 
     /* -- Kotlin -- */
 
     // Kotlinx.serialization
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.2")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
     // Date
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
@@ -122,5 +123,5 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5:5.5.5")
     testImplementation("io.kotest:kotest-assertions-core:5.5.5")
     testImplementation("io.kotest.extensions:kotest-assertions-ktor:2.0.0")
-    testImplementation("io.ktor:ktor-server-tests-jvm:2.3.2")
+    testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
 }
