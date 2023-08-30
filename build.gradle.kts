@@ -39,7 +39,7 @@ dependencies {
 
     /* -- KTOR -- */
 
-    val ktorVersion = "2.3.2"
+    val ktorVersion = "2.3.3"
     // Ktor server
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jvm:$ktorVersion")
@@ -103,7 +103,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core:9.16.0")
 
     // Web push
-    implementation("nl.martijndwars:web-push:5.1.1")
+    implementation("nl.martijndwars:web-push:5.1.1") // todo: replace with https://github.com/interaso/webpush
 
     // Config
     implementation("com.sksamuel.hoplite:hoplite-core:2.7.4")

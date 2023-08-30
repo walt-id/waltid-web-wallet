@@ -14,7 +14,7 @@ const locale = useState<string>('locale.i18n')
         <!--<head>
           <link rel="icon" type="text/xml" href="/svg/walt-s.svg">
         </head>-->
-        <Body class="bg-white text-gray-800 antialiased transition-colors duration-300 dark:bg-gray-900 dark:text-gray-200 h-full">
+        <Body class="bg-white text-gray-800 antialiased transition-colors duration-300  h-full"> <!-- dark:bg-gray-900 dark:text-gray-200 -->
             <ModalBase />
             <VitePwaManifest/>
             <NuxtLoadingIndicator/>
