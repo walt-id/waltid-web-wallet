@@ -52,15 +52,15 @@ fun Application.exchange() = walletRoute {
 
             val request = call.receiveText()
 
-            wallet.usePresentationRequest(request, did)
+            val redirect = wallet.usePresentationRequest(request, did)
             wallet.addOperationHistory(
                 WalletOperationHistory.new(
                     wallet, "usePresentationRequest",
-                    mapOf("did" to did, "request" to request)
+                    mapOf("did" to did, "request" to request, "redirect" to redirect)
                 )
             )
 
-            context.respond(HttpStatusCode.OK)
+            context.respond(HttpStatusCode.OK, mapOf("redirectUri" to redirect))
         }
     }
 }
