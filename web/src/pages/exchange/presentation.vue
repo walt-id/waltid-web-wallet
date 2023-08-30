@@ -104,11 +104,20 @@ let groupedCredentialTypes = groupBy(inputDescriptors.map(item => {
 const immediateAccept = ref(false)
 
 async function acceptPresentation() {
-    await $fetch("/r/wallet/exchange/usePresentationRequest", {
+    const response = await $fetch<{redirectUri: string | null}>("/r/wallet/exchange/usePresentationRequest", {
         method: 'POST',
         body: request
     })
-    navigateTo('/')
+
+    const redirect = response.redirectUri
+
+    if (redirect != null) {
+        navigateTo(redirect, {
+            external: true
+        })
+    } else {
+        navigateTo('/')
+    }
 }
 
 
