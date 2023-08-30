@@ -16,6 +16,7 @@ import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -28,7 +29,10 @@ import kotlinx.serialization.json.*
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.net.URLDecoder
+import java.nio.charset.Charset
 import java.util.*
+
 
 class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
 
@@ -134,9 +138,56 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
              .bodyAsText()*/
 
 
-    /* SIOP */
+    private fun getQueryParams(url: String): Map<String, MutableList<String>> {
+        val params: MutableMap<String, MutableList<String>> = HashMap()
+        val urlParts = url.split("\\?".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-    override suspend fun usePresentationRequest(request: String, did: String) {
+        if (urlParts.size <= 1)
+            return params
+
+        val query = urlParts[1]
+        for (param in query.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
+            val pair = param.split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val key = URLDecoder.decode(pair[0], "UTF-8")
+            var value = ""
+            if (pair.size > 1) {
+                value = URLDecoder.decode(pair[1], "UTF-8")
+            }
+            var values = params[key]
+            if (values == null) {
+                values = ArrayList()
+                params[key] = values
+            }
+            values.add(value)
+        }
+        return params
+    }
+
+
+    /* SIOP */
+    @Serializable
+    data class PresentationResponse(
+        val vp_token: String,
+        val presentation_submission: String,
+        val id_token: String?,
+        val state: String?,
+        val fulfilled: Boolean,
+        val rp_response: String?
+    )
+
+    @Serializable
+    data class SIOPv2Response(
+        val vp_token: String,
+        val presentation_submission: String,
+        val id_token: String?,
+        val state: String?
+    )
+
+    override suspend fun usePresentationRequest(request: String, did: String): String? {
+        val decoded = URLDecoder.decode(request, Charset.defaultCharset())
+        val queryParams = getQueryParams(decoded)
+        val redirectUri = queryParams["redirect_uri"]?.first() ?: throw IllegalArgumentException("Could not get redirect_uri from request!")
+
         val sessionId = authenticatedJsonPost(
             "/api/wallet/presentation/startPresentation",
             mapOf("oidcUri" to request)
@@ -151,14 +202,30 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
             }
         }.body<JsonObject>()["presentableCredentials"]!!.jsonArray
 
-        val presentResp = authenticatedJsonPost("/api/wallet/presentation/fulfill", presentableCredentials) {
+        val fulfillResponse = authenticatedJsonPost("/api/wallet/presentation/fulfill", presentableCredentials) {
             url {
                 parameters.apply {
                     append("sessionId", sessionId)
                 }
             }
         }
-        println(presentResp)
+
+        val presentationResponse = fulfillResponse.body<PresentationResponse>()
+        println("Presentation response: $presentationResponse")
+
+        println("Posting to redirect uri: $redirectUri")
+        val redirectUriResp = http.submitForm(redirectUri,
+            formParameters = parameters {
+                append("vp_token", presentationResponse.vp_token)
+                append("presentation_submission", presentationResponse.presentation_submission)
+                append("id_token", presentationResponse.id_token.toString())
+                append("state", presentationResponse.state.toString())
+            }
+        )
+
+        val redirect = redirectUriResp.headers[HttpHeaders.Location]
+
+        return redirect
     }
 
     override suspend fun useOfferRequest(offer: String, did: String) {
@@ -249,8 +316,8 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         // https://wallet.walt-test.cloud/api/wallet/issuance/info?sessionId=SESSION_ID
         // after taking up issuance offer
     }
-    // TODO
-    //fun infoAboutOfferRequest
+// TODO
+//fun infoAboutOfferRequest
 
     override suspend fun getHistory(limit: Int, offset: Int): List<WalletOperationHistory> = transaction {
         WalletOperationHistories
