@@ -500,5 +500,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+web/.github
 web/node_modules
 web/.nuxt
