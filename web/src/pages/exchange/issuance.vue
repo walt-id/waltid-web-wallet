@@ -19,10 +19,6 @@
                               class="inline-flex focus:outline focus:outline-offset-2 items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm"
                               display-text="Accept"
                               icon="heroicons:check" type="button" @click="acceptCredential"/>
-
-                <ActionButton :icon="CheckIcon"
-                              class="inline-flex focus:outline focus:outline-green-700 focus:outline-offset-2 items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 hover:scale-105 hover:animate-pulse focus:animate-none"
-                              display-text="Accept" type="button" @click="acceptCredential"/>
             </template>
         </PageHeader>
 
