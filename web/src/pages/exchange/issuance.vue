@@ -10,13 +10,19 @@
             </template>
 
             <template v-if="!immediateAccept" v-slot:menu>
-                <ActionButton :icon="XMarkIcon" class="inline-flex focus:outline focus:outline-red-700 focus:outline-offset-2 items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 hover:scale-105 hover:animate-pulse focus:animate-none"
-                              display-text="Reject"
-                              type="button" @click="navigateTo('/')"/>
 
-                <ActionButton :icon="CheckIcon" class="inline-flex focus:outline focus:outline-green-700 focus:outline-offset-2 items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 hover:scale-105 hover:animate-pulse focus:animate-none"
+                <ActionButton class="inline-flex focus:outline focus:outline-red-700 focus:outline-offset-2 items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 hover:scale-105 hover:animate-pulse focus:animate-none"
+                              display-text="Reject"
+                              icon="heroicons:x-mark" type="button" @click="navigateTo('/')"/>
+
+                <ActionButton :class="[failed ? 'bg-red-600 animate-pulse focus:outline focus:outline-red-700 focus:outline-offset-2 hover:bg-red-700 hover:scale-105' : 'bg-green-600 focus:outline-green-700 hover:bg-green-700 hover:scale-105 hover:animate-pulse focus:animate-none']" :failed="failed"
+                              class="inline-flex focus:outline focus:outline-offset-2 items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm"
                               display-text="Accept"
-                              type="button" @click="acceptCredential"/>
+                              icon="heroicons:check" type="button" @click="acceptCredential"/>
+
+                <ActionButton :icon="CheckIcon"
+                              class="inline-flex focus:outline focus:outline-green-700 focus:outline-offset-2 items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 hover:scale-105 hover:animate-pulse focus:animate-none"
+                              display-text="Accept" type="button" @click="acceptCredential"/>
             </template>
         </PageHeader>
 
@@ -53,7 +59,7 @@
 
 <script lang="ts" setup>
 import CenterMain from "~/components/CenterMain.vue";
-import {CheckIcon, XMarkIcon} from '@heroicons/vue/24/outline'
+import {CheckIcon} from '@heroicons/vue/24/outline'
 import PageHeader from "~/components/PageHeader.vue";
 import CredentialIcon from "~/components/CredentialIcon.vue";
 import ActionButton from "~/components/buttons/ActionButton.vue";
@@ -77,12 +83,20 @@ const groupedCredentialTypes = groupBy(credentialTypes.map(item => {
     return {id: ++i, name: item}
 }), c => c.name)
 
+
+const failed = ref(false)
+
 async function acceptCredential() {
-    await $fetch("/r/wallet/exchange/useOfferRequest", {
-        method: 'POST',
-        body: request
-    })
-    navigateTo('/')
+    try {
+        await $fetch("/r/wallet/exchange/useOfferRequest", {
+            method: 'POST',
+            body: request
+        })
+        navigateTo('/')
+    } catch (e) {
+        failed.value = true
+        throw e
+    }
 }
 
 if (query.accept) { // TODO make accept a JWT or something wallet-backend secured
