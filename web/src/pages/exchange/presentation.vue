@@ -1,30 +1,5 @@
 <template>
     <div>
-
-        <!--<PageHeader>
-            <template v-slot:title>
-                <div class="ml-3">
-                    <h1 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:leading-9">
-                        Present {{ credentialCount === 1 ? 'single' : credentialCount }} {{ credentialCount === 1 ? 'credential' : 'credentials' }}</h1>
-                    <p>requested by <span class="underline">{{ verifierHost }}</span></p>
-                </div>
-            </template>
-
-            <template v-slot:menu v-if="!immediateAccept">
-                <ActionButton
-                        :icon="XMarkIcon"
-                        @click="navigateTo('/')"
-                        class="inline-flex focus:outline focus:outline-red-700 focus:outline-offset-2 items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 hover:scale-105 hover:animate-pulse focus:animate-none"
-                        display-text="Reject" type="button"/>
-
-                <ActionButton
-                        :icon="CheckIcon"
-                        @click="acceptCredential"
-                        class="inline-flex focus:outline focus:outline-green-700 focus:outline-offset-2 items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 hover:scale-105 hover:animate-pulse focus:animate-none"
-                        display-text="Accept" type="button"/>
-            </template>
-        </PageHeader>-->
-
         <PageHeader>
             <template v-slot:title>
                 <div class="ml-3">
@@ -35,11 +10,12 @@
             </template>
 
             <template v-if="!immediateAccept" v-slot:menu>
-                <ActionButton :icon="XMarkIcon" class="inline-flex focus:outline focus:outline-red-700 focus:outline-offset-2 items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 hover:scale-105 hover:animate-pulse focus:animate-none"
+                <ActionButton icon="heroicons:x-mark" class="inline-flex focus:outline focus:outline-red-700 focus:outline-offset-2 items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 hover:scale-105 hover:animate-pulse focus:animate-none"
                               display-text="Reject"
                               type="button" @click="navigateTo('/')"/>
 
-                <ActionButton :icon="CheckIcon" class="inline-flex focus:outline focus:outline-green-700 focus:outline-offset-2 items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 hover:scale-105 hover:animate-pulse focus:animate-none"
+                <ActionButton icon="heroicons:check" :failed="failed" class="inline-flex focus:outline focus:outline-offset-2 items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm"
+                              :class="[failed ? 'bg-red-600 animate-pulse focus:outline focus:outline-red-700 focus:outline-offset-2 hover:bg-red-700 hover:scale-105' : 'bg-green-600 focus:outline-green-700 hover:bg-green-700 hover:scale-105 hover:animate-pulse focus:animate-none']"
                               display-text="Accept"
                               type="button" @click="acceptPresentation"/>
             </template>
@@ -103,20 +79,27 @@ let groupedCredentialTypes = groupBy(inputDescriptors.map(item => {
 
 const immediateAccept = ref(false)
 
+const failed = ref(false)
+
 async function acceptPresentation() {
-    const response = await $fetch<{redirectUri: string | null}>("/r/wallet/exchange/usePresentationRequest", {
-        method: 'POST',
-        body: request
-    })
-
-    const redirect = response.redirectUri
-
-    if (redirect != null) {
-        navigateTo(redirect, {
-            external: true
+    try {
+        const response = await $fetch<{ redirectUri: string | null }>("/r/wallet/exchange/usePresentationRequest", {
+            method: 'POST',
+            body: request
         })
-    } else {
-        navigateTo('/')
+
+        const redirect = response.redirectUri
+
+        if (redirect != null) {
+            navigateTo(redirect, {
+                external: true
+            })
+        } else {
+            navigateTo('/')
+        }
+    } catch (e) {
+        failed.value = true
+        throw e
     }
 }
 

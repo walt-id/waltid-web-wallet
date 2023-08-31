@@ -12,7 +12,8 @@ export default defineNuxtConfig({
         '@vite-pwa/nuxt',
         '@sidebase/nuxt-auth',
         '@nuxt/content',
-        '@pinia/nuxt'
+        '@pinia/nuxt',
+        'nuxt-icon'
     ],
     build: {
         transpile: ['@headlessui/vue'],
