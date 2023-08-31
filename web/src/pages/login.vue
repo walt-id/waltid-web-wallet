@@ -197,6 +197,8 @@ const { user } = storeToRefs(userStore)
 
 const {status, data, signIn} = useAuth()
 
+const signInRedirectUrl = ref("/")
+
 async function login() {
     console.log("logging in")
     isLogin.value = true
@@ -207,7 +209,9 @@ async function login() {
     }
 
     // try {
-        await signIn({ username: emailInput, password: passwordInput, type: "email" }, { callbackUrl: '/' })
+        await signIn({ username: emailInput, password: passwordInput, type: "email" },
+            { callbackUrl: signInRedirectUrl.value }
+        )
         .then(data => {
             user.value = {
                 id: "",
@@ -263,6 +267,13 @@ const cardStyle = computed(() => (
 useHead({
     title: "Login to your wallet - walt.id"
 })
+
+const route = useRoute()
+if (route.redirectedFrom != undefined) {
+    console.log(`Redirected from: ${JSON.stringify(route.redirectedFrom)}`)
+    signInRedirectUrl.value = route.redirectedFrom.fullPath
+}
+
 </script>
 
 <style scoped>
