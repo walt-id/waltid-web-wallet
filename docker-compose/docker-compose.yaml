@@ -6,7 +6,7 @@ services:
     environment:
       WALTID_DATA_ROOT: /waltid-walletkit/data-root
       WALTID_WALLET_BACKEND_BIND_ADDRESS: 0.0.0.0
-      WALTID_WALLET_BACKEND_PORT: "${WALLETKIT_PORT}"
+      WALTID_WALLET_BACKEND_PORT: "$WALLETKIT_PORT"
       EXTERNAL_HOSTNAME: $HOSTNAME
     volumes:
       - ./walletkit:/waltid-walletkit/data-root # data store volume incl. config files.
@@ -20,7 +20,7 @@ services:
   wallet-frontend:
     image: waltid/wallet-frontend:latest
     environment:
-      NUXT_PUBLIC_ISSUER_URL: "http://localhost:8000"
+      NUXT_PUBLIC_ISSUER_URL: "http://localhost:$ISSUER_PORT"
   issuer-portal:
     image: waltid/ssikit-issuer-portal:latest
   verifier-portal:
@@ -28,16 +28,16 @@ services:
   ingress:
     image: nginx:1.15.10-alpine
     ports:
-      - target: 3000
-        published: 3000 # wallet-frontend
+      - target: $WALLET_FRONTEND_PORT
+        published: $WALLET_FRONTEND_PORT # wallet-frontend
         protocol: tcp
         mode: host
-      - target: 8000
-        published: 8000 # issuer-portal
+      - target: $ISSUER_PORT
+        published: $ISSUER_PORT # issuer-portal
         protocol: tcp
         mode: host
-      - target: 8001
-        published: 8001 # verifier-portal
+      - target: $VERIFIER_PORT
+        published: $VERIFIER_PORT # verifier-portal
         protocol: tcp
         mode: host
     volumes:
