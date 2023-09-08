@@ -1,6 +1,7 @@
-import { BeaconWallet } from "@taquito/beacon-wallet";
+//import { BeaconWallet } from "@taquito/beacon-wallet";
 import { ref } from 'vue'
 
+/*
 const useTezosWallet = () => {
     const account = ref('')
     const wallet = new BeaconWallet({ name: "Walt.id" });
@@ -16,4 +17,4 @@ const useTezosWallet = () => {
     }
 }
 
-export default useTezosWallet;
+export default useTezosWallet;*/
