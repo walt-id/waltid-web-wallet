@@ -95,8 +95,8 @@ import { setupOptoWallet } from "@near-wallet-selector/opto-wallet";
 import { setupModal } from "@near-wallet-selector/modal-ui";
 import { setupWalletSelector } from "@near-wallet-selector/core";
 
-import { BeaconWallet } from "@taquito/beacon-wallet";
-import { TezosToolkit } from "@taquito/taquito";
+//import { BeaconWallet } from "@taquito/beacon-wallet";
+//import { TezosToolkit } from "@taquito/taquito";
 import { getAccount } from "@wagmi/core";
 
 import {
@@ -163,40 +163,40 @@ const { status, data, signIn } = useAuth();
 //   isLogin.value = true;
 // }
 
-const Tezos = new TezosToolkit("https://mainnet-tezos.giganode.io");
-const wallet = new BeaconWallet({ name: "Beacon Docs Taquito" });
-Tezos.setWalletProvider(wallet);
-
-async function beaconTezosWallet() {
-  try {
-    const abc = await wallet.requestPermissions();
-    console.log(abc);
-    const permissions = await wallet.client.requestPermissions();
-    const userData = {
-      address: permissions.address,
-      username: permissions.address,
-      ecosystem: "tezos",
-    };
-
-    await signIn(
-      {
-        address: userData.address,
-        ecosystem: userData.ecosystem,
-        type: "address",
-      },
-      { callbackUrl: "/settings/tokens" }
-    ).then((data) => {
-      store.closeModal();
-      user.value = {
-        id: userData.address,
-        username: userData.username,
-      };
-    });
-    isLogin.value = true;
-  } catch (error) {
-    console.log("Got error:", error);
-  }
-}
+//const Tezos = new TezosToolkit("https://mainnet-tezos.giganode.io");
+//const wallet = new BeaconWallet({ name: "Beacon Docs Taquito" });
+// Tezos.setWalletProvider(wallet);
+//
+// async function beaconTezosWallet() {
+//   try {
+//     const abc = await wallet.requestPermissions();
+//     console.log(abc);
+//     const permissions = await wallet.client.requestPermissions();
+//     const userData = {
+//       address: permissions.address,
+//       username: permissions.address,
+//       ecosystem: "tezos",
+//     };
+//
+//     await signIn(
+//       {
+//         address: userData.address,
+//         ecosystem: userData.ecosystem,
+//         type: "address",
+//       },
+//       { callbackUrl: "/settings/tokens" }
+//     ).then((data) => {
+//       store.closeModal();
+//       user.value = {
+//         id: userData.address,
+//         username: userData.username,
+//       };
+//     });
+//     isLogin.value = true;
+//   } catch (error) {
+//     console.log("Got error:", error);
+//   }
+// }
 
 const config = useRuntimeConfig();
 
