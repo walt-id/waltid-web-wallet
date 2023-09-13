@@ -60,6 +60,7 @@ import PageHeader from "~/components/PageHeader.vue";
 import CredentialIcon from "~/components/CredentialIcon.vue";
 import ActionButton from "~/components/buttons/ActionButton.vue";
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
+import {useTitle} from "@vueuse/core";
 
 const query = useRoute().query
 
@@ -106,6 +107,8 @@ if (query.accept) { // TODO make accept a JWT or something wallet-backend secure
 } else {
     console.error("No request")
 }*/
+
+useTitle(`Claim credentials - walt.id`)
 </script>
 
 <style scoped>
