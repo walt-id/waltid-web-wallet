@@ -59,6 +59,7 @@ import CredentialIcon from "~/components/CredentialIcon.vue";
 import ActionButton from "~/components/buttons/ActionButton.vue";
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import {groupBy} from "~/composables/groupings";
+import {useTitle} from "@vueuse/core";
 
 const query = useRoute().query
 
@@ -108,6 +109,8 @@ if (query.accept) { // TODO make accept a JWT or something wallet-backend secure
     immediateAccept.value = true
     acceptPresentation()
 }
+
+useTitle(`Present credentials - walt.id`)
 </script>
 
 <style scoped>
