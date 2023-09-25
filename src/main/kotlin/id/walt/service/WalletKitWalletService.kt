@@ -129,7 +129,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
 
     //private val prettyJson = Json { prettyPrint = true }
 
-    override suspend fun deleteCredential(id: String) = authenticatedJsonDelete("/api/wallet/credentials/delete/$id")
+    override suspend fun deleteCredential(id: String) = authenticatedJsonDelete("/api/wallet/credentials/delete/$id").status.isSuccess()
 
     override suspend fun getCredential(credentialId: String): String =
         /*prettyJson.encodeToString(*/listCredentials().first { it["id"]?.jsonPrimitive?.content == credentialId }.toString()//)
@@ -272,9 +272,8 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun loadDid(did: String) = authenticatedJsonGet("/api/wallet/did/$did")
         .body<JsonObject>()
 
-    override suspend fun deleteDid(did: String) {
-        authenticatedJsonDelete("/api/wallet/did/delete/$did")
-    }
+    override suspend fun deleteDid(did: String): Boolean =
+        authenticatedJsonDelete("/api/wallet/did/delete/$did").status.isSuccess()
 
     /* Keys */
 
@@ -288,17 +287,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         )
             .body<String>()
 
-    @Serializable
-    data class SingleKeyResponse(
-        val algorithm: String,
-        val cryptoProvider: String,
-        val keyId: KeyId,
-        val keyPair: JsonObject,
-        val keysetHandle: JsonElement
-    ) {
-        @Serializable
-        data class KeyId(val id: String)
-    }
+
 
     override suspend fun listKeys() = authenticatedJsonGet("/api/wallet/keys/list")
         .body<JsonObject>()["list"]!!.jsonArray.map { Json.decodeFromJsonElement<SingleKeyResponse>(it) }
@@ -307,8 +296,8 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         authenticatedJsonPost("/api/wallet/keys/import", body = jwkOrPem)
             .body<String>()
 
-    override suspend fun deleteKey(alias: String) =
-        authenticatedJsonDelete("/api/wallet/keys/delete/$alias").status
+    override suspend fun deleteKey(alias: String): Boolean =
+        authenticatedJsonDelete("/api/wallet/keys/delete/$alias").status.isSuccess()
 
 
     fun addToHistory() {

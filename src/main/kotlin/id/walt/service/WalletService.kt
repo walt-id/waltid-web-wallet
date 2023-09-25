@@ -14,7 +14,7 @@ abstract class WalletService(val accountId: UUID) {
 
     // Credentials
     abstract suspend fun listCredentials(): List<JsonObject>
-    abstract suspend fun deleteCredential(id: String): HttpResponse
+    abstract suspend fun deleteCredential(id: String): Boolean
     abstract suspend fun getCredential(credentialId: String): String
 
     // SIOP
@@ -28,13 +28,15 @@ abstract class WalletService(val accountId: UUID) {
     suspend fun createDidWithParameters(method: String, args: Map<String, Any?>): String {
         return createDid(method, args.toJsonPrimitives())
     }
+    abstract suspend fun deleteDid(did: String): Boolean
 
     // Keys
     abstract suspend fun listKeys(): List<WalletKitWalletService.SingleKeyResponse>
     abstract suspend fun exportKey(alias: String, format: String, private: Boolean): String
     abstract suspend fun importKey(jwkOrPem: String): String
-    abstract suspend fun deleteKey(alias: String): HttpStatusCode
-    abstract suspend fun deleteDid(did: String)
+    abstract suspend fun deleteKey(alias: String): Boolean
+
+    // History
     abstract suspend fun getHistory(limit: Int = 10, offset: Int = 0): List<WalletOperationHistory>
     abstract suspend fun addOperationHistory(operationHistory: WalletOperationHistory)
 
