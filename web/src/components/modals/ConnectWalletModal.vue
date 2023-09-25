@@ -38,6 +38,9 @@
           <span class="ml-1 h-5 font-semibold text-gray-800">Polkadot</span>
         </a>
       </div> -->
+      <div class="flex gap-1">
+        <w3m-core-button label="Login with WalletConnect" />
+      </div>
       <div>
         <a
           class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
@@ -95,10 +98,8 @@ import { setupOptoWallet } from "@near-wallet-selector/opto-wallet";
 import { setupModal } from "@near-wallet-selector/modal-ui";
 import { setupWalletSelector } from "@near-wallet-selector/core";
 
-import { BeaconWallet } from "@taquito/beacon-wallet";
-import { TezosToolkit } from "@taquito/taquito";
-import { getAccount } from "@wagmi/core";
-
+//import { BeaconWallet } from "@taquito/beacon-wallet";
+//import { TezosToolkit } from "@taquito/taquito";
 import {
   EthereumClient,
   w3mConnectors,
@@ -106,7 +107,10 @@ import {
 } from "@web3modal/ethereum";
 import { Web3Modal } from "@web3modal/html";
 import { configureChains, createConfig } from "@wagmi/core";
-import { arbitrum, avalanche, mainnet, polygon } from "@wagmi/core/chains";
+import { mainnet } from "@wagmi/core/chains";
+import { defineChain } from "viem";
+import { getAccount } from "@wagmi/core";
+import { ModalCtrlState } from "@web3modal/core/dist/_types/src/types/controllerTypes";
 
 import { web3Enable, web3Accounts } from "@polkadot/extension-dapp";
 
@@ -119,146 +123,101 @@ const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 const { status, data, signIn } = useAuth();
 
-// async function web3Modal() {
-//   const web3Modal = new Web3Modal({
-//     cacheProvider: false, // optional
-//   });
+const projectId = "92fa9ca65f8b1bb7b140bee3dcd3245e";
 
-//   const provider = await web3Modal.connect();
-//   console.log("provider", provider);
-//   var userData = {
-//     address: "",
-//     username: "",
-//     ecosystem: "",
-//   };
+const shimmer = defineChain({
+  id: 1072,
+  name: "ShimmerEVM Testnet",
+  network: "shimmer",
+  nativeCurrency: {
+    decimals: 18,
+    name: "SMR",
+    symbol: "SMR",
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://json-rpc.evm.testnet.shimmer.network"],
+      //webSocket: ['wss://rpc.zora.energy'],
+    },
+    public: {
+      http: ["https://json-rpc.evm.testnet.shimmer.network"],
+      //webSocket: ['wss://rpc.zora.energy'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: "Explorer",
+      url: "https://explorer.evm.testnet.shimmer.network",
+    },
+  },
+});
 
-//   if (provider.isMetaMask) {
-//     userData = {
-//       address: provider.selectedAddress,
-//       username: provider.selectedAddress,
-//       ecosystem: "ethereum",
-//     };
-//   } else {
-//     userData = {
-//       address: provider.selectedAddress[0],
-//       username: provider.selectedAddress[0],
-//       ecosystem: "ethereum",
-//     };
-//     provider.disconnect();
-//   }
-//   await signIn(
-//     {
-//       address: userData.address,
-//       ecosystem: userData.ecosystem,
-//       type: "address",
-//     },
-//     { callbackUrl: "/settings/tokens" }
-//   ).then((data) => {
-//     store.closeModal();
-//     user.value = {
-//       id: userData.address,
-//       username: userData.username,
-//     };
-//   });
-//   isLogin.value = true;
-// }
+const chains = [mainnet, shimmer];
 
-const Tezos = new TezosToolkit("https://mainnet-tezos.giganode.io");
-const wallet = new BeaconWallet({ name: "Beacon Docs Taquito" });
-Tezos.setWalletProvider(wallet);
+const { publicClient } = configureChains(chains, [w3mProvider({ projectId })]);
 
-async function beaconTezosWallet() {
-  try {
-    const abc = await wallet.requestPermissions();
-    console.log(abc);
-    const permissions = await wallet.client.requestPermissions();
-    const userData = {
-      address: permissions.address,
-      username: permissions.address,
-      ecosystem: "tezos",
-    };
+const wagmiConfig = createConfig({
+  autoConnect: true,
+  connectors: w3mConnectors({ projectId, chains }),
+  publicClient,
+});
 
-    await signIn(
-      {
-        address: userData.address,
-        ecosystem: userData.ecosystem,
-        type: "address",
-      },
-      { callbackUrl: "/settings/tokens" }
-    ).then((data) => {
-      store.closeModal();
-      user.value = {
-        id: userData.address,
-        username: userData.username,
+const ethereumClient = new EthereumClient(wagmiConfig, chains);
+
+async function onModalUpdate(newState: ModalCtrlState) {
+  console.log("New modal state: ", newState);
+  store.closeModal();
+
+  if (!newState.open) {
+    const account = getAccount();
+    console.log("Wagmi account: ", account);
+
+    if (account.status === "connected" && account.address.startsWith("0x")) {
+      console.log("WE WILL NOW CONTINUE");
+
+      const userData = {
+        address: account.address,
+        username: account.address,
+        ecosystem: "ethereum",
       };
-    });
-    isLogin.value = true;
-  } catch (error) {
-    console.log("Got error:", error);
+      await signIn(
+        {
+          address: userData.address,
+          ecosystem: "ethereum",
+          type: "address",
+        },
+        { callbackUrl: "/settings/tokens" }
+      ).then((data) => {
+        user.value = {
+          id: userData.address,
+          username: userData.username,
+        };
+      });
+      isLogin.value = true;
+    }
   }
 }
+
+if (process.client) {
+  const web3modal = new Web3Modal(
+    {
+      projectId,
+      themeVariables: {
+        "--w3m-accent-color": "#FFF",
+        "--w3m-accent-fill-color":"#000"
+      },
+    },
+    ethereumClient
+  );
+
+  web3modal.subscribeModal(async (newState) => {
+    await onModalUpdate(newState);
+  });
+}
+
+
 
 const config = useRuntimeConfig();
-
-function openWeb3() {
-  
-  // 1. Define constants
-  const projectId = "7b5d7bd97ff42210ca029d691bfabfc4";
-  // const projectId = config.public.projectId;
-  if (!projectId) {
-    throw new Error("You need to provide PROJECT_ID env variable");
-  }
-  const chains = [mainnet, polygon, avalanche, arbitrum];
-
-  // 2. Configure wagmi client
-  const { publicClient } = configureChains(chains, [
-    w3mProvider({ projectId }),
-  ]);
-  const wagmiConfig = createConfig({
-    autoConnect: true,
-    connectors: w3mConnectors({ projectId, chains }),
-    publicClient,
-  });
-
-  // 3. Create ethereum and modal clients
-  const ethereumClient = new EthereumClient(wagmiConfig, chains);
-  const web3Modal = new Web3Modal({ projectId }, ethereumClient);
-  const subscribe = web3Modal.subscribeModal((newState) =>
-    console.log(newState)
-  );
-  web3Modal
-    .openModal()
-    .then(() => {
-      subscribe();
-      store.closeModal();
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-  if (getAccount().isConnected) {
-    web3Modal.closeModal();
-    const userData = {
-      address: getAccount().address as `0x${string}`,
-      username: getAccount().address as `0x${string}`,
-      ecosystem: "Ethereum",
-    };
-    signIn(
-      {
-        address: userData.address,
-        ecosystem: userData.ecosystem,
-        type: "address",
-      },
-      { callbackUrl: "/settings/tokens" }
-    ).then((data) => {
-      console.log(getAccount().address);
-      user.value = {
-        id: userData.address,
-        username: userData.username,
-      };
-    });
-    isLogin.value = true;
-  }
-}
 
 const myAlgoWallet = new MyAlgoConnect();
 const settings = {
