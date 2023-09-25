@@ -4,6 +4,7 @@ import id.walt.core.crypto.keys.LocalKey
 import id.walt.core.crypto.keys.LocalKey.Companion
 import id.walt.core.crypto.keys.TSEKey
 import id.walt.db.models.*
+import id.walt.oid4vc.requests.CredentialOfferRequest
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.ssikit.did.registrar.dids.DidCreateOptions
@@ -19,6 +20,7 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.util.*
 import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
@@ -117,6 +119,13 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val state: String?
     )
 
+    private val ktorClient = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            json()
+        }
+        followRedirects = false
+    }
+
     /**
      * @return redirect uri
      */
@@ -125,6 +134,9 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     }
 
     override suspend fun useOfferRequest(offer: String, did: String) {
+        /*val parsedOfferReq = CredentialOfferRequest.fromHttpParameters(Url(offer).parameters.toMap())
+        val providerMetadataUri = credentialWallet.getCIProviderMetadataUrl(parsedOfferReq.credentialOffer!!.credentialIssuer)
+        val providerMetadata = ktorClient.get(providerMetadataUri).call.body<OpenIDProviderMetadata>()*/
 
     }
 

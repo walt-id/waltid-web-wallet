@@ -22,6 +22,7 @@ repositories {
     mavenCentral()
     maven("https://jitpack.io")
     maven("https://maven.walt.id/repository/waltid/")
+    maven("https://maven.walt.id/repository/waltid-ssi-kit/")
     //maven("https://repo.danubetech.com/repository/maven-public/")
 }
 
@@ -33,7 +34,7 @@ tasks.withType<KotlinCompile> {
 
 dependencies {
     // nftkit
-    implementation("id.walt:waltid-nftkit:1.2307292233.0"){
+    implementation("id.walt:waltid-nftkit:1.2307292233.0") {
         exclude("com.sksamuel.hoplite", "hoplite-core")
         exclude("com.sksamuel.hoplite", "hoplite-yaml")
         exclude("com.sksamuel.hoplite", "hoplite-hikaricp")
@@ -93,6 +94,9 @@ dependencies {
     // SSI Kit 2
     implementation("id.walt:waltid-ssikit2:1.0.1-SNAPSHOT")
     implementation("id.walt:core-crypto:1.0-SNAPSHOT")
+
+    // OIDC
+    implementation("id.walt:waltid-openid4vc:1.2309251429.0")
 
     /* -- Misc --*/
 
