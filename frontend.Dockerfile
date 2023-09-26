@@ -1,5 +1,5 @@
 # BUILD
-FROM docker.io/gplane/pnpm:8.6 as buildstage
+FROM docker.io/gplane/pnpm:8 as buildstage
 
 COPY web /build
 

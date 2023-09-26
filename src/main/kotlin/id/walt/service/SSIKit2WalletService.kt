@@ -19,9 +19,6 @@ import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.service.oidc4vc.TestCredentialWallet
 import id.walt.ssikit.did.DidService
-import id.walt.ssikit.did.registrar.LocalRegistrar
-import id.walt.ssikit.did.registrar.dids.DidCreateOptions
-import id.walt.ssikit.did.registrar.local.jwk.DidJwkRegistrar
 import id.walt.ssikit.helpers.WaltidServices
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -93,9 +90,11 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         WalletCredentials.deleteWhere { (account eq accountId) and (credentialId eq id) }
     } > 0
 
-    override suspend fun getCredential(credentialId: String): String = transaction {
-        WalletCredentials.select { (WalletCredentials.account eq accountId) and (WalletCredentials.credentialId eq id) }
-            .single()[WalletCredentials.credential]
+    override suspend fun getCredential(credentialId: String): String {
+        return transaction {
+            WalletCredentials.select { (WalletCredentials.account eq accountId) and (WalletCredentials.credentialId eq credentialId) }
+                .single()[WalletCredentials.credential]
+        }
     }
 
     private fun getQueryParams(url: String): Map<String, MutableList<String>> {
@@ -184,6 +183,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     private val testCIClientConfig = OpenIDClientConfig("test-client", null, redirectUri = "http://blank")
 
 
+    @OptIn(ExperimentalEncodingApi::class)
     override suspend fun useOfferRequest(offer: String, did: String) {
         println("// -------- WALLET ----------")
         println("// as WALLET: receive credential offer, either being called via deeplink or by scanning QR code")
@@ -252,16 +252,16 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val credential = credentialResp.credential!!.jsonPrimitive.content
         println(">>> CREDENTIAL IS: " + credential)
 
-        val todoId = UUID.randomUUID().toString()
+        val credentialId = Json.parseToJsonElement(Base64.decode(credential.split(".")[1]).decodeToString()).jsonObject["vc"]!!.jsonObject["id"]!!.jsonPrimitive.content
 
         transaction {
             WalletCredentials.insert {
                 it[WalletCredentials.account] = accountId
-                it[WalletCredentials.credentialId] = todoId
+                it[WalletCredentials.credentialId] = credentialId
                 it[WalletCredentials.credential] = credential
             }
         }
-        println("Credential stored with Id: $todoId")
+        println("Credential stored with Id: $credentialId")
 
 
     }
