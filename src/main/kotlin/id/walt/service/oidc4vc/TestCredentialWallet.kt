@@ -98,20 +98,17 @@ class TestCredentialWallet(
             "verifiableCredential" to credentialList
         ).toJsonElement())
 
-        val keyId = runBlocking { runBlocking { DidService.resolveToKey(TEST_DID) }.getOrThrow().getKeyId() }
-        val key = walletService.getKey(keyId)
+        val key = runBlocking {  walletService.getKeyByDid(TEST_DID)}
         val signed = runBlocking { key.signJws(vp.toByteArray()) }
 
-        TODO("No Presentation passed")
-        return PresentationResult(listOf(), PresentationSubmission(
+        return PresentationResult(listOf(JsonPrimitive(signed)), PresentationSubmission(
             "submission 1", presentationDefinition.id, listOf(
                 DescriptorMapping(
                     "presentation 1", VCFormat.jwt_vc, "$"
                 )
             )
         ))
-
-        /*val presentation = Custodian.getService()
+        /*val presentation: String = Custodian.getService()
             .createPresentation(Custodian.getService().listCredentials().map { PresentableCredential(it) }, TEST_DID)
         return PresentationResult(
             listOf(Json.parseToJsonElement(presentation)), PresentationSubmission(

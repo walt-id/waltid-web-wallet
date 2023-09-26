@@ -9,6 +9,7 @@ import id.walt.oid4vc.data.GrantType
 import id.walt.oid4vc.data.OpenIDProviderMetadata
 import id.walt.oid4vc.providers.OpenIDClientConfig
 import id.walt.oid4vc.providers.SIOPProviderConfig
+import id.walt.oid4vc.requests.AuthorizationRequest
 import id.walt.oid4vc.requests.CredentialOfferRequest
 import id.walt.oid4vc.requests.CredentialRequest
 import id.walt.oid4vc.requests.TokenRequest
@@ -153,7 +154,24 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
      * @return redirect uri
      */
     override suspend fun usePresentationRequest(request: String, did: String): String {
-        return ""
+        val authReq = AuthorizationRequest.fromHttpQueryString(Url(request).encodedQuery)
+        println("Auth req: $authReq")
+        val walletSession = credentialWallet.initializeAuthorization(authReq, 60)
+        println("Resolved presentation definition: ${walletSession.authorizationRequest!!.presentationDefinition!!.toJSONString()}")
+        val tokenResponse = credentialWallet.processImplicitFlowAuthorization(walletSession.authorizationRequest!!)
+        val resp = ktorClient.submitForm(walletSession.authorizationRequest!!.responseUri!!,
+            parameters {
+                tokenResponse.toHttpParameters().forEach { entry ->
+                    entry.value.forEach { append(entry.key, it) }
+                }
+            })
+        println(resp)
+
+        if (!resp.status.isSuccess()) {
+            return "https://error.org/"
+        } else {
+            return ""
+        }
     }
 
     private val credentialWallet: TestCredentialWallet by lazy {
