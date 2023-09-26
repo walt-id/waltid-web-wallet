@@ -43,8 +43,7 @@
                                 </div>
                             </div>
 
-                            <img v-if="credential.issuer.image" :src="credential.issuer.image.id" alt="credential image" class="h-10 w-10 flex-shrink-0 rounded-full mt-1.5 bg-gray-300"/>
-
+                            <img v-if="credential.issuer.image" :src="credential.issuer.image" alt="credential image" class="h-10 w-10 flex-shrink-0 rounded-md mt-1.5 bg-gray-300"/>
 
                             <div class="flex-1 truncate w-full">
 
@@ -54,7 +53,7 @@
                                 </p>
                                 <p class="mt-1 text-sm text-gray-500 flex flex-row items-center">
                                     <CalendarDaysIcon class="h-5 mr-1"/>
-                                    <span class="overflow-x-scroll scrollbar-hide w-5/6"><span class="font-mono">On</span>: {{ new Date(credential.issued).toLocaleString("de") }}</span>
+                                    <span class="overflow-x-scroll scrollbar-hide w-5/6"><span class="font-mono">On</span>: {{ new Date(credential.issuanceDate).toLocaleString("de") }}</span>
                                 </p>
                                 <p class="mt-1 text-sm text-gray-500 flex flex-row items-center">
                                     <BuildingLibraryIcon class="h-5 mr-1"/>
