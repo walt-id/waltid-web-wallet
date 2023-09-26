@@ -1,0 +1,13 @@
+<template>
+    <div>
+        <button class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                type="button">
+            <span class="sr-only">Close</span>
+            <XMarkIcon aria-hidden="true" class="h-6 w-6"/>
+        </button>
+    </div>
+  </template>
+  
+  <script setup lang="ts">
+  import { XMarkIcon } from '@heroicons/vue/24/outline'
+  </script>
