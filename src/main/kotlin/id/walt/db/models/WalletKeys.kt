@@ -6,9 +6,9 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.json.json
 
 object WalletKeys : Table() {
-    val wallet = reference("wallet", Wallets.id)
+    val account = reference("account", Accounts.id)
     val keyId = varchar("kid", 512)
-    val document = json<Key>("key", Json)
+    val document = text("key")
 
-    override val primaryKey = PrimaryKey(wallet, keyId)
+    override val primaryKey = PrimaryKey(account, keyId)
 }

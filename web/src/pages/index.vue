@@ -17,7 +17,7 @@
                     <h3 class="mt-2 text-sm font-semibold text-gray-900">No credentials yet</h3>
                     <p class="mt-1 text-sm text-gray-500">Get started filling your wallet by receiving some credentials!</p>
                     <div class="mt-4">
-                        <a :href="config.issuerUrl" target="_blank"
+                        <a :href="config.public['issuerUrl']" target="_blank"
                             class="inline-flex items-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                             type="button">
                             <PlusIcon aria-hidden="true" class="-ml-0.5 mr-1.5 h-5 w-5"/>

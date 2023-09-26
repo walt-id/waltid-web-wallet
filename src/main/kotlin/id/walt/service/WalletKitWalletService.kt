@@ -293,7 +293,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         .body<JsonObject>()["list"]!!.jsonArray.map { Json.decodeFromJsonElement<SingleKeyResponse>(it) }
 
     override suspend fun importKey(jwkOrPem: String) =
-        authenticatedJsonPost("/api/wallet/keys/import", body = jwkOrPem)
+        authenticatedJsonPost<String>("/api/wallet/keys/import", body = jwkOrPem)
             .body<String>()
 
     override suspend fun deleteKey(alias: String): Boolean =

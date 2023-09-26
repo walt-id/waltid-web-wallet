@@ -63,7 +63,7 @@ import {useTitle} from "@vueuse/core";
 
 const query = useRoute().query
 
-const request = atob(query.request)
+const request = decodeRequest(query.request)
 console.log("Decoded request: " + request)
 
 const presentationUrl = new URL(request)

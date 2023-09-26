@@ -24,7 +24,7 @@
         </template>
 
         <template v-slot:menu>
-            <a :href="config.issuerUrl" target="_blank"
+            <a :href="config.public['issuerUrl']" target="_blank"
                 class="inline-flex focus:outline focus:outline-blue-600 focus:outline-offset-2 items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                 type="button">
                 <ArrowDownOnSquareStackIcon class="h-5 w-5 mr-1" />

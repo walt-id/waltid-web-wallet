@@ -31,7 +31,7 @@ abstract class WalletService(val accountId: UUID) {
     abstract suspend fun deleteDid(did: String): Boolean
 
     // Keys
-    abstract suspend fun listKeys(): List<WalletKitWalletService.SingleKeyResponse>
+    abstract suspend fun listKeys(): List<SingleKeyResponse>
     abstract suspend fun exportKey(alias: String, format: String, private: Boolean): String
     abstract suspend fun importKey(jwkOrPem: String): String
     abstract suspend fun deleteKey(alias: String): Boolean

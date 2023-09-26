@@ -64,14 +64,46 @@ import {useTitle} from "@vueuse/core";
 
 const query = useRoute().query
 
-const request = atob(query.request)
+const request = decodeRequest(query.request)
+console.log("Issuance -> Using request: ", request)
 
 const immediateAccept = ref(false)
+console.log("Making issuanceUrl...")
 const issuanceUrl = new URL(request)
-const issuanceParams = issuanceUrl.searchParams
+console.log("issuanceUrl: ", issuanceUrl)
 
-const issuerHost = new URL(issuanceParams.get("issuer") ?? "").host
-const credentialTypes = issuanceParams.getAll("credential_type")
+const credentialOffer = issuanceUrl.searchParams.get("credential_offer")
+console.log("credentialOffer: ", credentialOffer)
+
+if (credentialOffer == null) {
+    throw createError({statusCode: 400, statusMessage: 'Invalid issuance request: No credential_offer'})
+}
+
+const issuanceParamsJson = JSON.parse(credentialOffer)
+console.log("issuanceParamsJson: ", issuanceParamsJson)
+
+console.log("Issuer host...")
+const issuer = issuanceParamsJson["credential_issuer"]
+
+let issuerHost: String
+try {
+    issuerHost = new URL(issuer).host
+} catch {
+    issuerHost = issuer
+}
+
+console.log("Issuer host:", issuerHost)
+const credentialList = issuanceParamsJson["credentials"]
+
+let credentialTypes: String[] = []
+
+for (let credentialListElement of credentialList) {
+    const typeList = credentialListElement["types"] as Array<String>
+    const lastType = typeList[typeList.length - 1] as String
+
+    credentialTypes.push(lastType)
+}
+
 
 const credentialCount = credentialTypes.length
 

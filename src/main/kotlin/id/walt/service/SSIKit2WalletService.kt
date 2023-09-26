@@ -1,26 +1,38 @@
 package id.walt.service
 
+import id.walt.core.crypto.keys.Key
+import id.walt.core.crypto.keys.KeySerialization
+import id.walt.core.crypto.keys.KeyType
 import id.walt.core.crypto.keys.LocalKey
-import id.walt.core.crypto.keys.LocalKey.Companion
-import id.walt.core.crypto.keys.TSEKey
 import id.walt.db.models.*
+import id.walt.oid4vc.data.GrantType
+import id.walt.oid4vc.data.OpenIDProviderMetadata
+import id.walt.oid4vc.providers.OpenIDClientConfig
+import id.walt.oid4vc.providers.SIOPProviderConfig
 import id.walt.oid4vc.requests.CredentialOfferRequest
+import id.walt.oid4vc.requests.CredentialRequest
+import id.walt.oid4vc.requests.TokenRequest
+import id.walt.oid4vc.responses.CredentialResponse
+import id.walt.oid4vc.responses.TokenResponse
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
+import id.walt.service.oidc4vc.TestCredentialWallet
+import id.walt.ssikit.did.DidService
+import id.walt.ssikit.did.registrar.LocalRegistrar
 import id.walt.ssikit.did.registrar.dids.DidCreateOptions
 import id.walt.ssikit.did.registrar.local.jwk.DidJwkRegistrar
+import id.walt.ssikit.helpers.WaltidServices
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.util.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
@@ -33,11 +45,18 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.URLDecoder
-import java.nio.charset.Charset
 import java.util.*
 
 
 class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
+
+    companion object {
+        init {
+            runBlocking {
+                WaltidServices.init()
+            }
+        }
+    }
 
     private val userEmail: String by lazy {
         transaction {
@@ -47,18 +66,11 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         }
     }
 
-    private val walletId: UUID by lazy {
-        transaction {
-            AccountWallets.select { AccountWallets.account eq accountId }
-                .first()[AccountWallets.wallet].value
-        }
-    }
-
     /* Credentials */
 
     override suspend fun listCredentials(): List<JsonObject> =
         transaction {
-            WalletCredentials.select { WalletCredentials.wallet eq walletId }.map {
+            WalletCredentials.select { WalletCredentials.account eq accountId }.map {
                 it[WalletCredentials.credential]
             }
         }.map {
@@ -66,11 +78,11 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         }
 
     override suspend fun deleteCredential(id: String) = transaction {
-        WalletCredentials.deleteWhere { (wallet eq walletId) and (credentialId eq id) }
+        WalletCredentials.deleteWhere { (account eq accountId) and (credentialId eq id) }
     } > 0
 
     override suspend fun getCredential(credentialId: String): String = transaction {
-        WalletCredentials.select { (WalletCredentials.wallet eq walletId) and (WalletCredentials.credentialId eq id) }
+        WalletCredentials.select { (WalletCredentials.account eq accountId) and (WalletCredentials.credentialId eq id) }
             .single()[WalletCredentials.credential]
     }
 
@@ -133,23 +145,105 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         return ""
     }
 
+    private val credentialWallet: TestCredentialWallet by lazy {
+        TestCredentialWallet(
+            SIOPProviderConfig("http://blank"),
+            this
+        )
+    }
+
+    private val testCIClientConfig = OpenIDClientConfig("test-client", null, redirectUri = "http://blank")
+
+
     override suspend fun useOfferRequest(offer: String, did: String) {
-        /*val parsedOfferReq = CredentialOfferRequest.fromHttpParameters(Url(offer).parameters.toMap())
-        val providerMetadataUri = credentialWallet.getCIProviderMetadataUrl(parsedOfferReq.credentialOffer!!.credentialIssuer)
-        val providerMetadata = ktorClient.get(providerMetadataUri).call.body<OpenIDProviderMetadata>()*/
+        println("// -------- WALLET ----------")
+        println("// as WALLET: receive credential offer, either being called via deeplink or by scanning QR code")
+        println("// parse credential URI")
+        val parsedOfferReq = CredentialOfferRequest.fromHttpParameters(Url(offer).parameters.toMap())
+        println("parsedOfferReq: $parsedOfferReq")
+
+        println("// get issuer metadata")
+        val providerMetadataUri =
+            credentialWallet.getCIProviderMetadataUrl(parsedOfferReq.credentialOffer!!.credentialIssuer)
+        println("Getting provider metadata from: $providerMetadataUri")
+        val providerMetadataResult = ktorClient.get(providerMetadataUri)
+        println("Provider metadata returned: " + providerMetadataResult.bodyAsText())
+
+        val providerMetadata = providerMetadataResult.body<OpenIDProviderMetadata>()
+        println("providerMetadata: $providerMetadata")
+
+        println("// resolve offered credentials")
+        val offeredCredentials = parsedOfferReq.credentialOffer!!.resolveOfferedCredentials(providerMetadata)
+        println("offeredCredentials: $offeredCredentials")
+
+        val offeredCredential = offeredCredentials.first()
+        println("offeredCredentials[0]: $offeredCredential")
+
+        println("// fetch access token using pre-authorized code (skipping authorization step)")
+        var tokenReq = TokenRequest(
+            grantType = GrantType.pre_authorized_code,
+            clientId = testCIClientConfig.clientID,
+            redirectUri = credentialWallet.config.redirectUri,
+            preAuthorizedCode = parsedOfferReq.credentialOffer!!.grants[GrantType.pre_authorized_code.value]!!.preAuthorizedCode,
+            userPin = null
+        )
+        println("tokenReq: $tokenReq")
+
+        var tokenResp = ktorClient.submitForm(
+            providerMetadata.tokenEndpoint!!, formParameters = parametersOf(tokenReq.toHttpParameters())
+        ).body<JsonObject>().let { TokenResponse.fromJSON(it) }
+        println("tokenResp: $tokenResp")
+
+        println(">>> Token response = success: ${tokenResp.isSuccess}")
+
+        println("// receive credential")
+        var nonce = tokenResp.cNonce!!
+
+        println("Using issuer URL: ${parsedOfferReq.credentialOfferUri ?: parsedOfferReq.credentialOffer!!.credentialIssuer}")
+        val credReq = CredentialRequest.forOfferedCredential(
+            offeredCredential = offeredCredential,
+            proof = credentialWallet.generateDidProof(
+                did = credentialWallet.TEST_DID,
+                issuerUrl =  /*ciTestProvider.baseUrl*/ parsedOfferReq.credentialOfferUri
+                    ?: parsedOfferReq.credentialOffer!!.credentialIssuer,
+                nonce = nonce
+            )
+        )
+        println("credReq: $credReq")
+
+        val credentialResp = ktorClient.post(providerMetadata.credentialEndpoint!!) {
+            contentType(ContentType.Application.Json)
+            bearerAuth(tokenResp.accessToken!!)
+            setBody(credReq.toJSON())
+        }.body<JsonObject>().let { CredentialResponse.fromJSON(it) }
+        println("credentialResp: $credentialResp")
+
+
+        println("// parse and verify credential")
+        println(">>> CREDENTIAL IS: " + credentialResp.credential!!.jsonPrimitive.content)
 
     }
 
     /* DIDs */
 
     override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>): String {
-        // TODO: other DIDs
-        val result = DidJwkRegistrar().register(DidCreateOptions(method, emptyMap()))
+        // TODO: other DIDs, Keys
+        val newKey = LocalKey.generate(KeyType.Ed25519)
+        val newKeyId = newKey.getKeyId()
+
+        val result = DidService.registerByKey("jwk", newKey)
 
         transaction {
+            WalletKeys.insert {
+                it[account] = accountId
+                it[keyId] = newKeyId
+                it[document] = KeySerialization.serializeKey(newKey)
+            }
+
             WalletDids.insert {
-                it[wallet] = walletId
+                it[account] = accountId
                 it[did] = result.did
+                it[keyId] = newKeyId
                 it[document] = Json.encodeToString(result.didDocument)
             }
         }
@@ -158,25 +252,36 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     }
 
     override suspend fun listDids(): List<String> = transaction {
-        WalletDids.select { WalletDids.wallet eq walletId }.map {
+        WalletDids.select { WalletDids.account eq accountId }.map {
             it[WalletDids.did]
         }
     }
 
     override suspend fun loadDid(did: String): JsonObject = Json.parseToJsonElement(transaction {
-        WalletDids.select { (WalletDids.wallet eq walletId) and (WalletDids.did eq did) }.single()[WalletDids.document]
+        WalletDids.select { (WalletDids.account eq accountId) and (WalletDids.did eq did) }
+            .single()[WalletDids.document]
     }).jsonObject
 
     override suspend fun deleteDid(did: String): Boolean = transaction {
-        WalletDids.deleteWhere { (wallet eq wallet) and (WalletDids.did eq did) }
+        WalletDids.deleteWhere { (account eq account) and (WalletDids.did eq did) }
     } > 0
 
     /* Keys */
+
+    fun getKey(keyId: String) = KeySerialization.deserializeKey(transaction {
+        WalletKeys.select { (WalletKeys.account eq accountId) and (WalletKeys.keyId eq keyId) }
+            .single()[WalletKeys.document]
+    }).getOrElse { throw IllegalArgumentException("Could not deserialize resolved key: ${it.message}", it) }
+
+    suspend fun getKeyByDid(did: String): Key {
+        val publicKey = DidService.resolveToKey(did).getOrThrow()
+        val keyId = publicKey.getKeyId()
+
+        return getKey(keyId)
+    }
+
     override suspend fun exportKey(alias: String, format: String, private: Boolean): String {
-        val key = transaction {
-            WalletKeys.select { (WalletKeys.wallet eq walletId) and (WalletKeys.keyId eq alias) }
-                .single()[WalletKeys.document]
-        }
+        val key = getKey(alias)
 
         return when (format.lowercase()) {
             "jwk" -> key.exportJWK()
@@ -187,12 +292,14 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     override suspend fun listKeys(): List<SingleKeyResponse> {
         val keyList = transaction {
-            WalletKeys.select { WalletKeys.wallet eq walletId }.map {
+            WalletKeys.select { WalletKeys.account eq accountId }.map {
                 Pair(it[WalletKeys.keyId], it[WalletKeys.document])
             }
         }
 
-        return keyList.map { (id, key) ->
+        return keyList.map { (id, keyJson) ->
+            val key = KeySerialization.deserializeKey(keyJson).getOrThrow()
+
             SingleKeyResponse(
                 keyId = SingleKeyResponse.KeyId(id),
                 algorithm = key.keyType.name,
@@ -221,12 +328,13 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
         val key = keyResult.getOrThrow()
         val keyId = key.getKeyId()
+        val keyJson = KeySerialization.serializeKey(key)
 
         transaction {
             WalletKeys.insert {
-                it[wallet] = walletId
+                it[account] = accountId
                 it[WalletKeys.keyId] = keyId
-                it[document] = key
+                it[document] = keyJson
             }
         }
 
@@ -234,7 +342,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     }
 
     override suspend fun deleteKey(alias: String): Boolean = transaction {
-        WalletKeys.deleteWhere { (wallet eq walletId) and (keyId eq alias) }
+        WalletKeys.deleteWhere { (account eq accountId) and (keyId eq alias) }
     } > 0
 
     fun addToHistory() {

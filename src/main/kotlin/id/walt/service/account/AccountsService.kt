@@ -1,9 +1,11 @@
 package id.walt.service.account
 
+import id.walt.db.models.Wallets
 import id.walt.web.generateToken
 import id.walt.web.model.AddressLoginRequest
 import id.walt.web.model.EmailLoginRequest
 import id.walt.web.model.LoginRequest
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 object AccountsService {
@@ -19,7 +21,15 @@ object AccountsService {
             is EmailLoginRequest -> emailStrategy.authenticate(request)
             is AddressLoginRequest -> walletStrategy.authenticate(request)
         }
-    }.fold(onSuccess = { Result.success(AuthenticationResult(id = it.id, username = it.username, token = generateToken())) },
+    }.fold(onSuccess = {
+        Result.success(
+            AuthenticationResult(
+                id = it.id,
+                username = it.username,
+                token = generateToken()
+            )
+        )
+    },
         onFailure = { Result.failure(it) })
 }
 

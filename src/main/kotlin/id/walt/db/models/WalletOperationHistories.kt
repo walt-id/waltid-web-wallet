@@ -9,7 +9,7 @@ import kotlinx.serialization.json.JsonElement
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.javatime.timestamp
 
-object WalletOperationHistories : UUIDTable("\"wallet_operation_histories\"") {
+object WalletOperationHistories : UUIDTable() {
     val account = reference("account", Accounts.id)
     val timestamp = timestamp("timestamp")
     val operation = varchar("operation", 48)
@@ -19,6 +19,7 @@ object WalletOperationHistories : UUIDTable("\"wallet_operation_histories\"") {
 @Serializable
 data class WalletOperationHistory(
     val accountId: String,
+    //val walletId: String,
     val timestamp: Instant,
     val operation: String,
     val data: Map<String, JsonElement>
