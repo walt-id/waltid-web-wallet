@@ -46,6 +46,8 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.URLDecoder
 import java.util.*
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
@@ -68,13 +70,22 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     /* Credentials */
 
+    @OptIn(ExperimentalEncodingApi::class)
     override suspend fun listCredentials(): List<JsonObject> =
         transaction {
             WalletCredentials.select { WalletCredentials.account eq accountId }.map {
                 it[WalletCredentials.credential]
             }
-        }.map {
-            Json.decodeFromString<JsonObject>(it)
+        }.mapNotNull {
+            runCatching {
+                if (it.startsWith("{"))
+                    Json.parseToJsonElement(it).jsonObject
+                else if (it.startsWith("ey"))
+                    Json.parseToJsonElement(
+                        Base64.decode(it.split(".")[1]).decodeToString()
+                    ).jsonObject["vc"]!!.jsonObject
+                else throw IllegalArgumentException("Unknown credential format")
+            }.onFailure { it.printStackTrace() }.getOrNull()
         }
 
     override suspend fun deleteCredential(id: String) = transaction {
@@ -220,7 +231,20 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
 
         println("// parse and verify credential")
-        println(">>> CREDENTIAL IS: " + credentialResp.credential!!.jsonPrimitive.content)
+        val credential = credentialResp.credential!!.jsonPrimitive.content
+        println(">>> CREDENTIAL IS: " + credential)
+
+        val todoId = UUID.randomUUID().toString()
+
+        transaction {
+            WalletCredentials.insert {
+                it[WalletCredentials.account] = accountId
+                it[WalletCredentials.credentialId] = todoId
+                it[WalletCredentials.credential] = credential
+            }
+        }
+        println("Credential stored with Id: $todoId")
+
 
     }
 
