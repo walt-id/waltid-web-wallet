@@ -206,7 +206,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val providerMetadataResult = ktorClient.get(providerMetadataUri)
         println("Provider metadata returned: " + providerMetadataResult.bodyAsText())
 
-        val providerMetadata = providerMetadataResult.body<OpenIDProviderMetadata>()
+        val providerMetadata = providerMetadataResult.body<JsonObject>().let { OpenIDProviderMetadata.fromJSON(it) }
         println("providerMetadata: $providerMetadata")
 
         println("// resolve offered credentials")
