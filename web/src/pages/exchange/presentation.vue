@@ -61,9 +61,21 @@ import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import {groupBy} from "~/composables/groupings";
 import {useTitle} from "@vueuse/core";
 
+async function resolvePresentationRequest(request) {
+    try {
+    console.log("RESOLVING request", request)
+        const response = await $fetch("/r/wallet/exchange/resolvePresentationRequest", { method: 'POST', body: request })
+        console.log(response)
+        return response
+    } catch (e) {
+        failed.value = true
+        throw e
+    }
+}
+
 const query = useRoute().query
 
-const request = decodeRequest(query.request)
+const request = await resolvePresentationRequest(decodeRequest(query.request))
 console.log("Decoded request: " + request)
 
 const presentationUrl = new URL(request)

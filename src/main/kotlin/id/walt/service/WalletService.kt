@@ -19,6 +19,7 @@ abstract class WalletService(val accountId: UUID) {
 
     // SIOP
     abstract suspend fun usePresentationRequest(request: String, did: String): String?
+    abstract suspend fun resolvePresentationRequest(request: String): String
     abstract suspend fun useOfferRequest(offer: String, did: String)
 
     // DIDs

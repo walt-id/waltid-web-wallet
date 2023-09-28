@@ -12,12 +12,14 @@ import id.walt.oid4vc.providers.SIOPCredentialProvider
 import id.walt.oid4vc.providers.SIOPProviderConfig
 import id.walt.oid4vc.providers.SIOPSession
 import id.walt.oid4vc.providers.TokenTarget
+import id.walt.oid4vc.requests.AuthorizationRequest
 import id.walt.service.SSIKit2WalletService
 import id.walt.ssikit.did.DidService
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
@@ -99,7 +101,7 @@ class TestCredentialWallet(
         ).toJsonElement())
 
         val key = runBlocking {  walletService.getKeyByDid(TEST_DID)}
-        val signed = runBlocking { key.signJws(vp.toByteArray()) }
+        val signed = runBlocking { key.signJws(vp.toByteArray(), mapOf("kid" to key.getKeyId())) }
 
         return PresentationResult(listOf(JsonPrimitive(signed)), PresentationSubmission(
             "submission 1", presentationDefinition.id, listOf(
@@ -171,6 +173,9 @@ class TestCredentialWallet(
     override fun putSession(id: String, session: SIOPSession) = sessionCache.put(id, session)
     override fun removeSession(id: String) = sessionCache.remove(id)
 
+    fun parsePresentationRequest(request: String): AuthorizationRequest {
+        return resolveVPAuthorizationParameters(AuthorizationRequest.fromHttpQueryString(Url(request).encodedQuery))
+    }
     /*
     fun start() {
         embeddedServer(Netty, port = WALLET_PORT) {

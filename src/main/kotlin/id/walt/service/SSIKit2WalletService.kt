@@ -173,6 +173,10 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         }
     }
 
+    override suspend fun resolvePresentationRequest(request: String): String {
+        return Url(request).protocolWithAuthority.plus("?").plus(credentialWallet.parsePresentationRequest(request).toHttpQueryString())
+    }
+
     private val credentialWallet: TestCredentialWallet by lazy {
         TestCredentialWallet(
             SIOPProviderConfig("http://blank"),
