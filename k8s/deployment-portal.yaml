@@ -100,7 +100,8 @@ spec:
     spec:
       containers:
         - name: wallet-backend
-          image: waltid/wallet-backend:portal-v1
+          image: waltid/wallet-backend:portal-latest
+          imagePullPolicy: Always
           volumeMounts:
             - name: wallet-db-config
               mountPath: "/waltid-web-wallet/config/db.conf"
@@ -199,7 +200,8 @@ spec:
     spec:
       containers:
         - name: wallet-frontend
-          image: waltid/wallet-frontend:portal-v1
+          image: waltid/wallet-frontend:portal-latest
+          imagePullPolicy: Always
           env:
             - name: NUXT_PUBLIC_ISSUER_URL
               value: "https://issuer.walt.id"
