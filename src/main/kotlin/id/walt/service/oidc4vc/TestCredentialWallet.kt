@@ -111,7 +111,7 @@ class TestCredentialWallet(
         )
 
         val key = runBlocking { walletService.getKeyByDid(TEST_DID) }
-        val signed = runBlocking { key.signJws(vp.toByteArray()) }
+        val signed = runBlocking { key.signJws(vp.toByteArray(), mapOf("kid" to TEST_DID, "typ" to "JWT")) }
 
         return PresentationResult(
             listOf(JsonPrimitive(signed)), PresentationSubmission(
