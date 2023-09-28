@@ -234,7 +234,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         println(">>> Token response = success: ${tokenResp.isSuccess}")
 
         println("// receive credential")
-        var nonce = tokenResp.cNonce!!
+        var nonce = tokenResp.cNonce
 
         println("Using issuer URL: ${parsedOfferReq.credentialOfferUri ?: parsedOfferReq.credentialOffer!!.credentialIssuer}")
         val credReq = CredentialRequest.forOfferedCredential(
