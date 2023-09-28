@@ -249,6 +249,10 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
 
         println("// parse and verify credential")
+        if (credentialResp.credential == null) {
+            throw IllegalStateException("No credential was returned from credentialEndpoint: $credentialResp")
+        }
+
         val credential = credentialResp.credential!!.jsonPrimitive.content
         println(">>> CREDENTIAL IS: " + credential)
 

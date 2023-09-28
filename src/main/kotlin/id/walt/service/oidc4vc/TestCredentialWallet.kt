@@ -91,23 +91,35 @@ class TestCredentialWallet(
 
         val credentialList = runBlocking { walletService.listCredentials() }
 
-        val vp = Json.encodeToString(mapOf(
-            "@context" to listOf("https://www.w3.org/2018/credentials/v1"),
-            "type" to listOf("VerifiablePresentation"),
-            "id" to "urn:uuid:${UUID.randomUUID().toString().lowercase()}",
-            "verifiableCredential" to credentialList
-        ).toJsonElement())
+        val vp = Json.encodeToString(
+            mapOf(
+                "sub" to TEST_DID,
+                //"nfb"
+                //"iat"
+                "jti" to "urn:uuid:" + UUID.randomUUID().toString(),
+                "iss" to TEST_DID,
 
-        val key = runBlocking {  walletService.getKeyByDid(TEST_DID)}
+                "vp" to mapOf(
+                            "@context" to listOf("https://www.w3.org/2018/credentials/v1"),
+                            "type" to listOf("VerifiablePresentation"),
+                            "id" to "urn:uuid:${UUID.randomUUID().toString().lowercase()}",
+                            "verifiableCredential" to credentialList
+                        )
+            ).toJsonElement()
+        )
+
+        val key = runBlocking { walletService.getKeyByDid(TEST_DID) }
         val signed = runBlocking { key.signJws(vp.toByteArray()) }
 
-        return PresentationResult(listOf(JsonPrimitive(signed)), PresentationSubmission(
-            "submission 1", presentationDefinition.id, listOf(
-                DescriptorMapping(
-                    "presentation 1", VCFormat.jwt_vc, "$"
+        return PresentationResult(
+            listOf(JsonPrimitive(signed)), PresentationSubmission(
+                "submission 1", presentationDefinition.id, listOf(
+                    DescriptorMapping(
+                        "presentation 1", VCFormat.jwt_vc, "$"
+                    )
                 )
             )
-        ))
+        )
         /*val presentation: String = Custodian.getService()
             .createPresentation(Custodian.getService().listCredentials().map { PresentableCredential(it) }, TEST_DID)
         return PresentationResult(
