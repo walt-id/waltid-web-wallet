@@ -94,16 +94,18 @@ const {
 } = await useLazyFetch(`/r/wallet/dids/${didId}`);
 refreshNuxtData();
 
+async function deleteDid() {
+  await $fetch(`/r/wallet/dids/${didId}`, {
+    method: "DELETE",
+  }).finally(()=> {navigateTo("/settings/dids")})
+ 
+}
+
 useHead({
   title: "View DID - walt.id",
 });
 
-async function deleteDid() {
-  navigateTo("/settings/dids");
-  await $fetch(`/r/wallet/dids/${didId}`, {
-    method: "DELETE",
-  });
-}
+
 </script>
 
 <style scoped></style>

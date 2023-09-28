@@ -178,8 +178,7 @@ function exportKey() {
 async function deleteKey() {
   await $fetch(`/r/wallet/keys/${keyId}`, {
     method: "DELETE",
-  });
-  navigateTo("/settings/keys");
+  }).finally(()=>{ navigateTo("/settings/keys")} )
 }
 
 useHead({
