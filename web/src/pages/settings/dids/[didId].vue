@@ -99,10 +99,10 @@ useHead({
 });
 
 async function deleteDid() {
-  navigateTo("/settings/dids");
   await $fetch(`/r/wallet/dids/${didId}`, {
     method: "DELETE",
   });
+  navigateTo("/settings/dids");
 }
 </script>
 
