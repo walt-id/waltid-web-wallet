@@ -11,7 +11,8 @@ object WalletServiceManager {
 
     fun getWalletService(wallet: UUID): WalletService =
         walletServices.getOrPut(wallet) {
-            WalletKitWalletService(wallet)
+            //WalletKitWalletService(wallet)
+            SSIKit2WalletService(wallet)
         }
 
     fun getNftService(): NftService = NftKitNftService()

@@ -20,7 +20,7 @@ import kotlin.io.path.absolutePathString
 
 private val log = KotlinLogging.logger { }
 
-fun main(args: Array<String>) {
+suspend fun main(args: Array<String>) {
     log.info { "Starting walt.id wallet..." }
 
     log.debug { "Running in path: ${Path(".").absolutePathString()}" }
@@ -32,6 +32,7 @@ fun main(args: Array<String>) {
     ConfigManager.loadConfigs(args)
 
     Db.start()
+    Db.init()
 
 //    val webConfig = ConfigManager.getConfig<WebConfig>()
 //    log.info { "Starting web server (binding to ${webConfig.webHost}, listening on port ${webConfig.webPort})..." }

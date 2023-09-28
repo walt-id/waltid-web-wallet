@@ -15,7 +15,11 @@ export function fixRequest(req: string) {
 }
 
 export function encodeRequest(req: string) {
-    return btoa(req).replaceAll('=', "")
+    return btoa(req).replaceAll('=', "").replaceAll("+", "-").replaceAll("/", "_")
+}
+
+export function decodeRequest(encoded: string) {
+    return atob(encoded.replaceAll("-", "+").replaceAll("_", "/"))
 }
 
 export function isSiopRequest(req: string): boolean {

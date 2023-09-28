@@ -11,7 +11,7 @@
                         Verifiable Credential data below:</p>
                 </div>
             </div>
-            <div class="p-3 shadow mt-3">
+           <!-- <div class="p-3 shadow mt-3">
                 <h3 class="font-semibold mb-2">QR code</h3>
                 <div v-if="credential && credential.length">
                     <qrcode-vue v-if="credential.length <= 4296" :value="credential" level="L" size="300"></qrcode-vue>
@@ -19,10 +19,14 @@
                         can hold is 4296).</p>
                 </div>
 
+            </div>-->
+            <div class="shadow p-3 mt-2 font-mono overflow-scroll">
+                <h3 class="font-semibold mb-2">JWT</h3>
+                <pre v-if="credential && credential.length">{{ /*JSON.stringify(JSON.parse(*/credential/*), null, 2)*/ ?? "" }}</pre>
             </div>
             <div class="shadow p-3 mt-2 font-mono overflow-scroll">
                 <h3 class="font-semibold mb-2">JSON</h3>
-                <pre v-if="credential && credential.length">{{ JSON.stringify(JSON.parse(credential), null, 2) ?? "" }}</pre>
+                <pre v-if="credential && credential.length">{{ jwtJson }} </pre>
             </div>
         </div>
     </CenterMain>
@@ -33,10 +37,18 @@ import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import QrcodeVue from 'qrcode.vue'
 import CenterMain from "~/components/CenterMain.vue";
 import BackButton from "~/components/buttons/BackButton.vue";
+import {btoa} from "buffer";
 
 const route = useRoute()
 
 const credentialId = route.params.credentialId
+
+const jwtJson = computed(() => {
+    console.log("Cred: " + credential.value)
+    if (credential.value) {
+        return JSON.parse(atob(credential.value.split(".")[1]).toString())
+    } else return ""
+})
 
 const {data: credential, pending, refresh, error} = await useLazyFetch(`/r/wallet/credentials/${credentialId}`)
 refreshNuxtData()

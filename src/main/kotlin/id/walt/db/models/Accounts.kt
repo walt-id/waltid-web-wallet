@@ -2,7 +2,7 @@ package id.walt.db.models
 
 import org.jetbrains.exposed.dao.id.UUIDTable
 
-object Accounts : UUIDTable("\"accounts\"") {
+object Accounts : UUIDTable() {
     val email = reference("email", Emails).nullable()
     val wallet = reference("wallet", Wallets).nullable()
 

@@ -62,8 +62,9 @@ fun Application.credentials() = walletRoute {
                 val credentialId =
                     call.parameters["credentialId"] ?: throw IllegalArgumentException("No credentialId provided")
 
-                val response = getWalletService().deleteCredential(credentialId)
-                context.respond(response.status)
+                val success = getWalletService().deleteCredential(credentialId)
+
+                context.respond(if (success) HttpStatusCode.OK else HttpStatusCode.BadRequest)
             }
         }
     }

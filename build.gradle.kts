@@ -1,9 +1,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.22"
-    id("io.ktor.plugin") version "2.3.2"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.22"
+    kotlin("jvm") version "1.9.10"
+    id("io.ktor.plugin") version "2.3.4"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
+
+    id("com.github.ben-manes.versions") version "0.48.0"
 }
 
 group = "id.walt"
@@ -20,7 +22,8 @@ repositories {
     mavenCentral()
     maven("https://jitpack.io")
     maven("https://maven.walt.id/repository/waltid/")
-    maven("https://repo.danubetech.com/repository/maven-public/")
+    maven("https://maven.walt.id/repository/waltid-ssi-kit/")
+    //maven("https://repo.danubetech.com/repository/maven-public/")
 }
 
 tasks.withType<KotlinCompile> {
@@ -31,7 +34,7 @@ tasks.withType<KotlinCompile> {
 
 dependencies {
     // nftkit
-    implementation("id.walt:waltid-nftkit:1.2307292233.0"){
+    implementation("id.walt:waltid-nftkit:1.2307292233.0") {
         exclude("com.sksamuel.hoplite", "hoplite-core")
         exclude("com.sksamuel.hoplite", "hoplite-yaml")
         exclude("com.sksamuel.hoplite", "hoplite-hikaricp")
@@ -39,7 +42,7 @@ dependencies {
 
     /* -- KTOR -- */
 
-    val ktorVersion = "2.3.3"
+    val ktorVersion = "2.3.4"
     // Ktor server
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jvm:$ktorVersion")
@@ -58,7 +61,7 @@ dependencies {
     implementation("io.ktor:ktor-server-cio-jvm:$ktorVersion")
 
     // Ktor server external libs
-    implementation("io.github.smiley4:ktor-swagger-ui:2.2.0")
+    implementation("io.github.smiley4:ktor-swagger-ui:2.5.0")
 
     // Ktor client
     implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
@@ -75,17 +78,25 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
     // Date
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
     /* -- Security -- */
     // Bouncy Castle
-    implementation("org.bouncycastle:bcprov-jdk18on:1.75")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.76")
 
     // Argon2
     implementation("de.mkammerer:argon2-jvm:2.11")
+
+
+    // SSI Kit 2
+    implementation("id.walt:waltid-ssikit2:1.0.1-SNAPSHOT")
+    implementation("id.walt:core-crypto:1.0-SNAPSHOT")
+
+    // OIDC
+    implementation("id.walt:waltid-openid4vc:1.2309251429.0")
 
     /* -- Misc --*/
 
@@ -93,35 +104,36 @@ dependencies {
     implementation("io.github.reactivecircus.cache4k:cache4k:0.11.0")
 
     // DB
-    implementation("org.jetbrains.exposed:exposed-core:0.41.1")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.41.1")
-    implementation("org.jetbrains.exposed:exposed-dao:0.41.1")
-    implementation("org.jetbrains.exposed:exposed-java-time:0.41.1")
+    implementation("org.jetbrains.exposed:exposed-core:0.43.0")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.43.0")
+    implementation("org.jetbrains.exposed:exposed-dao:0.43.0")
+    implementation("org.jetbrains.exposed:exposed-java-time:0.43.0")
+    implementation("org.jetbrains.exposed:exposed-json:0.43.0")
     implementation("org.xerial:sqlite-jdbc:3.42.0.0")
-    implementation("org.postgresql:postgresql:42.5.4")
+    implementation("org.postgresql:postgresql:42.6.0")
     // migration
-    implementation("org.flywaydb:flyway-core:9.16.0")
+    implementation("org.flywaydb:flyway-core:9.22.2")
 
     // Web push
     implementation("nl.martijndwars:web-push:5.1.1") // todo: replace with https://github.com/interaso/webpush
 
     // Config
-    implementation("com.sksamuel.hoplite:hoplite-core:2.7.4")
-    implementation("com.sksamuel.hoplite:hoplite-hocon:2.7.4")
-    implementation("com.sksamuel.hoplite:hoplite-yaml:2.7.4")
-    implementation("com.sksamuel.hoplite:hoplite-hikaricp:2.7.4")
+    implementation("com.sksamuel.hoplite:hoplite-core:2.8.0.RC3")
+    implementation("com.sksamuel.hoplite:hoplite-hocon:2.8.0.RC3")
+    implementation("com.sksamuel.hoplite:hoplite-yaml:2.8.0.RC3")
+    implementation("com.sksamuel.hoplite:hoplite-hikaricp:2.8.0.RC3")
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     // Logging
-    implementation("io.github.oshai:kotlin-logging-jvm:4.0.2")
-    implementation("org.slf4j:slf4j-simple:2.0.7")
-    implementation("org.slf4j:jul-to-slf4j:2.0.7")
+    implementation("io.github.oshai:kotlin-logging-jvm:5.1.0")
+    implementation("org.slf4j:slf4j-simple:2.0.9")
+    implementation("org.slf4j:jul-to-slf4j:2.0.9")
 
     // Test
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.8.22")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.9.10")
 
-    testImplementation("io.kotest:kotest-runner-junit5:5.5.5")
+    /*testImplementation("io.kotest:kotest-runner-junit5:5.5.5")
     testImplementation("io.kotest:kotest-assertions-core:5.5.5")
-    testImplementation("io.kotest.extensions:kotest-assertions-ktor:2.0.0")
+    testImplementation("io.kotest.extensions:kotest-assertions-ktor:2.0.0")*/
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
 }

@@ -73,7 +73,7 @@ function throwError(newError) {
 }
 
 async function startVideo(tries = 0) {
-    if (tries >= 3) {
+    if (tries >= 2) {
         console.error("QR Scanner: Giving up after too many tries.")
         throwError({
             title: "Could not start camera",

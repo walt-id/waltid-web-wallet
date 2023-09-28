@@ -1,9 +1,6 @@
 package id.walt.config
 
-import com.sksamuel.hoplite.ConfigLoaderBuilder
-import com.sksamuel.hoplite.addCommandLineSource
-import com.sksamuel.hoplite.addEnvironmentSource
-import com.sksamuel.hoplite.addFileSource
+import com.sksamuel.hoplite.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.plugins.*
 import java.util.concurrent.*
@@ -19,6 +16,7 @@ object ConfigManager {
     val registeredConfigurations = ConcurrentLinkedQueue<ConfigData>()
     val loadedConfigurations = HashMap<String, WalletConfig>()
 
+    @OptIn(ExperimentalHoplite::class)
     private fun loadConfig(config: ConfigData, args: Array<String>) {
         val id = config.id
         log.debug { "Loading configuration: \"$id\"..." }
@@ -29,7 +27,9 @@ object ConfigManager {
             ConfigLoaderBuilder.default().addCommandLineSource(args)
                 .addDefaultParsers()
                 .addFileSource("config/$id.conf", optional = true)
-                .addEnvironmentSource().build().loadConfigOrThrow(type, emptyList())
+                .addEnvironmentSource()
+                .withExplicitSealedTypes()
+                .build().loadConfigOrThrow(type, emptyList())
         }.onSuccess {
             loadedConfigurations[id] = it
             config.onLoad?.invoke(it)

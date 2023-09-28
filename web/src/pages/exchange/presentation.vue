@@ -59,23 +59,30 @@ import CredentialIcon from "~/components/CredentialIcon.vue";
 import ActionButton from "~/components/buttons/ActionButton.vue";
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import {groupBy} from "~/composables/groupings";
+import {useTitle} from "@vueuse/core";
 
 const query = useRoute().query
 
-const request = atob(query.request)
+const request = decodeRequest(query.request)
 console.log("Decoded request: " + request)
 
 const presentationUrl = new URL(request)
 const presentationParams = presentationUrl.searchParams
 
-const verifierHost = new URL(presentationParams.get("redirect_uri") ?? "").host
+const verifierHost = new URL(presentationParams.get("response_uri") ?? "").host
+console.log("verifierHost: ", verifierHost)
 
 const presentationDefinition = presentationParams.get("presentation_definition")
-let inputDescriptors = JSON.parse(presentationDefinition)["input_descriptors"]
+console.log("presentationDefinition: ", presentationDefinition)
 
+let inputDescriptors = JSON.parse(presentationDefinition)["input_descriptors"]
+console.log("inputDescriptors: ", inputDescriptors)
+
+let i = 0
 let groupedCredentialTypes = groupBy(inputDescriptors.map(item => {
-    return {id: item.id, name: item.constraints.fields[0].filter.const}
+    return {id: ++i, name: item.id}
 }), c => c.name)
+console.log("groupedCredentialTypes: ", groupedCredentialTypes)
 
 const immediateAccept = ref(false)
 
@@ -108,6 +115,8 @@ if (query.accept) { // TODO make accept a JWT or something wallet-backend secure
     immediateAccept.value = true
     acceptPresentation()
 }
+
+useTitle(`Present credentials - walt.id`)
 </script>
 
 <style scoped>
