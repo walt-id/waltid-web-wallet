@@ -62,5 +62,15 @@ fun Application.exchange() = walletRoute {
 
             context.respond(HttpStatusCode.OK, mapOf("redirectUri" to redirect))
         }
+        post("resolvePresentationRequest", {
+            request {
+                body<String> { description = "request" }
+            }
+        }) {
+            val wallet = getWalletService()
+            val request = call.receiveText()
+            val parsedRequest = wallet.resolvePresentationRequest(request)
+            context.respond(parsedRequest)
+        }
     }
 }

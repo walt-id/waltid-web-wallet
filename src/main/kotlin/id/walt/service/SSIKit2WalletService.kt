@@ -19,7 +19,11 @@ import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.service.oidc4vc.TestCredentialWallet
 import id.walt.ssikit.did.DidService
+import id.walt.ssikit.did.registrar.dids.DidCreateOptions
+import id.walt.ssikit.did.registrar.dids.DidJwkCreateOptions
+import id.walt.ssikit.did.registrar.dids.DidKeyCreateOptions
 import id.walt.ssikit.helpers.WaltidServices
+import id.walt.ssikit.utils.EnumUtils.enumValueIgnoreCase
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -173,6 +177,10 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         }
     }
 
+    override suspend fun resolvePresentationRequest(request: String): String {
+        return Url(request).protocolWithAuthority.plus("?").plus(credentialWallet.parsePresentationRequest(request).toHttpQueryString())
+    }
+
     private val credentialWallet: TestCredentialWallet by lazy {
         TestCredentialWallet(
             SIOPProviderConfig("http://blank"),
@@ -198,7 +206,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val providerMetadataResult = ktorClient.get(providerMetadataUri)
         println("Provider metadata returned: " + providerMetadataResult.bodyAsText())
 
-        val providerMetadata = providerMetadataResult.body<OpenIDProviderMetadata>()
+        val providerMetadata = providerMetadataResult.body<JsonObject>().let { OpenIDProviderMetadata.fromJSON(it) }
         println("providerMetadata: $providerMetadata")
 
         println("// resolve offered credentials")
@@ -226,7 +234,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         println(">>> Token response = success: ${tokenResp.isSuccess}")
 
         println("// receive credential")
-        var nonce = tokenResp.cNonce!!
+        var nonce = tokenResp.cNonce
 
         println("Using issuer URL: ${parsedOfferReq.credentialOfferUri ?: parsedOfferReq.credentialOffer!!.credentialIssuer}")
         val credReq = CredentialRequest.forOfferedCredential(
@@ -276,8 +284,9 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         // TODO: other DIDs, Keys
         val newKey = LocalKey.generate(KeyType.Ed25519)
         val newKeyId = newKey.getKeyId()
+        val options = getDidOptions(method, args)
 
-        val result = DidService.registerByKey("jwk", newKey)
+        val result = DidService.registerByKey(method, newKey, options)
 
         transaction {
             WalletKeys.insert {
@@ -436,4 +445,12 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun connectWallet(walletId: UUID) = Web3WalletService.connect(accountId, walletId)
 
     override suspend fun disconnectWallet(wallet: UUID) = Web3WalletService.disconnect(accountId, wallet)
+
+    private fun getDidOptions(method: String, args: Map<String, JsonPrimitive>) = when (method.lowercase()) {
+        "key" -> DidKeyCreateOptions(
+            args["key"]?.let { enumValueIgnoreCase<KeyType>(it.content) } ?: KeyType.Ed25519,
+            args["useJwkJcsPub"]?.let { it.content.toBoolean() } ?: false
+        )
+        else -> DidJwkCreateOptions()
+    }
 }

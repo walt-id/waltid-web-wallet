@@ -228,6 +228,10 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         return redirect
     }
 
+    override suspend fun resolvePresentationRequest(request: String): String {
+        return request
+    }
+
     override suspend fun useOfferRequest(offer: String, did: String) {
         val sessionId = authenticatedJsonPost(
             "/api/wallet/issuance/startIssuerInitiatedIssuance",

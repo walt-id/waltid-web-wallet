@@ -96,7 +96,7 @@ dependencies {
     implementation("id.walt:core-crypto:1.0-SNAPSHOT")
 
     // OIDC
-    implementation("id.walt:waltid-openid4vc:1.2309251429.0")
+    implementation("id.walt:waltid-openid4vc:1.2309281408.0")
 
     /* -- Misc --*/
 
