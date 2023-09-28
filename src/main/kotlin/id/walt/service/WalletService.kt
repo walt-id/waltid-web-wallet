@@ -25,6 +25,7 @@ abstract class WalletService(val accountId: UUID) {
     abstract suspend fun listDids(): List<String>
     abstract suspend fun loadDid(did: String): JsonObject
     abstract suspend fun createDid(method: String, args: Map<String, JsonPrimitive> = emptyMap()): String
+    abstract suspend fun deleteDid(did: String)
     suspend fun createDidWithParameters(method: String, args: Map<String, Any?>): String {
         return createDid(method, args.toJsonPrimitives())
     }
@@ -32,9 +33,9 @@ abstract class WalletService(val accountId: UUID) {
     // Keys
     abstract suspend fun listKeys(): List<WalletKitWalletService.SingleKeyResponse>
     abstract suspend fun exportKey(alias: String, format: String, private: Boolean): String
+    abstract suspend fun loadKey(alias: String): JsonObject
     abstract suspend fun importKey(jwkOrPem: String): String
     abstract suspend fun deleteKey(alias: String): HttpStatusCode
-    abstract suspend fun deleteDid(did: String)
     abstract suspend fun getHistory(limit: Int = 10, offset: Int = 0): List<WalletOperationHistory>
     abstract suspend fun addOperationHistory(operationHistory: WalletOperationHistory)
 

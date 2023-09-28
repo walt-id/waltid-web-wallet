@@ -277,6 +277,8 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     }
 
     /* Keys */
+    override suspend fun loadKey(alias: String) =  authenticatedJsonGet("/api/wallet/keys/$alias").body<JsonObject>()
+
 
     override suspend fun exportKey(alias: String, format: String, private: Boolean): String =
         authenticatedJsonPost(
@@ -287,6 +289,8 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
             ).toMutableMap()
         )
             .body<String>()
+
+
 
     @Serializable
     data class SingleKeyResponse(
