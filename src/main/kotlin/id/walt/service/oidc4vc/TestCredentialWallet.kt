@@ -25,11 +25,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import java.util.*
-import kotlin.collections.HashMap
-import kotlin.collections.first
-import kotlin.collections.listOf
-import kotlin.collections.mapOf
-import kotlin.collections.mutableMapOf
 import kotlin.collections.set
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -58,7 +53,10 @@ class TestCredentialWallet(
         val key = runBlocking { walletService.getKeyByDid(keyId) }
         println("KEY FOR SIGNING: $key")
 
-        return runBlocking { key.signJws(Json.encodeToString(payload).encodeToByteArray(), mapOf("kid" to keyId)) }
+        return runBlocking {
+            val authKeyId = DidService.resolve(keyId).getOrThrow().get("authentication")!!.jsonArray.first().jsonPrimitive.content
+            key.signJws(Json.encodeToString(payload).encodeToByteArray(), mapOf("typ" to "JWT", "kid" to authKeyId))
+        }
 
         //JwtService.getService().sign(payload, keyId)
     }

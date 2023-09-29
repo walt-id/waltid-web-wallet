@@ -216,7 +216,7 @@
         <div class="text-gray-600 flex justify-between">
           <div>
             {{
-              jwtJson.vc.expirationDate
+              jwtJson.vc.expirationDate && jwtJson.vc.issuanceDate
                 ? "Valid from " +
                   new Date(jwtJson.vc.issuanceDate).toISOString().slice(0, 10) +
                   " to " +
@@ -226,7 +226,7 @@
           </div>
           <div class="text-gray-900">
             Issued
-            {{ new Date(jwtJson.vc.issuanceDate).toISOString().slice(0, 10) }}
+            {{ jwtJson.vc.issuanceDate ? new Date(jwtJson.vc.issuanceDate).toISOString().slice(0, 10) : "<No issuance date>" }}
           </div>
         </div>
       </div>

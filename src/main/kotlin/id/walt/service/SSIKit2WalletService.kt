@@ -15,6 +15,7 @@ import id.walt.oid4vc.requests.CredentialRequest
 import id.walt.oid4vc.requests.TokenRequest
 import id.walt.oid4vc.responses.CredentialResponse
 import id.walt.oid4vc.responses.TokenResponse
+import id.walt.oid4vc.util.randomUUID
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.service.oidc4vc.TestCredentialWallet
@@ -76,18 +77,24 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun listCredentials(): List<JsonObject> =
         transaction {
             WalletCredentials.select { WalletCredentials.account eq accountId }.map {
-                it[WalletCredentials.credential]
+                it
             }
-        }.mapNotNull {
+        }.mapNotNull { resultRow ->
+            val credentialId = resultRow[WalletCredentials.credentialId]
             runCatching {
-                if (it.startsWith("{"))
-                    Json.parseToJsonElement(it).jsonObject
-                else if (it.startsWith("ey"))
+                val cred = resultRow[WalletCredentials.credential]
+                if (cred.startsWith("{"))
+                    Json.parseToJsonElement(cred).jsonObject
+                else if (cred.startsWith("ey"))
                     Json.parseToJsonElement(
-                        Base64.decode(it.split(".")[1]).decodeToString()
+                        Base64.decode(cred.split(".")[1]).decodeToString()
                     ).jsonObject["vc"]!!.jsonObject
                 else throw IllegalArgumentException("Unknown credential format")
-            }.onFailure { it.printStackTrace() }.getOrNull()
+            }.onFailure { it.printStackTrace() }.getOrNull()?.let { jsonObject ->
+                JsonObject(jsonObject.toMutableMap().also {
+                    it.putIfAbsent("id", JsonPrimitive(credentialId))
+                })
+            }
         }
 
     override suspend fun deleteCredential(id: String) = transaction {
@@ -264,7 +271,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val credential = credentialResp.credential!!.jsonPrimitive.content
         println(">>> CREDENTIAL IS: " + credential)
 
-        val credentialId = Json.parseToJsonElement(Base64.decode(credential.split(".")[1]).decodeToString()).jsonObject["vc"]!!.jsonObject["id"]!!.jsonPrimitive.content
+        val credentialId = Json.parseToJsonElement(Base64.decode(credential.split(".")[1]).decodeToString()).jsonObject["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content ?: randomUUID()
 
         transaction {
             WalletCredentials.insert {
