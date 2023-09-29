@@ -127,6 +127,10 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun listCredentials() = authenticatedJsonGet("/api/wallet/credentials/list")
         .body<JsonObject>()["list"]!!.jsonArray.toList().map { it.jsonObject }
 
+    override suspend fun listRawCredentials(): List<String> {
+        TODO("Not yet implemented")
+    }
+
     //private val prettyJson = Json { prettyPrint = true }
 
     override suspend fun deleteCredential(id: String) = authenticatedJsonDelete("/api/wallet/credentials/delete/$id").status.isSuccess()

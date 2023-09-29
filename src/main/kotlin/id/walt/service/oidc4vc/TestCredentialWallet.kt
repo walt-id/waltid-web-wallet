@@ -54,7 +54,17 @@ class TestCredentialWallet(
         println("KEY FOR SIGNING: $key")
 
         return runBlocking {
-            val authKeyId = DidService.resolve(keyId).getOrThrow().get("authentication")!!.jsonArray.first().jsonPrimitive.content
+            val didDoc = ktorClient.post("https://core.ssikit.walt.id/v1/did/resolve") {
+                headers { contentType(ContentType.Application.Json) }
+                setBody("{ \"did\": \"$TEST_DID\" }")
+            }.body<JsonObject>()
+            val authKeyId = didDoc.get("authentication")!!.jsonArray.first().let {
+                if(it is JsonObject) {
+                    it.jsonObject["id"]!!.jsonPrimitive.content
+                } else {
+                    it.jsonPrimitive.content
+                }
+            }
             key.signJws(Json.encodeToString(payload).encodeToByteArray(), mapOf("typ" to "JWT", "kid" to authKeyId))
         }
 
@@ -89,7 +99,7 @@ class TestCredentialWallet(
         // find credential(s) matching the presentation definition
         // for this test wallet implementation, present all credentials in the wallet
 
-        val credentialList = runBlocking { walletService.listCredentials() }
+        val credentialList = runBlocking { walletService.listRawCredentials() }
 
         val vp = Json.encodeToString(
             mapOf(
@@ -109,13 +119,27 @@ class TestCredentialWallet(
         )
 
         val key = runBlocking { walletService.getKeyByDid(TEST_DID) }
-        val signed = runBlocking { key.signJws(vp.toByteArray(), mapOf("kid" to TEST_DID, "typ" to "JWT")) }
+        val signed = runBlocking {
+            val didDoc = ktorClient.post("https://core.ssikit.walt.id/v1/did/resolve") {
+                headers { contentType(ContentType.Application.Json) }
+                setBody("{ \"did\": \"$TEST_DID\" }")
+            }.body<JsonObject>()
+            val authKeyId = didDoc.get("authentication")!!.jsonArray.first().let {
+                if(it is JsonObject) {
+                    it.jsonObject["id"]!!.jsonPrimitive.content
+                } else {
+                    it.jsonPrimitive.content
+                }
+            }
+            key.signJws(vp.toByteArray(), mapOf("kid" to authKeyId, "typ" to "JWT"))
+        }
+        println("GENERATED VP: $signed")
 
         return PresentationResult(
             listOf(JsonPrimitive(signed)), PresentationSubmission(
                 "submission 1", presentationDefinition.id, listOf(
                     DescriptorMapping(
-                        "presentation 1", VCFormat.jwt_vc, "$"
+                        "presentation 1", VCFormat.jwt_vc_json, "$"
                     )
                 )
             )

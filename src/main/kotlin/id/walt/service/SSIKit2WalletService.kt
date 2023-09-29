@@ -97,6 +97,14 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
             }
         }
 
+    override suspend fun listRawCredentials(): List<String> {
+        return transaction {
+            WalletCredentials.select { WalletCredentials.account eq accountId }.map {
+                it[WalletCredentials.credential]
+            }
+        }
+    }
+
     override suspend fun deleteCredential(id: String) = transaction {
         WalletCredentials.deleteWhere { (account eq accountId) and (credentialId eq id) }
     } > 0

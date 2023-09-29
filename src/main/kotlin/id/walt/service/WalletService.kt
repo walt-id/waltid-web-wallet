@@ -14,6 +14,7 @@ abstract class WalletService(val accountId: UUID) {
 
     // Credentials
     abstract suspend fun listCredentials(): List<JsonObject>
+    abstract suspend fun listRawCredentials(): List<String>
     abstract suspend fun deleteCredential(id: String): Boolean
     abstract suspend fun getCredential(credentialId: String): String
 
