@@ -160,7 +160,7 @@ export default defineNuxtConfig({
     },
 
     tailwindcss: {
-        configPath: './tailwind.config.ts',
+        configPath: './tailwind.config.js',
     },
 
     vite: {
