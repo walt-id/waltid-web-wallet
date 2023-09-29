@@ -177,6 +177,10 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         }
     }
 
+    override suspend fun resolvePresentationRequest(request: String): String {
+        return Url(request).protocolWithAuthority.plus("?").plus(credentialWallet.parsePresentationRequest(request).toHttpQueryString())
+    }
+
     private val credentialWallet: TestCredentialWallet by lazy {
         TestCredentialWallet(
             SIOPProviderConfig("http://blank"),
@@ -202,7 +206,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val providerMetadataResult = ktorClient.get(providerMetadataUri)
         println("Provider metadata returned: " + providerMetadataResult.bodyAsText())
 
-        val providerMetadata = providerMetadataResult.body<OpenIDProviderMetadata>()
+        val providerMetadata = providerMetadataResult.body<JsonObject>().let { OpenIDProviderMetadata.fromJSON(it) }
         println("providerMetadata: $providerMetadata")
 
         println("// resolve offered credentials")
@@ -230,7 +234,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         println(">>> Token response = success: ${tokenResp.isSuccess}")
 
         println("// receive credential")
-        var nonce = tokenResp.cNonce!!
+        var nonce = tokenResp.cNonce ?: throw IllegalArgumentException("No token nonce received!")
 
         println("Using issuer URL: ${parsedOfferReq.credentialOfferUri ?: parsedOfferReq.credentialOffer!!.credentialIssuer}")
         val credReq = CredentialRequest.forOfferedCredential(
@@ -253,6 +257,10 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
 
         println("// parse and verify credential")
+        if (credentialResp.credential == null) {
+            throw IllegalStateException("No credential was returned from credentialEndpoint: $credentialResp")
+        }
+
         val credential = credentialResp.credential!!.jsonPrimitive.content
         println(">>> CREDENTIAL IS: " + credential)
 
