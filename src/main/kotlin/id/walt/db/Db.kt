@@ -85,7 +85,8 @@ object Db {
 
         val accountId = AccountsService.register(EmailLoginRequest("user@email.com", "password")).getOrThrow().id
         println("CREATED ACCOUNT: $accountId")
-        val did = WalletServiceManager.getWalletService(accountId).createDid("key")
-        println("CREATED DID: $did")
+        /** moved to [AccountsService.register] **/
+//        val did = WalletServiceManager.getWalletService(accountId).createDid("key")
+//        println("CREATED DID: $did")
     }
 }
