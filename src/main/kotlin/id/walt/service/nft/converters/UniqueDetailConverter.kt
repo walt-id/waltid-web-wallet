@@ -10,7 +10,7 @@ class UniqueDetailConverter : NftDetailConverterBase<PolkadotUniqueNft>() {
         id = data.tokenId,
         art = TokenArt(url = data.metadata?.fullUrl),
         attributes = data.metadata?.attributes?.map {
-            TokenAttributes(trait = it.name, value = it.value)
+            TokenAttributes(trait = it.name, value = it.value.toString())
         } ?: emptyList(),
         //...TODO
     )

@@ -2,6 +2,7 @@ package id.walt.service.oidc4vc
 
 import id.walt.core.crypto.keys.Key
 import id.walt.core.crypto.utils.JsonUtils.toJsonElement
+import id.walt.core.crypto.utils.JwsUtils.decodeJws
 import id.walt.oid4vc.data.OpenIDProviderMetadata
 import id.walt.oid4vc.data.dif.DescriptorMapping
 import id.walt.oid4vc.data.dif.PresentationDefinition
@@ -59,7 +60,7 @@ class TestCredentialWallet(
                 setBody("{ \"did\": \"$TEST_DID\" }")
             }.body<JsonObject>()
             val authKeyId = didDoc.get("authentication")!!.jsonArray.first().let {
-                if(it is JsonObject) {
+                if (it is JsonObject) {
                     it.jsonObject["id"]!!.jsonPrimitive.content
                 } else {
                     it.jsonPrimitive.content
@@ -101,6 +102,9 @@ class TestCredentialWallet(
 
         val credentialList = runBlocking { walletService.listRawCredentials() }
 
+        val credentials = credentialList
+
+
         val vp = Json.encodeToString(
             mapOf(
                 "sub" to TEST_DID,
@@ -110,11 +114,11 @@ class TestCredentialWallet(
                 "iss" to TEST_DID,
 
                 "vp" to mapOf(
-                            "@context" to listOf("https://www.w3.org/2018/credentials/v1"),
-                            "type" to listOf("VerifiablePresentation"),
-                            "id" to "urn:uuid:${UUID.randomUUID().toString().lowercase()}",
-                            "verifiableCredential" to credentialList
-                        )
+                    "@context" to listOf("https://www.w3.org/2018/credentials/v1"),
+                    "type" to listOf("VerifiablePresentation"),
+                    "id" to "urn:uuid:${UUID.randomUUID().toString().lowercase()}",
+                    "verifiableCredential" to credentials
+                )
             ).toJsonElement()
         )
 
@@ -125,7 +129,7 @@ class TestCredentialWallet(
                 setBody("{ \"did\": \"$TEST_DID\" }")
             }.body<JsonObject>()
             val authKeyId = didDoc.get("authentication")!!.jsonArray.first().let {
-                if(it is JsonObject) {
+                if (it is JsonObject) {
                     it.jsonObject["id"]!!.jsonPrimitive.content
                 } else {
                     it.jsonPrimitive.content
@@ -137,11 +141,25 @@ class TestCredentialWallet(
 
         return PresentationResult(
             listOf(JsonPrimitive(signed)), PresentationSubmission(
-                "submission 1", presentationDefinition.id, listOf(
+                id = "submission 1",
+                definitionId = presentationDefinition.id,
+                descriptorMap = credentials.mapIndexed { index, vcJwsStr ->
+
+                    val vcJws = vcJwsStr.decodeJws()
+                    val type =
+                        vcJws.payload["vc"]?.jsonObject?.get("type")?.jsonArray?.last()?.jsonPrimitive?.contentOrNull
+                            ?: "VerifiableCredential"
+
                     DescriptorMapping(
-                        "presentation 1", VCFormat.jwt_vc_json, "$"
+                        id = type,
+                        format = VCFormat.jwt_vp_json,  // jwt_vp_json
+                        path = "$[$index]",
+                        pathNested = DescriptorMapping(
+                            format = VCFormat.jwt_vc_json,
+                            path = "$.vp.verifiableCredential[0]",
+                        )
                     )
-                )
+                }
             )
         )
         /*val presentation: String = Custodian.getService()
