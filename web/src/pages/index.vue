@@ -59,17 +59,11 @@
               <div class="bg-white p-6 rounded-2xl shadow-2xl h-full">
                 <div class="flex justify-end">
                   <div
-                    :class="
-                      credential.expirationDate ? 'bg-red-50' : 'bg-cyan-50'
-                    "
+                    :class="credential.expirationDate ? new Date(credential.expirationDate).getTime() > new Date().getTime()? 'bg-cyan-50': 'bg-red-50': 'bg-cyan-50'"
                     class="rounded-lg px-3 mb-2"
                   >
                     <span
-                      :class="
-                        credential.expirationDate
-                          ? 'text-orange-900'
-                          : 'text-cyan-900'
-                      "
+                      :class="credential.expirationDate? new Date(credential.expirationDate).getTime() > new Date().getTime() ? 'text-cyan-900' : 'text-orange-900': 'text-cyan-900'"
                       >{{
                         credential.expirationDate
                           ? new Date(credential.expirationDate).getTime() >
