@@ -96,7 +96,7 @@ class TestCredentialWallet(
         // JwtService.getService().verify(token).verified
     }
 
-    override fun generatePresentation(presentationDefinition: PresentationDefinition): PresentationResult {
+    override fun generatePresentation(presentationDefinition: PresentationDefinition, nonce: String?): PresentationResult {
         // find credential(s) matching the presentation definition
         // for this test wallet implementation, present all credentials in the wallet
 
@@ -112,7 +112,7 @@ class TestCredentialWallet(
                 //"iat"
                 "jti" to "urn:uuid:" + UUID.randomUUID().toString(),
                 "iss" to TEST_DID,
-
+                "nonce" to (nonce ?: ""),
                 "vp" to mapOf(
                     "@context" to listOf("https://www.w3.org/2018/credentials/v1"),
                     "type" to listOf("VerifiablePresentation"),
