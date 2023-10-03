@@ -4,8 +4,6 @@ import id.walt.db.models.WalletOperationHistory
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.utils.JsonUtils.toJsonPrimitives
-import io.ktor.client.statement.*
-import io.ktor.http.*
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.util.*
@@ -34,6 +32,7 @@ abstract class WalletService(val accountId: UUID) {
 
     // Keys
     abstract suspend fun listKeys(): List<SingleKeyResponse>
+    abstract suspend fun generateKey(type: String):String
     abstract suspend fun exportKey(alias: String, format: String, private: Boolean): String
     abstract suspend fun loadKey(alias: String): JsonObject
     abstract suspend fun importKey(jwkOrPem: String): String
