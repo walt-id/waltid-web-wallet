@@ -23,7 +23,7 @@ fun Application.credentials() = walletRoute {
                 }
             }
         }) {
-            context.respond(getWalletService().listCredentials().map { it.rawCredential })
+            context.respond(getWalletService().listCredentials().map { it.parsedCredential })
         }
 
         put({
