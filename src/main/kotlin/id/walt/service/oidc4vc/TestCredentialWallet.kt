@@ -37,7 +37,8 @@ const val WALLET_BASE_URL = "http://localhost:${WALLET_PORT}"
 
 class TestCredentialWallet(
     config: SIOPProviderConfig,
-    val walletService: SSIKit2WalletService
+    val walletService: SSIKit2WalletService,
+    val did: String
 ) : SIOPCredentialProvider(WALLET_BASE_URL, config) {
 
     private val sessionCache = mutableMapOf<String, SIOPSession>()
@@ -59,7 +60,7 @@ class TestCredentialWallet(
         return runBlocking {
             val didDoc = ktorClient.post("https://core.ssikit.walt.id/v1/did/resolve") {
                 headers { contentType(ContentType.Application.Json) }
-                setBody("{ \"did\": \"$TEST_DID\" }")
+                setBody("{ \"did\": \"${this@TestCredentialWallet.did}\" }")
             }.body<JsonObject>()
             val authKeyId = didDoc.get("authentication")!!.jsonArray.first().let {
                 if (it is JsonObject) {
@@ -109,29 +110,29 @@ class TestCredentialWallet(
 
         val vp = Json.encodeToString(
             mapOf(
-                "sub" to TEST_DID,
+                "sub" to this.did,
                 "nbf" to Clock.System.now().minus(1.minutes).epochSeconds,
                 "iat" to Clock.System.now().epochSeconds,
                 "jti" to "urn:uuid:" + UUID.randomUUID().toString(),
-                "iss" to TEST_DID,
+                "iss" to this.did,
                 "nonce" to (nonce ?: ""),
                 "vp" to mapOf(
                     "@context" to listOf("https://www.w3.org/2018/credentials/v1"),
                     "type" to listOf("VerifiablePresentation"),
                     "id" to "urn:uuid:${UUID.randomUUID().toString().lowercase()}",
-                    "holder" to TEST_DID,
+                    "holder" to this.did,
                     "verifiableCredential" to credentials
                 )
             ).toJsonElement()
         )
 
-        val key = runBlocking { walletService.getKeyByDid(TEST_DID) }
+        val key = runBlocking { walletService.getKeyByDid(this@TestCredentialWallet.did) }
         val signed = runBlocking {
             // TODO
             // FIXME
             val didDoc = ktorClient.post("https://core.ssikit.walt.id/v1/did/resolve") {
                 headers { contentType(ContentType.Application.Json) }
-                setBody("{ \"did\": \"$TEST_DID\" }")
+                setBody("{ \"did\": \"${this@TestCredentialWallet.did}\" }")
             }.body<JsonObject>()
             val authKeyId = didDoc.get("authentication")!!.jsonArray.first().let {
                 if (it is JsonObject) {
@@ -188,7 +189,6 @@ class TestCredentialWallet(
     }
 
     //val TEST_DID: String = DidService.create(DidMethod.jwk)
-    val TEST_DID: String by lazy { runBlocking { walletService.listDids().first() } }
 
     val keyMapping = HashMap<String, Key>() // TODO: Hack as this is non stateless because of oidc4vc lib API
 
