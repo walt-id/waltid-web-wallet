@@ -207,7 +207,8 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     fun getCredentialWallet(did: String) = credentialWallets.getOrPut(did) {
         TestCredentialWallet(
             SIOPProviderConfig("http://blank"),
-            this
+            this,
+            did
         )
     }
     fun getAnyCredentialWallet() = credentialWallets.values.firstOrNull() ?: getCredentialWallet("did:test:test")
