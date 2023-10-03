@@ -1,10 +1,12 @@
 package id.walt.service.account
 
 import id.walt.db.models.Wallets
+import id.walt.service.WalletServiceManager
 import id.walt.web.generateToken
 import id.walt.web.model.AddressLoginRequest
 import id.walt.web.model.EmailLoginRequest
 import id.walt.web.model.LoginRequest
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
@@ -14,6 +16,10 @@ object AccountsService {
     fun register(request: LoginRequest): Result<RegistrationResult> = when (request) {
         is EmailLoginRequest -> emailStrategy.register(request)
         is AddressLoginRequest -> walletStrategy.register(request)
+    }.also {
+        it.getOrNull()?.let {
+            runBlocking { WalletServiceManager.getWalletService(it.id).createDid("key") }
+        }
     }
 
     fun authenticate(request: LoginRequest): Result<AuthenticationResult> = runCatching {

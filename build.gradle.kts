@@ -19,6 +19,7 @@ application {
 
 
 repositories {
+    //mavenLocal()
     mavenCentral()
     maven("https://jitpack.io")
     maven("https://maven.walt.id/repository/waltid/")
@@ -34,7 +35,7 @@ tasks.withType<KotlinCompile> {
 
 dependencies {
     // nftkit
-    implementation("id.walt:waltid-nftkit:1.2307292233.0") {
+    implementation("id.walt:waltid-nftkit:1.2310021030.0") {
         exclude("com.sksamuel.hoplite", "hoplite-core")
         exclude("com.sksamuel.hoplite", "hoplite-yaml")
         exclude("com.sksamuel.hoplite", "hoplite-hikaricp")
@@ -62,6 +63,7 @@ dependencies {
 
     // Ktor server external libs
     implementation("io.github.smiley4:ktor-swagger-ui:2.5.0")
+    //implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
 
     // Ktor client
     implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
@@ -96,7 +98,7 @@ dependencies {
     implementation("id.walt:core-crypto:1.0-SNAPSHOT")
 
     // OIDC
-    implementation("id.walt:waltid-openid4vc:1.2309281408.0")
+    implementation("id.walt:waltid-openid4vc:1.2310020952.0")
 
     /* -- Misc --*/
 
@@ -104,11 +106,11 @@ dependencies {
     implementation("io.github.reactivecircus.cache4k:cache4k:0.11.0")
 
     // DB
-    implementation("org.jetbrains.exposed:exposed-core:0.43.0")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.43.0")
-    implementation("org.jetbrains.exposed:exposed-dao:0.43.0")
-    implementation("org.jetbrains.exposed:exposed-java-time:0.43.0")
-    implementation("org.jetbrains.exposed:exposed-json:0.43.0")
+    implementation("org.jetbrains.exposed:exposed-core:0.44.0")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.44.0")
+    implementation("org.jetbrains.exposed:exposed-dao:0.44.0")
+    implementation("org.jetbrains.exposed:exposed-java-time:0.44.0")
+    implementation("org.jetbrains.exposed:exposed-json:0.44.0")
     implementation("org.xerial:sqlite-jdbc:3.42.0.0")
     implementation("org.postgresql:postgresql:42.6.0")
     // migration

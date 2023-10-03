@@ -2,6 +2,7 @@ package id.walt.service.oidc4vc
 
 import id.walt.core.crypto.keys.Key
 import id.walt.core.crypto.utils.JsonUtils.toJsonElement
+import id.walt.core.crypto.utils.JwsUtils.decodeJws
 import id.walt.oid4vc.data.OpenIDProviderMetadata
 import id.walt.oid4vc.data.dif.DescriptorMapping
 import id.walt.oid4vc.data.dif.PresentationDefinition
@@ -22,12 +23,14 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import java.util.*
 import kotlin.collections.set
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.time.Duration.Companion.minutes
 
 const val WALLET_PORT = 8001
 const val WALLET_BASE_URL = "http://localhost:${WALLET_PORT}"
@@ -59,7 +62,7 @@ class TestCredentialWallet(
                 setBody("{ \"did\": \"$TEST_DID\" }")
             }.body<JsonObject>()
             val authKeyId = didDoc.get("authentication")!!.jsonArray.first().let {
-                if(it is JsonObject) {
+                if (it is JsonObject) {
                     it.jsonObject["id"]!!.jsonPrimitive.content
                 } else {
                     it.jsonPrimitive.content
@@ -101,47 +104,74 @@ class TestCredentialWallet(
 
         val credentialList = runBlocking { walletService.listRawCredentials() }
 
+        val credentials = credentialList
+
+
         val vp = Json.encodeToString(
             mapOf(
                 "sub" to TEST_DID,
-                //"nfb"
-                //"iat"
+                "nbf" to Clock.System.now().minus(1.minutes).epochSeconds,
+                "iat" to Clock.System.now().epochSeconds,
                 "jti" to "urn:uuid:" + UUID.randomUUID().toString(),
                 "iss" to TEST_DID,
-
+                //"nonce" to nonce
                 "vp" to mapOf(
-                            "@context" to listOf("https://www.w3.org/2018/credentials/v1"),
-                            "type" to listOf("VerifiablePresentation"),
-                            "id" to "urn:uuid:${UUID.randomUUID().toString().lowercase()}",
-                            "verifiableCredential" to credentialList
-                        )
+                    "@context" to listOf("https://www.w3.org/2018/credentials/v1"),
+                    "type" to listOf("VerifiablePresentation"),
+                    "id" to "urn:uuid:${UUID.randomUUID().toString().lowercase()}",
+                    "holder" to TEST_DID,
+                    "verifiableCredential" to credentials
+                )
             ).toJsonElement()
         )
 
         val key = runBlocking { walletService.getKeyByDid(TEST_DID) }
         val signed = runBlocking {
+            // TODO
+            // FIXME
             val didDoc = ktorClient.post("https://core.ssikit.walt.id/v1/did/resolve") {
                 headers { contentType(ContentType.Application.Json) }
                 setBody("{ \"did\": \"$TEST_DID\" }")
             }.body<JsonObject>()
             val authKeyId = didDoc.get("authentication")!!.jsonArray.first().let {
-                if(it is JsonObject) {
+                if (it is JsonObject) {
                     it.jsonObject["id"]!!.jsonPrimitive.content
                 } else {
                     it.jsonPrimitive.content
                 }
             }
-            key.signJws(vp.toByteArray(), mapOf("kid" to authKeyId, "typ" to "JWT"))
+
+            key.signJws(
+                vp.toByteArray(), mapOf(
+                    "kid" to authKeyId,
+                    "typ" to "JWT"
+                )
+            )
         }
+
         println("GENERATED VP: $signed")
 
         return PresentationResult(
             listOf(JsonPrimitive(signed)), PresentationSubmission(
-                "submission 1", presentationDefinition.id, listOf(
+                id = "submission 1",
+                definitionId = presentationDefinition.id,
+                descriptorMap = credentials.mapIndexed { index, vcJwsStr ->
+
+                    val vcJws = vcJwsStr.decodeJws()
+                    val type =
+                        vcJws.payload["vc"]?.jsonObject?.get("type")?.jsonArray?.last()?.jsonPrimitive?.contentOrNull
+                            ?: "VerifiableCredential"
+
                     DescriptorMapping(
-                        "presentation 1", VCFormat.jwt_vc_json, "$"
+                        id = type,
+                        format = VCFormat.jwt_vp_json,  // jwt_vp_json
+                        path = "$[$index]",
+                        pathNested = DescriptorMapping(
+                            format = VCFormat.jwt_vc_json,
+                            path = "$.vp.verifiableCredential[0]",
+                        )
                     )
-                )
+                }
             )
         )
         /*val presentation: String = Custodian.getService()
