@@ -20,7 +20,6 @@ import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.service.oidc4vc.TestCredentialWallet
 import id.walt.ssikit.did.DidService
-import id.walt.ssikit.did.registrar.dids.DidCreateOptions
 import id.walt.ssikit.did.registrar.dids.DidJwkCreateOptions
 import id.walt.ssikit.did.registrar.dids.DidKeyCreateOptions
 import id.walt.ssikit.helpers.WaltidServices
@@ -49,6 +48,7 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.URLDecoder
 import java.util.*
+import kotlin.collections.HashMap
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -173,6 +173,8 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
      * @return redirect uri
      */
     override suspend fun usePresentationRequest(request: String, did: String): String {
+        val credentialWallet = getCredentialWallet(did)
+
         val authReq = AuthorizationRequest.fromHttpQueryString(Url(request).encodedQuery)
         println("Auth req: $authReq")
         val walletSession = credentialWallet.initializeAuthorization(authReq, 60)
@@ -194,21 +196,29 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     }
 
     override suspend fun resolvePresentationRequest(request: String): String {
+        val credentialWallet = getAnyCredentialWallet()
+
         return Url(request).protocolWithAuthority.plus("?").plus(credentialWallet.parsePresentationRequest(request).toHttpQueryString())
     }
 
-    private val credentialWallet: TestCredentialWallet by lazy {
+
+    private val credentialWallets = HashMap<String, TestCredentialWallet>()
+
+    fun getCredentialWallet(did: String) = credentialWallets.getOrPut(did) {
         TestCredentialWallet(
             SIOPProviderConfig("http://blank"),
             this
         )
     }
+    fun getAnyCredentialWallet() = credentialWallets.values.firstOrNull() ?: getCredentialWallet("did:test:test")
 
     private val testCIClientConfig = OpenIDClientConfig("test-client", null, redirectUri = "http://blank")
 
 
     @OptIn(ExperimentalEncodingApi::class)
     override suspend fun useOfferRequest(offer: String, did: String) {
+        val credentialWallet = getCredentialWallet(did)
+
         println("// -------- WALLET ----------")
         println("// as WALLET: receive credential offer, either being called via deeplink or by scanning QR code")
         println("// parse credential URI")
@@ -256,7 +266,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val credReq = CredentialRequest.forOfferedCredential(
             offeredCredential = offeredCredential,
             proof = credentialWallet.generateDidProof(
-                did = credentialWallet.TEST_DID,
+                did = credentialWallet.did,
                 issuerUrl =  /*ciTestProvider.baseUrl*/ parsedOfferReq.credentialOfferUri
                     ?: parsedOfferReq.credentialOffer!!.credentialIssuer,
                 nonce = nonce
