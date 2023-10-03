@@ -396,6 +396,20 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         }
     }
 
+    override suspend fun generateKey(type: String): String {
+
+        val newKey = LocalKey.generate(KeyType.valueOf(type))
+        val newKeyId = newKey.getKeyId()
+        transaction {
+            WalletKeys.insert {
+                it[account] = accountId
+                it[keyId] = newKeyId
+                it[document] = KeySerialization.serializeKey(newKey)
+            }
+        }
+        return newKeyId
+    }
+
     override suspend fun importKey(jwkOrPem: String): String {
         val type = when {
             jwkOrPem.lines().first().contains("BEGIN ") -> "pem"

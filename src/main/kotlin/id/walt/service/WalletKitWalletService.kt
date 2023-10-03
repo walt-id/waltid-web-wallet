@@ -298,10 +298,12 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         )
             .body<String>()
 
-
-
     override suspend fun listKeys() = authenticatedJsonGet("/api/wallet/keys/list")
-        .body<JsonObject>()["list"]!!.jsonArray.map { Json.decodeFromJsonElement<SingleKeyResponse>(it) }
+        .body<JsonObject>()["list"]!!.jsonArray.map{ Json.decodeFromJsonElement<SingleKeyResponse>(it) }
+
+    override suspend fun generateKey(type: String)=
+        authenticatedJsonPost("/api/wallet/keys/generate", type ).body<String>()
+
 
     override suspend fun importKey(jwkOrPem: String) =
         authenticatedJsonPost("/api/wallet/keys/import", body = jwkOrPem)

@@ -1,5 +1,6 @@
 package id.walt.web.controllers
 
+import id.walt.core.crypto.keys.KeyType
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -26,6 +27,20 @@ fun Application.keys() = walletRoute {
         }) {
             context.respond(getWalletService().listKeys())
         }
+
+        post("generate",{
+            summary = "Generate key"
+            request {
+                queryParameter<String>("type")
+            }
+        }) {
+            val type = call.request.queryParameters["type"]
+                ?: KeyType.Ed25519.toString()
+
+            val keyId = getWalletService().generateKey(type)
+            context.respond(keyId)
+        }
+
 
         post("import", {
             summary = "Import an existing key"
