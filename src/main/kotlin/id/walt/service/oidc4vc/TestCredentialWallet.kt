@@ -23,12 +23,14 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import java.util.*
 import kotlin.collections.set
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.time.Duration.Companion.minutes
 
 const val WALLET_PORT = 8001
 const val WALLET_BASE_URL = "http://localhost:${WALLET_PORT}"
@@ -108,15 +110,16 @@ class TestCredentialWallet(
         val vp = Json.encodeToString(
             mapOf(
                 "sub" to TEST_DID,
-                //"nfb"
-                //"iat"
+                "nbf" to Clock.System.now().minus(1.minutes).epochSeconds,
+                "iat" to Clock.System.now().epochSeconds,
                 "jti" to "urn:uuid:" + UUID.randomUUID().toString(),
                 "iss" to TEST_DID,
-
+                //"nonce" to nonce
                 "vp" to mapOf(
                     "@context" to listOf("https://www.w3.org/2018/credentials/v1"),
                     "type" to listOf("VerifiablePresentation"),
                     "id" to "urn:uuid:${UUID.randomUUID().toString().lowercase()}",
+                    "holder" to TEST_DID,
                     "verifiableCredential" to credentials
                 )
             ).toJsonElement()
@@ -124,6 +127,8 @@ class TestCredentialWallet(
 
         val key = runBlocking { walletService.getKeyByDid(TEST_DID) }
         val signed = runBlocking {
+            // TODO
+            // FIXME
             val didDoc = ktorClient.post("https://core.ssikit.walt.id/v1/did/resolve") {
                 headers { contentType(ContentType.Application.Json) }
                 setBody("{ \"did\": \"$TEST_DID\" }")
@@ -135,8 +140,15 @@ class TestCredentialWallet(
                     it.jsonPrimitive.content
                 }
             }
-            key.signJws(vp.toByteArray(), mapOf("kid" to authKeyId, "typ" to "JWT"))
+
+            key.signJws(
+                vp.toByteArray(), mapOf(
+                    "kid" to authKeyId,
+                    "typ" to "JWT"
+                )
+            )
         }
+
         println("GENERATED VP: $signed")
 
         return PresentationResult(
