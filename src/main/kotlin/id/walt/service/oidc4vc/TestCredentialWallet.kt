@@ -102,9 +102,10 @@ class TestCredentialWallet(
         // find credential(s) matching the presentation definition
         // for this test wallet implementation, present all credentials in the wallet
 
-        val credentialList = runBlocking { walletService.listRawCredentials() }
+        val credentialList = runBlocking { walletService.listCredentials() }
 
-        val credentials = credentialList
+        val filterString = presentationDefinition.inputDescriptors.flatMap { it.constraints?.fields ?: listOf() }.firstOrNull { field -> field.path.any { it.contains("type") } }?.filter?.jsonObject.toString()
+        val credentials = credentialList.filter { filterString.contains(it.parsedCredential["type"]!!.jsonArray.last().jsonPrimitive.content) }
 
 
         val vp = Json.encodeToString(
@@ -120,7 +121,7 @@ class TestCredentialWallet(
                     "type" to listOf("VerifiablePresentation"),
                     "id" to "urn:uuid:${UUID.randomUUID().toString().lowercase()}",
                     "holder" to TEST_DID,
-                    "verifiableCredential" to credentials
+                    "verifiableCredential" to credentials.map { it.rawCredential }
                 )
             ).toJsonElement()
         )
@@ -155,7 +156,7 @@ class TestCredentialWallet(
             listOf(JsonPrimitive(signed)), PresentationSubmission(
                 id = "submission 1",
                 definitionId = presentationDefinition.id,
-                descriptorMap = credentials.mapIndexed { index, vcJwsStr ->
+                descriptorMap = credentials.map { it.rawCredential }.mapIndexed { index, vcJwsStr ->
 
                     val vcJws = vcJwsStr.decodeJws()
                     val type =

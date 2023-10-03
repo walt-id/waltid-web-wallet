@@ -74,7 +74,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     /* Credentials */
 
     @OptIn(ExperimentalEncodingApi::class)
-    override suspend fun listCredentials(): List<JsonObject> =
+    override suspend fun listCredentials(): List<Credential> =
         transaction {
             WalletCredentials.select { WalletCredentials.account eq accountId }.map {
                 it
@@ -83,17 +83,18 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
             val credentialId = resultRow[WalletCredentials.credentialId]
             runCatching {
                 val cred = resultRow[WalletCredentials.credential]
-                if (cred.startsWith("{"))
+                val parsedCred = if (cred.startsWith("{"))
                     Json.parseToJsonElement(cred).jsonObject
                 else if (cred.startsWith("ey"))
                     Json.parseToJsonElement(
                         Base64.decode(cred.split(".")[1]).decodeToString()
                     ).jsonObject["vc"]!!.jsonObject
                 else throw IllegalArgumentException("Unknown credential format")
-            }.onFailure { it.printStackTrace() }.getOrNull()?.let { jsonObject ->
-                JsonObject(jsonObject.toMutableMap().also {
+                Credential(parsedCred, cred)
+            }.onFailure { it.printStackTrace() }.getOrNull()?.let { cred ->
+                Credential(JsonObject(cred.parsedCredential.toMutableMap().also {
                     it.putIfAbsent("id", JsonPrimitive(credentialId))
-                })
+                }), cred.rawCredential)
             }
         }
 
