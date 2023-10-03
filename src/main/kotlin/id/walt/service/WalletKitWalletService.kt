@@ -280,10 +280,13 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun loadDid(did: String) = authenticatedJsonGet("/api/wallet/did/$did")
         .body<JsonObject>()
 
-    override suspend fun deleteDid(did: String): Boolean =
-        authenticatedJsonDelete("/api/wallet/did/delete/$did").status.isSuccess()
+    override suspend fun deleteDid(did: String)=authenticatedJsonDelete("/api/wallet/did/delete/$did").status.isSuccess()
+
 
     /* Keys */
+
+    override suspend fun loadKey(alias: String) =  authenticatedJsonGet("/api/wallet/keys/$alias").body<JsonObject>()
+
 
     override suspend fun exportKey(alias: String, format: String, private: Boolean): String =
         authenticatedJsonPost(
@@ -301,10 +304,10 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         .body<JsonObject>()["list"]!!.jsonArray.map { Json.decodeFromJsonElement<SingleKeyResponse>(it) }
 
     override suspend fun importKey(jwkOrPem: String) =
-        authenticatedJsonPost<String>("/api/wallet/keys/import", body = jwkOrPem)
+        authenticatedJsonPost("/api/wallet/keys/import", body = jwkOrPem)
             .body<String>()
 
-    override suspend fun deleteKey(alias: String): Boolean =
+    override suspend fun deleteKey(alias: String) =
         authenticatedJsonDelete("/api/wallet/keys/delete/$alias").status.isSuccess()
 
 
