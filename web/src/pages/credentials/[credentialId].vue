@@ -8,18 +8,16 @@
           <div class="flex justify-end">
             <div
               :class="jwtJson.vc.expirationDate ? new Date(jwtJson.vc.expirationDate).getTime() > new Date().getTime() ? 'bg-cyan-50' : 'bg-red-50' : 'bg-cyan-50'"
-              class="rounded-lg px-3 mb-2"
-            >
+              class="rounded-lg px-3 mb-2">
               <div
-              :class="jwtJson.vc.expirationDate ? new Date(jwtJson.vc.expirationDate).getTime() > new Date().getTime() ? 'text-cyan-900' : 'text-orange-900' : 'text-cyan-900'"
-              >
+                :class="jwtJson.vc.expirationDate ? new Date(jwtJson.vc.expirationDate).getTime() > new Date().getTime() ? 'text-cyan-900' : 'text-orange-900' : 'text-cyan-900'">
                 {{
                   jwtJson.vc.expirationDate
-                    ? new Date(jwtJson.vc.expirationDate).getTime() >
-                      new Date().getTime()
-                      ? "Valid"
-                      : "Expired"
-                    : "Valid"
+                  ? new Date(jwtJson.vc.expirationDate).getTime() >
+                    new Date().getTime()
+                    ? "Valid"
+                    : "Expired"
+                  : "Valid"
                 }}
               </div>
             </div>
@@ -33,14 +31,8 @@
             }}
           </h2>
           <div class="flex items-center">
-            <img
-              class="w-12"
-              :src="
-                jwtJson.vc.issuer?.image?.id
-                  ? jwtJson.vc.issuer?.image?.id
-                  : jwtJson.vc.issuer?.image
-              "
-            />
+            <img class="w-12"
+              :src="jwtJson.vc.issuer?.image?.id ? jwtJson.vc.issuer?.image?.id : jwtJson.vc.issuer?.image" />
             <div class="text-natural-600 ml-2 w-32">
               {{ jwtJson.vc.issuer.name }}
             </div>
@@ -60,11 +52,7 @@
         <hr class="my-5" />
 
         <!-- VerifiableDiploma -->
-        <div
-          v-if="
-            jwtJson.vc.type[jwtJson.vc.type.length - 1] == 'VerifiableDiploma'
-          "
-        >
+        <div v-if="jwtJson.vc.type[jwtJson.vc.type.length - 1] == 'VerifiableDiploma'">
           <div class="text-gray-500 mb-4 font-bold">Subject</div>
           <div class="md:flex text-gray-500 mb-3 md:mb-1">
             <div class="min-w-[19vw]">Given Name</div>
@@ -159,12 +147,9 @@
             </div>
           </div>
         </div>
+
         <!-- Open Badge 3.0 -->
-        <div
-          v-if="
-            jwtJson.vc.type[jwtJson.vc.type.length - 1] == 'OpenBadgeCredential'
-          "
-        >
+        <div v-if="jwtJson.vc.type[jwtJson.vc.type.length - 1] == 'OpenBadgeCredential'">
           <div class="flex items-center">
             <div>
               <div class="text-gray-500 mb-4 font-bold">Subject</div>
@@ -189,10 +174,74 @@
                 </div>
               </div>
             </div>
-            <img
-              class="w-32 h-20 hidden md:block"
-              :src="jwtJson.vc.credentialSubject.achievement.image"
-            />
+            <img class="w-32 h-20 hidden md:block" :src="jwtJson.vc.credentialSubject.achievement.image" />
+          </div>
+        </div>
+
+        <!-- Permanent Resident Card -->
+        <div v-else-if="jwtJson.vc.type[jwtJson.vc.type.length - 1] == 'PermanentResidentCard'">
+          <div>
+            <div class="text-gray-500 mb-4 font-bold">Subject Info</div>
+            <div class="md:flex text-gray-500 mb-3 md:mb-1">
+              <div class="min-w-[19vw]">Given Name</div>
+              <div class="font-bold">
+                {{ jwtJson.vc.credentialSubject.givenName }}
+              </div>
+            </div>
+            <div class="md:flex text-gray-500 mb-3 md:mb-1">
+              <div class="min-w-[19vw]">Surname</div>
+              <div class="font-bold">
+                {{ jwtJson.vc.credentialSubject.familyName }}
+              </div>
+            </div>
+            <div class="md:flex text-gray-500 mb-3 md:mb-1">
+              <div class="min-w-[19vw]">Date Of Birth</div>
+              <div class="font-bold grow-0">
+                {{
+                  jwtJson.vc.credentialSubject.birthDate
+                }}
+              </div>
+            </div>
+            <div class="md:flex text-gray-500 mb-3 md:mb-1">
+              <div class="min-w-[19vw]">Sex</div>
+              <div class="font-bold grow-0">
+                {{
+                  jwtJson.vc.credentialSubject.gender
+                }}
+              </div>
+            </div>
+            <div class="md:flex text-gray-500 mb-3 md:mb-1">
+              <div class="min-w-[19vw]">Country Of Birth</div>
+              <div class="font-bold grow-0">
+                {{
+                  jwtJson.vc.credentialSubject.birthCountry
+                }}
+              </div>
+            </div>
+            <div class="md:flex text-gray-500 mb-3 md:mb-1">
+              <div class="min-w-[19vw]">Category</div>
+              <div class="font-bold grow-0">
+                {{
+                  jwtJson.vc.credentialSubject.lprCategory
+                }}
+              </div>
+            </div>
+            <div class="md:flex text-gray-500 mb-3 md:mb-1">
+              <div class="min-w-[19vw]">USCIS</div>
+              <div class="font-bold grow-0">
+                {{
+                  jwtJson.vc.credentialSubject.lprNumber
+                }}
+              </div>
+            </div>
+            <div class="md:flex text-gray-500 mb-3 md:mb-1">
+              <div class="min-w-[19vw]">Resident Since</div>
+              <div class="font-bold grow-0">
+                {{
+                  jwtJson.vc.credentialSubject.residentSince
+                }}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -213,30 +262,23 @@
           <div>
             {{
               jwtJson.vc.expirationDate && jwtJson.vc.issuanceDate
-                ? "Valid from " +
-                  new Date(jwtJson.vc.issuanceDate).toISOString().slice(0, 10) +
-                  " to " +
-                  new Date(jwtJson.vc.expirationDate).toISOString().slice(0, 10)
-                : ""
+              ? "Valid from " + new Date(jwtJson.vc.issuanceDate).toISOString().slice(0, 10) + " to " + new
+                Date(jwtJson.vc.expirationDate).toISOString().slice(0, 10)
+              : ""
             }}
           </div>
           <div class="text-gray-900">
             Issued
-            {{ jwtJson.vc.issuanceDate ? new Date(jwtJson.vc.issuanceDate).toISOString().slice(0, 10) : "<No issuance date>" }}
+            {{ jwtJson.vc.issuanceDate ? new Date(jwtJson.vc.issuanceDate).toISOString().slice(0, 10)
+              : "<No issuancedate> " }}
           </div>
         </div>
       </div>
       <div class="flex justify-between">
-        <div
-          class="mt-12 text-primary-400 cursor-pointer"
-          @click="showCredentialJson = !showCredentialJson"
-        >
+        <div class="mt-12 text-primary-400 cursor-pointer" @click="showCredentialJson = !showCredentialJson">
           <u>View Credential In JSON</u>
         </div>
-        <div
-          class="mt-12 text-red-400 cursor-pointer"
-          @click="deleteCredential"
-        >
+        <div class="mt-12 text-red-400 cursor-pointer" @click="deleteCredential">
           Delete Credential
         </div>
       </div>
@@ -262,9 +304,8 @@
             </div>-->
         <div class="shadow p-3 mt-2 font-mono overflow-scroll">
           <h3 class="font-semibold mb-2">JWT</h3>
-          <pre v-if="credential && credential.length">{{
-            /*JSON.stringify(JSON.parse(*/ credential /*), null, 2)*/ ?? ""
-          }}</pre>
+          <pre
+            v-if="credential && credential.length">{{/*JSON.stringify(JSON.parse(*/ credential /*), null, 2)*/ ?? "" }}</pre>
         </div>
         <div class="shadow p-3 mt-2 font-mono overflow-scroll">
           <h3 class="font-semibold mb-2">JSON</h3>
@@ -308,6 +349,6 @@ async function deleteCredential() {
   await $fetch(`/r/wallet/credentials/${credentialId}`, {
     method: "DELETE",
   });
-  await navigateTo({path: "/"});
+  await navigateTo({ path: "/" });
 }
 </script>

@@ -3,29 +3,16 @@
     <WalletPageHeader />
     <CenterMain>
       <div>
-        <span v-if="credentials && credentials.length > 0" class="font-semibold"
-          >Your credentials ({{ credentials.length }}):</span
-        >
+        <span v-if="credentials && credentials.length > 0" class="font-semibold">
+          Your credentials ({{ credentials.length }}):</span>
 
-        <LoadingIndicator v-else-if="pending"
-          >Loading credentials...</LoadingIndicator
-        >
+        <LoadingIndicator v-else-if="pending">Loading credentials...</LoadingIndicator>
 
         <div v-else class="text-center pt-6">
-          <svg
-            aria-hidden="true"
-            class="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              vector-effect="non-scaling-stroke"
-            />
+          <svg aria-hidden="true" class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+              stroke-linecap="round" stroke-linejoin="round" stroke-width="2" vector-effect="non-scaling-stroke" />
           </svg>
           <h3 class="mt-2 text-sm font-semibold text-gray-900">
             No credentials yet
@@ -34,45 +21,32 @@
             Get started filling your wallet by receiving some credentials!
           </p>
           <div class="mt-4">
-            <a
-              :href="config.issuerUrl"
-              target="_blank"
+            <a :href="config.issuerUrl" target="_blank"
               class="inline-flex items-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-              type="button"
-            >
+              type="button">
               <PlusIcon aria-hidden="true" class="-ml-0.5 mr-1.5 h-5 w-5" />
               Request credentials
             </a>
           </div>
         </div>
 
-        <ul
-          class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-6"
-          role="list"
-        >
-          <li
-            v-for="credential in credentials"
-            :key="credential.id"
-            class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow w-[96%] transform hover:scale-105 cursor-pointer duration-200"
-          >
+        <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-6" role="list">
+          <li v-for="credential in credentials" :key="credential.id"
+            class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow w-[96%] transform hover:scale-105 cursor-pointer duration-200">
             <NuxtLink :to="'/credentials/' + credential.id">
               <div class="bg-white p-6 rounded-2xl shadow-2xl h-full">
                 <div class="flex justify-end">
                   <div
-                    :class="credential.expirationDate ? new Date(credential.expirationDate).getTime() > new Date().getTime()? 'bg-cyan-50': 'bg-red-50': 'bg-cyan-50'"
-                    class="rounded-lg px-3 mb-2"
-                  >
+                    :class="credential.expirationDate ? new Date(credential.expirationDate).getTime() > new Date().getTime() ? 'bg-cyan-50' : 'bg-red-50' : 'bg-cyan-50'"
+                    class="rounded-lg px-3 mb-2">
                     <span
-                      :class="credential.expirationDate? new Date(credential.expirationDate).getTime() > new Date().getTime() ? 'text-cyan-900' : 'text-orange-900': 'text-cyan-900'"
-                      >{{
+                      :class="credential.expirationDate ? new Date(credential.expirationDate).getTime() > new Date().getTime() ? 'text-cyan-900' : 'text-orange-900' : 'text-cyan-900'">{{
                         credential.expirationDate
-                          ? new Date(credential.expirationDate).getTime() >
-                            new Date().getTime()
-                            ? "Valid"
-                            : "Expired"
-                          : "Valid"
-                      }}</span
-                    >
+                        ? new Date(credential.expirationDate).getTime() >
+                          new Date().getTime()
+                          ? "Valid"
+                          : "Expired"
+                        : "Valid" }}</span>
                   </div>
                 </div>
                 <h2 class="text-2xl font-bold mb-2 text-gray-900 bold mb-8">
@@ -84,14 +58,10 @@
                   }}
                 </h2>
                 <div class="flex items-center">
-                  <img
-                    class="w-12"
-                    :src="
-                      credential.issuer?.image?.id
+                  <img class="w-12" :src="credential.issuer?.image?.id
                         ? credential.issuer?.image?.id
                         : credential.issuer?.image
-                    "
-                  />
+                      " />
                   <div class="text-natural-600 ml-2 w-32">
                     {{ credential.issuer.name }}
                   </div>
@@ -274,7 +244,7 @@ if (process.client) {
 }
 </script>
   
-  <style scoped>
+<style scoped>
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
