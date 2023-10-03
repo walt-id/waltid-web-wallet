@@ -94,8 +94,8 @@ dependencies {
 
 
     // SSI Kit 2
-    implementation("id.walt:waltid-ssikit2:1.0.1-SNAPSHOT")
-    implementation("id.walt:core-crypto:1.0.2-SNAPSHOT")
+    implementation("id.walt:waltid-ssikit2:1.0.2-SNAPSHOT")
+    // implementation id.walt:core-crypto -> provided by id.walt:waltid-ssikit2
 
     // OIDC
     implementation("id.walt:waltid-openid4vc:1.2310030922.0")
