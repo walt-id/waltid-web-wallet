@@ -372,6 +372,10 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         }
     }
 
+    override suspend fun loadKey(alias: String): JsonObject = Json.parseToJsonElement( transaction {
+        WalletKeys.select{(WalletKeys.account eq accountId) and (WalletKeys.keyId eq alias)}.single()[WalletKeys.document]
+    }).jsonObject
+
     override suspend fun listKeys(): List<SingleKeyResponse> {
         val keyList = transaction {
             WalletKeys.select { WalletKeys.account eq accountId }.map {

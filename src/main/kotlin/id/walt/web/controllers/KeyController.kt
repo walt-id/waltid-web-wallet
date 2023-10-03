@@ -9,6 +9,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import kotlinx.serialization.json.JsonObject
 
 fun Application.keys() = walletRoute {
     route("keys", {
@@ -38,7 +39,29 @@ fun Application.keys() = walletRoute {
             context.respond(HttpStatusCode.OK)
         }
 
-        get("load/{keyId}", {
+        get("load/{alias}", {
+            summary = "Show a specific key"
+            request {
+                pathParameter<String>("alias") {
+                    description = "the key string"
+
+                }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    description = "The key document"
+                    body<JsonObject>()
+                }
+            }
+        }) {
+            context.respond(
+                getWalletService().loadKey(
+                    context.parameters["alias"] ?: throw IllegalArgumentException("No key supplied")
+                )
+            )
+        }
+
+        get("export/{keyId}", {
             summary = "Load a specific key"
 
             request {
