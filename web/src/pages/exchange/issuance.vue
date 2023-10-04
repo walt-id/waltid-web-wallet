@@ -31,6 +31,7 @@
               : 'bg-green-600 hover:scale-105 hover:animate-pulse hover:bg-green-700 focus:animate-none focus:outline-green-700',
           ]"
           :failed="failed"
+          :disabled = "!selected.startsWith('did')"
           class="inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus:outline focus:outline-offset-2"
           display-text="Accept"
           icon="heroicons:check"
@@ -47,6 +48,67 @@
         Receiving {{ credentialCount }} credential(s)...
       </LoadingIndicator>
 
+      <Listbox as="div" v-model="selected">
+        <ListboxLabel class="block top-0 z-10 border-y border-b-gray-200 border-t-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-900">
+            <h3>Subject:</h3>
+         </ListboxLabel>
+        <div class="relative mt-2">
+          <ListboxButton class=" overflow-y-auto shadow-xl relative w-full cursor-default bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 ring-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6">
+            <span class="block truncate">{{ selected }}</span>
+            <span
+              class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"
+            >
+              <ChevronUpDownIcon
+                class="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </span>
+          </ListboxButton>
+
+          <transition
+            leave-active-class="transition ease-in duration-100"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+          >
+            <ListboxOptions
+              class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+            >
+              <ListboxOption
+                as="template"
+                v-for="did in dids.value"
+                :value="did"
+                v-slot="{ active, selected }"
+              >
+                <li
+                  :class="[
+                    active ? 'bg-blue-600 text-white' : 'text-gray-900',
+                    'relative cursor-default select-none py-2 pl-8 pr-4',
+                  ]"
+                >
+                  <span
+                    :class="[
+                      selected ? 'font-semibold' : 'font-normal',
+                      'block truncate',
+                    ]"
+                    >{{ did }}</span
+                  >
+
+                  <span
+                    v-if="selected"
+                    :class="[
+                      active ? 'text-white' : 'text-indigo-600',
+                      'absolute inset-y-0 left-0 flex items-center pl-1.5',
+                    ]"
+                  >
+                    <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                  </span>
+                </li>
+              </ListboxOption>
+            </ListboxOptions>
+          </transition>
+        </div>
+      </Listbox>
+      <br>
       <p class="mb-1">The following credentials will be issued:</p>
 
       <div
@@ -59,7 +121,7 @@
           class="relative"
         >
           <div
-            class="sticky top-0 z-10 border-y border-b-gray-200 border-t-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-900"
+            class="top-0 z-10 border-y border-b-gray-200 border-t-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-900"
           >
             <h3>{{ group }}s:</h3>
           </div>
@@ -88,13 +150,13 @@
       </div>
       <br />
       <p class="mb-1">Subject:</p>
-      <div class="h-full overflow-y-auto shadow-xl">
+      <!-- <div class="h-full overflow-y-auto shadow-xl">
         <select v-model="selected">
           <option v-for="did in dids.value" :value="did">
             {{ did }}
           </option>
         </select>
-      </div>
+      </div> -->
     </CenterMain>
   </div>
 </template>
@@ -105,17 +167,26 @@ import PageHeader from "~/components/PageHeader.vue";
 import CredentialIcon from "~/components/CredentialIcon.vue";
 import ActionButton from "~/components/buttons/ActionButton.vue";
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
+import {
+  Listbox,
+  ListboxButton,
+  ListboxLabel,
+  ListboxOption,
+  ListboxOptions,
+} from "@headlessui/vue";
+import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { useTitle } from "@vueuse/core";
 
-const selected = ref('')
-
+// const selected = ref('')
 const dids = ref();
+
 async function loadDids() {
   dids.value = await useLazyFetch("/r/wallet/dids").data;
   refreshNuxtData();
+  
 }
 loadDids();
-console.log(dids);
+const selected = ref('Please select a did')
 
 const query = useRoute().query;
 
@@ -175,7 +246,7 @@ const groupedCredentialTypes = groupBy(
 const failed = ref(false);
 
 async function acceptCredential() {
-  console.log(selected.value)
+  console.log(selected.value);
   try {
     await $fetch(`/r/wallet/exchange/useOfferRequest?did=${selected.value}`, {
       method: "POST",
