@@ -17,6 +17,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.*
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import java.util.*
 import kotlin.collections.set
 import kotlin.time.Duration.Companion.days
@@ -97,7 +99,11 @@ fun Application.auth() {
                 description = "Login with email + password"
                 request {
                     body<EmailLoginRequest> {
-                        example("example", EmailLoginRequest("string@string.string", "string"))
+                        example("example", buildJsonObject {
+                            put("username", JsonPrimitive("user@email.com"))
+                            put("password", JsonPrimitive("password"))
+                            put("type", JsonPrimitive("email"))
+                        }.toString())
                     }
                 }
                 response {

@@ -60,17 +60,22 @@ object Db {
     }
 
     suspend fun init() {
+        val databaseConfig = ConfigManager.getConfig<DatabaseConfiguration>()
         transaction {
-            SchemaUtils.drop(
-                WalletOperationHistories,
-                WalletKeys,
-                WalletDids,
-                WalletCredentials,
-                AccountWallets,
-                Accounts,
-                Emails,
-                Wallets
-            )
+            if(databaseConfig.recreate_schema) {
+                println("DROP SCHEMA")
+                SchemaUtils.drop(
+                    WalletOperationHistories,
+                    WalletKeys,
+                    WalletDids,
+                    WalletCredentials,
+                    AccountWallets,
+                    Accounts,
+                    Emails,
+                    Wallets
+                )
+            }
+            println("CREATE SCHEMA IF NOT EXISTING")
             SchemaUtils.create(
                 Wallets,
                 Emails,
@@ -83,8 +88,10 @@ object Db {
             )
         }
 
-        val accountId = AccountsService.register(EmailLoginRequest("user@email.com", "password")).getOrThrow().id
-        println("CREATED ACCOUNT: $accountId")
+        if(databaseConfig.recreate_schema) {
+            val accountId = AccountsService.register(EmailLoginRequest("user@email.com", "password")).getOrThrow().id
+            println("CREATED ACCOUNT: $accountId")
+        }
         /** moved to [AccountsService.register] **/
 //        val did = WalletServiceManager.getWalletService(accountId).createDid("key")
 //        println("CREATED DID: $did")
