@@ -74,7 +74,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     /* Credentials */
 
     @OptIn(ExperimentalEncodingApi::class)
-    override suspend fun listCredentials(): List<JsonObject> =
+    override suspend fun listCredentials(): List<Credential> =
         transaction {
             WalletCredentials.select { WalletCredentials.account eq accountId }.map {
                 it
@@ -83,17 +83,18 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
             val credentialId = resultRow[WalletCredentials.credentialId]
             runCatching {
                 val cred = resultRow[WalletCredentials.credential]
-                if (cred.startsWith("{"))
+                val parsedCred = if (cred.startsWith("{"))
                     Json.parseToJsonElement(cred).jsonObject
                 else if (cred.startsWith("ey"))
                     Json.parseToJsonElement(
                         Base64.decode(cred.split(".")[1]).decodeToString()
                     ).jsonObject["vc"]!!.jsonObject
                 else throw IllegalArgumentException("Unknown credential format")
-            }.onFailure { it.printStackTrace() }.getOrNull()?.let { jsonObject ->
-                JsonObject(jsonObject.toMutableMap().also {
+                Credential(parsedCred, cred)
+            }.onFailure { it.printStackTrace() }.getOrNull()?.let { cred ->
+                Credential(JsonObject(cred.parsedCredential.toMutableMap().also {
                     it.putIfAbsent("id", JsonPrimitive(credentialId))
-                })
+                }), cred.rawCredential)
             }
         }
 
@@ -371,6 +372,10 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         }
     }
 
+    override suspend fun loadKey(alias: String): JsonObject = Json.parseToJsonElement( transaction {
+        WalletKeys.select{(WalletKeys.account eq accountId) and (WalletKeys.keyId eq alias)}.single()[WalletKeys.document]
+    }).jsonObject
+
     override suspend fun listKeys(): List<SingleKeyResponse> {
         val keyList = transaction {
             WalletKeys.select { WalletKeys.account eq accountId }.map {
@@ -389,6 +394,20 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
                 keysetHandle = JsonNull
             )
         }
+    }
+
+    override suspend fun generateKey(type: String): String {
+
+        val newKey = LocalKey.generate(KeyType.valueOf(type))
+        val newKeyId = newKey.getKeyId()
+        transaction {
+            WalletKeys.insert {
+                it[account] = accountId
+                it[keyId] = newKeyId
+                it[document] = KeySerialization.serializeKey(newKey)
+            }
+        }
+        return newKeyId
     }
 
     override suspend fun importKey(jwkOrPem: String): String {

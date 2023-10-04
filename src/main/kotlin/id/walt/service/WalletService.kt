@@ -4,8 +4,6 @@ import id.walt.db.models.WalletOperationHistory
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.utils.JsonUtils.toJsonPrimitives
-import io.ktor.client.statement.*
-import io.ktor.http.*
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.util.*
@@ -13,7 +11,7 @@ import java.util.*
 abstract class WalletService(val accountId: UUID) {
 
     // Credentials
-    abstract suspend fun listCredentials(): List<JsonObject>
+    abstract suspend fun listCredentials(): List<Credential>
     abstract suspend fun listRawCredentials(): List<String>
     abstract suspend fun deleteCredential(id: String): Boolean
     abstract suspend fun getCredential(credentialId: String): String
@@ -27,14 +25,16 @@ abstract class WalletService(val accountId: UUID) {
     abstract suspend fun listDids(): List<String>
     abstract suspend fun loadDid(did: String): JsonObject
     abstract suspend fun createDid(method: String, args: Map<String, JsonPrimitive> = emptyMap()): String
+    abstract suspend fun deleteDid(did: String): Boolean
     suspend fun createDidWithParameters(method: String, args: Map<String, Any?>): String {
         return createDid(method, args.toJsonPrimitives())
     }
-    abstract suspend fun deleteDid(did: String): Boolean
 
     // Keys
     abstract suspend fun listKeys(): List<SingleKeyResponse>
+    abstract suspend fun generateKey(type: String):String
     abstract suspend fun exportKey(alias: String, format: String, private: Boolean): String
+    abstract suspend fun loadKey(alias: String): JsonObject
     abstract suspend fun importKey(jwkOrPem: String): String
     abstract suspend fun deleteKey(alias: String): Boolean
 

@@ -1,5 +1,6 @@
 package id.walt.web.controllers
 
+import id.walt.core.crypto.keys.KeyType
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -9,6 +10,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import kotlinx.serialization.json.JsonObject
 
 fun Application.keys() = walletRoute {
     route("keys", {
@@ -26,6 +28,20 @@ fun Application.keys() = walletRoute {
             context.respond(getWalletService().listKeys())
         }
 
+        post("generate",{
+            summary = "Generate key"
+            request {
+                queryParameter<String>("type")
+            }
+        }) {
+            val type = call.request.queryParameters["type"]
+                ?: KeyType.Ed25519.toString()
+
+            val keyId = getWalletService().generateKey(type)
+            context.respond(keyId)
+        }
+
+
         post("import", {
             summary = "Import an existing key"
             request {
@@ -38,7 +54,29 @@ fun Application.keys() = walletRoute {
             context.respond(HttpStatusCode.OK)
         }
 
-        get("load/{keyId}", {
+        get("load/{alias}", {
+            summary = "Show a specific key"
+            request {
+                pathParameter<String>("alias") {
+                    description = "the key string"
+
+                }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    description = "The key document"
+                    body<JsonObject>()
+                }
+            }
+        }) {
+            context.respond(
+                getWalletService().loadKey(
+                    context.parameters["alias"] ?: throw IllegalArgumentException("No key supplied")
+                )
+            )
+        }
+
+        get("export/{keyId}", {
             summary = "Load a specific key"
 
             request {
