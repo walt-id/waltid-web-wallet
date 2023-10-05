@@ -10,12 +10,13 @@ object DidCreation {
         post("key", {
             summary = "Create a did:key"
         }) {
+            val alias = context.request.queryParameters["alias"] ?: ""
             val useJwkJcsPub = context.request.queryParameters["useJwkJcsPub"]?.toBoolean() ?: false
             context.respond(
                 getWalletService().createDidWithParameters(
                     "key", mapOf(
                         "useJwkJcsPub" to useJwkJcsPub
-                    )
+                    ),alias
                 )
             )
         }
@@ -23,7 +24,8 @@ object DidCreation {
         post("jwk", {
             summary = "Create a did:jwk"
         }) {
-            context.respond(getWalletService().createDid("jwk"))
+            val alias = context.request.queryParameters["alias"] ?: ""
+            context.respond(getWalletService().createDid("jwk", alias=alias))
         }
 
         post("web", {
@@ -35,12 +37,15 @@ object DidCreation {
         }) {
             val domain = context.request.queryParameters["domain"]
             val path = context.request.queryParameters["path"]
+
+            val alias = context.request.queryParameters["alias"] ?: ""
+
             context.respond(
                 getWalletService().createDidWithParameters(
                     "web", mapOf(
                         "domain" to domain,
                         "path" to path
-                    )
+                    ),alias
                 )
             )
         }
@@ -54,12 +59,16 @@ object DidCreation {
         }) {
             val version = context.request.queryParameters["version"]?.toInt()
             val bearerToken = context.request.queryParameters["bearerToken"]
+            var alias = context.request.queryParameters["alias"]
+            if (alias == null){
+                alias =""
+            }
             context.respond(
                 getWalletService().createDidWithParameters(
                     "ebsi", mapOf(
                         "bearerToken" to bearerToken,
                         "version" to version
-                    )
+                    ),alias
                 )
             )
         }
@@ -71,11 +80,13 @@ object DidCreation {
             }
         }) {
             val network = context.request.queryParameters["network"]
+            val alias = context.request.queryParameters["alias"] ?: ""
+
             context.respond(
                 getWalletService().createDidWithParameters(
                     "cheqd", mapOf(
                         "network" to network
-                    )
+                    ),alias
                 )
             )
         }
@@ -83,7 +94,9 @@ object DidCreation {
         post("iota", {
             summary = "Create a did:iota"
         }) {
-            context.respond(getWalletService().createDid("iota"))
+            val alias = context.request.queryParameters["alias"] ?: ""
+
+            context.respond(getWalletService().createDid("iota", alias = alias))
         }
     }
 

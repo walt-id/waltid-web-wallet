@@ -307,7 +307,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     /* DIDs */
 
-    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>): String {
+    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>, al:String): String {
         // TODO: other DIDs, Keys
         val newKey = LocalKey.generate(KeyType.Ed25519)
         val newKeyId = newKey.getKeyId()
@@ -320,11 +320,13 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
                 it[account] = accountId
                 it[keyId] = newKeyId
                 it[document] = KeySerialization.serializeKey(newKey)
+
             }
 
             WalletDids.insert {
                 it[account] = accountId
                 it[did] = result.did
+                it[alias] = al
                 it[keyId] = newKeyId
                 it[document] = Json.encodeToString(result.didDocument)
             }
@@ -333,9 +335,15 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         return result.did
     }
 
-    override suspend fun listDids(): List<String> = transaction {
-        WalletDids.select { WalletDids.account eq accountId }.map {
-            it[WalletDids.did]
+    override suspend fun listDids(): List<Did> =
+        transaction {
+        WalletDids.select { WalletDids.account eq accountId }.map {resultRow ->
+            Did(
+                did = resultRow[WalletDids.did],
+                alias = resultRow[WalletDids.alias],
+                default = resultRow[WalletDids.default]
+            )
+
         }
     }
 

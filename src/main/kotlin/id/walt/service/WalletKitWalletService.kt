@@ -254,7 +254,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
 
     /* DIDs */
 
-    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>): String {
+    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>, alias:String): String {
         val createParams = mutableMapOf("method" to method.toJsonPrimitive())
 
         createParams.putAll(
@@ -275,7 +275,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     }
 
     override suspend fun listDids() = authenticatedJsonGet("/api/wallet/did/list")
-        .body<List<String>>()
+        .body<List<Did>>()
 
     override suspend fun loadDid(did: String) = authenticatedJsonGet("/api/wallet/did/$did")
         .body<JsonObject>()
