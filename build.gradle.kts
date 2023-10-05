@@ -98,7 +98,7 @@ dependencies {
     // implementation id.walt:core-crypto -> provided by id.walt:waltid-ssikit2
 
     // OIDC
-    implementation("id.walt:waltid-openid4vc:1.2310030922.0")
+    implementation("id.walt:waltid-openid4vc:1.2310051536.0")
 
     /* -- Misc --*/
 

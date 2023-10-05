@@ -51,6 +51,7 @@ import java.util.*
 import kotlin.collections.HashMap
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.time.Duration.Companion.seconds
 
 
 class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
@@ -177,7 +178,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
         val authReq = AuthorizationRequest.fromHttpQueryString(Url(request).encodedQuery)
         println("Auth req: $authReq")
-        val walletSession = credentialWallet.initializeAuthorization(authReq, 60)
+        val walletSession = credentialWallet.initializeAuthorization(authReq, 60.seconds)
         println("Resolved presentation definition: ${walletSession.authorizationRequest!!.presentationDefinition!!.toJSONString()}")
         val tokenResponse = credentialWallet.processImplicitFlowAuthorization(walletSession.authorizationRequest!!)
         val resp = ktorClient.submitForm(walletSession.authorizationRequest!!.responseUri!!,

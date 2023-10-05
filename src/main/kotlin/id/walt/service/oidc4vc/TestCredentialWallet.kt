@@ -8,12 +8,15 @@ import id.walt.oid4vc.data.dif.DescriptorMapping
 import id.walt.oid4vc.data.dif.PresentationDefinition
 import id.walt.oid4vc.data.dif.PresentationSubmission
 import id.walt.oid4vc.data.dif.VCFormat
+import id.walt.oid4vc.errors.PresentationError
 import id.walt.oid4vc.interfaces.PresentationResult
 import id.walt.oid4vc.providers.SIOPCredentialProvider
 import id.walt.oid4vc.providers.SIOPProviderConfig
 import id.walt.oid4vc.providers.SIOPSession
 import id.walt.oid4vc.providers.TokenTarget
 import id.walt.oid4vc.requests.AuthorizationRequest
+import id.walt.oid4vc.requests.TokenRequest
+import id.walt.oid4vc.responses.TokenErrorCode
 import id.walt.service.SSIKit2WalletService
 import id.walt.ssikit.did.DidService
 import io.ktor.client.*
@@ -24,6 +27,7 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import java.util.*
@@ -39,9 +43,9 @@ class TestCredentialWallet(
     config: SIOPProviderConfig,
     val walletService: SSIKit2WalletService,
     val did: String
-) : SIOPCredentialProvider(WALLET_BASE_URL, config) {
+) : SIOPCredentialProvider<VPresentationSession>(WALLET_BASE_URL, config) {
 
-    private val sessionCache = mutableMapOf<String, SIOPSession>()
+    private val sessionCache = mutableMapOf<String, VPresentationSession>()
     private val ktorClient = HttpClient(CIO) {
         install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
             json()
@@ -99,11 +103,12 @@ class TestCredentialWallet(
         // JwtService.getService().verify(token).verified
     }
 
-    override fun generatePresentation(presentationDefinition: PresentationDefinition, nonce: String?): PresentationResult {
+    override fun generatePresentationForVPToken(session: VPresentationSession, tokenRequest: TokenRequest): PresentationResult {
         // find credential(s) matching the presentation definition
         // for this test wallet implementation, present all credentials in the wallet
 
         val credentialList = runBlocking { walletService.listCredentials() }
+        val presentationDefinition = session.presentationDefinition ?: throw PresentationError(TokenErrorCode.invalid_request, tokenRequest, session.presentationDefinition)
 
         val filterString = presentationDefinition.inputDescriptors.flatMap { it.constraints?.fields ?: listOf() }.firstOrNull { field -> field.path.any { it.contains("type") } }?.filter?.jsonObject.toString()
         val credentials = credentialList.filter { filterString.contains(it.parsedCredential["type"]!!.jsonArray.last().jsonPrimitive.content) }
@@ -116,7 +121,7 @@ class TestCredentialWallet(
                 "iat" to Clock.System.now().epochSeconds,
                 "jti" to "urn:uuid:" + UUID.randomUUID().toString(),
                 "iss" to this.did,
-                "nonce" to (nonce ?: ""),
+                "nonce" to (session.nonce ?: ""),
                 "vp" to mapOf(
                     "@context" to listOf("https://www.w3.org/2018/credentials/v1"),
                     "type" to listOf("VerifiablePresentation"),
@@ -234,8 +239,14 @@ class TestCredentialWallet(
     override val metadata: OpenIDProviderMetadata
         get() = createDefaultProviderMetadata()
 
+    override fun createSIOPSession(
+        id: String,
+        authorizationRequest: AuthorizationRequest?,
+        expirationTimestamp: Instant
+    ) = VPresentationSession(id, authorizationRequest, expirationTimestamp, setOf())
+
     override fun getSession(id: String) = sessionCache[id]
-    override fun putSession(id: String, session: SIOPSession) = sessionCache.put(id, session)
+    override fun putSession(id: String, session: VPresentationSession) = sessionCache.put(id, session)
     override fun removeSession(id: String) = sessionCache.remove(id)
 
     fun parsePresentationRequest(request: String): AuthorizationRequest {
