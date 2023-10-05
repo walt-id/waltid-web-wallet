@@ -24,9 +24,9 @@
             :to="'/settings/dids/' + did.did"
             class="hidden rounded-md  px-2.5 py-1 text-sm ring-inset w-full ring-gray-300  sm:block"
           >
-            <div class="min-w-0">
-              <div class="flex items-start gap-x-3">
-                <p class="mx-2 text-base font-medium leading-6 text-gray-900">
+            <div class="min-w-0 max-w-4xl overflow-scroll overflow-hidden	">
+              <div class="flex items-start gap-x-3 " >
+                <p class="mx-2 text-base font-medium leading-6 text-gray-900 ">
                   {{ did.alias }}
                 </p>
               </div>
