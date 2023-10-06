@@ -1,7 +1,7 @@
 <template>
   <CenterMain>
-    <div class="flex items-center justify-between border-b mb-5">
-        <h1 class="py-3 text-2xl font-normal">DIDs</h1>
+    <div class="mb-5 flex items-center justify-between border-b">
+      <h1 class="py-3 text-2xl font-normal">DIDs</h1>
       <div class="flex">
         <button
           class="inline-flex items-center rounded-lg bg-blue-500 px-9 py-2 text-sm font-thin text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
@@ -17,31 +17,35 @@
       <li
         v-for="did in dids.value"
         :key="did"
-        class="flex relative  items-center justify-between gap-x-6 border-b pt-3 h-20 bg-white hover:bg-gray-50 hover:rounded-lg"
+        class="relative flex h-20  items-center justify-between gap-x-6 border-b bg-white pt-3 hover:rounded-lg hover:bg-gray-50"
       >
-        <div class=" flex flex-none absolute inset-x-0 bottom-0 items-center gap-x-4 w-full ">
+        <div
+          class=" inset-x-0 bottom-0 flex w-full h-full min-h-content flex-none items-end gap-x-4"
+        >
           <NuxtLink
             :to="'/settings/dids/' + did.did"
-            class="hidden rounded-md  px-2.5 py-1 text-sm ring-inset w-full ring-gray-300  sm:block"
+            class="grid h-full w-full grid-cols-8 items-end gap-2 rounded-md px-2.5 py-1"
           >
-            <div class="min-w-0">
+            <div class="col-span-6 min-w-0">
               <div class="flex items-start gap-x-3">
                 <p class="mx-2 text-base font-medium leading-6 text-gray-900">
                   {{ did.alias }}
                 </p>
               </div>
               <div class="flex items-start gap-x-3">
-                <p class="mx-2 text-base font-normal leading-6 text-gray-500">
+                <p
+                  class="mx-2 overflow-x-auto text-base font-normal leading-6 text-gray-500"
+                >
                   {{ did.did }}
                 </p>
               </div>
             </div>
+            <div v-if="!did.default" class="col-span-2 mb-1 justify-self-end">
+              <span class="mr-1 gap-x-3 rounded-full bg-cyan-100 px-3 py-0.5 text-xs font-medium text-cyan-900" >
+                Default
+              </span>
+            </div>
           </NuxtLink>
-          <div v-if="!did.default" class="rounded-full bg-cyan-100 gap-x-3 font-medium text-xs text-cyan-900 mr-2 ">
-            <span class="p-5 ">
-              Default
-            </span>
-          </div>
         </div>
       </li>
     </ol>
