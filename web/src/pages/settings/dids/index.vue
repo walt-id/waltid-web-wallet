@@ -40,7 +40,7 @@
                 </p>
               </div>
             </div>
-            <div v-if="!did.default" class="col-span-2 mb-1 justify-self-end">
+            <div v-if="did.default" class="col-span-2 mb-1 justify-self-end">
               <span class="mr-1 gap-x-3 rounded-full bg-cyan-100 px-3 py-0.5 text-xs font-medium text-cyan-900" >
                 Default
               </span>

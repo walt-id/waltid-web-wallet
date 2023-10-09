@@ -30,6 +30,7 @@ abstract class WalletService(val accountId: UUID) {
     suspend fun createDidWithParameters(method: String, args: Map<String, Any?>, alias:String): String {
         return createDid(method, args.toJsonPrimitives(), alias)
     }
+    abstract suspend fun setDefault(did: String) :Boolean
 
     // Keys
     abstract suspend fun listKeys(): List<SingleKeyResponse>

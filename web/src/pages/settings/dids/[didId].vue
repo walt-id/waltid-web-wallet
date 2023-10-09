@@ -42,6 +42,17 @@
               </span>
             </button>
           </div>
+          <div class="mt-2 flex items-center justify-end gap-x-6">
+            <button
+              class="inline-flex justify-center bg-gray-600 hover:bg-gray-400 focus-visible:outline-gray-700 rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              @click="setDefault"
+            >
+              <span class="inline-flex place-items-center gap-1">
+                <TagIcon class="w-5 h-5 mr-0.5" />
+                Set default DID
+              </span>
+            </button>
+          </div>
         </div>
         <div class="p-3 shadow mt-3">
           <h3 class="font-semibold mb-2">QR code</h3>
@@ -80,7 +91,7 @@ import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import QrcodeVue from "qrcode.vue";
 import CenterMain from "~/components/CenterMain.vue";
 import BackButton from "~/components/buttons/BackButton.vue";
-import { TrashIcon } from "@heroicons/vue/24/outline";
+import { TrashIcon,TagIcon } from "@heroicons/vue/24/outline";
 
 const route = useRoute();
 
@@ -99,6 +110,12 @@ async function deleteDid() {
     method: "DELETE",
   }).finally(()=> {navigateTo("/settings/dids")})
  
+}
+
+async function setDefault(){
+  await $fetch(`/r/wallet/dids/default?did=${didId}`,{
+    method: 'POST'
+  })
 }
 
 useHead({
