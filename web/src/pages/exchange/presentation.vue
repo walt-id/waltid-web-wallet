@@ -107,15 +107,14 @@ async function acceptPresentation() {
             body: request
         })
 
-        const redirect = response.redirectUri
-
-        if (redirect != null) {
-            navigateTo(redirect, {
-                external: true
-            })
-        } else {
-            navigateTo('/')
-        }
+        setInterval(async () => {
+            let sessionId = presentationUrl.searchParams.get('state');
+            let response = await fetch(`https://verifier.portal.walt.id/vp/session/${sessionId}`);
+            response = await response.json();
+            if (response.verification_result) {
+                window.location.href = `https://portal.walt.id/success/${sessionId}`;
+            }
+        }, 1000);
     } catch (e) {
         failed.value = true
         throw e
