@@ -40,11 +40,8 @@ import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.URLDecoder
 import java.util.*
@@ -308,7 +305,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     /* DIDs */
 
-    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>): String {
+    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>, al:String): String {
         // TODO: other DIDs, Keys
         val newKey = LocalKey.generate(KeyType.Ed25519)
         val newKeyId = newKey.getKeyId()
@@ -321,11 +318,13 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
                 it[account] = accountId
                 it[keyId] = newKeyId
                 it[document] = KeySerialization.serializeKey(newKey)
+
             }
 
             WalletDids.insert {
                 it[account] = accountId
                 it[did] = result.did
+                it[alias] = al
                 it[keyId] = newKeyId
                 it[document] = Json.encodeToString(result.didDocument)
             }
@@ -334,9 +333,14 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         return result.did
     }
 
-    override suspend fun listDids(): List<String> = transaction {
-        WalletDids.select { WalletDids.account eq accountId }.map {
-            it[WalletDids.did]
+    override suspend fun listDids(): List<Did> =
+        transaction {
+        WalletDids.select { WalletDids.account eq accountId }.map {resultRow ->
+            Did(
+                did = resultRow[WalletDids.did],
+                alias = resultRow[WalletDids.alias],
+                default = resultRow[WalletDids.default]
+            )
         }
     }
 
@@ -345,8 +349,18 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
             .single()[WalletDids.document]
     }).jsonObject
 
+
     override suspend fun deleteDid(did: String): Boolean = transaction {
         WalletDids.deleteWhere { (account eq account) and (WalletDids.did eq did) }
+    } > 0
+
+    override suspend fun setDefault(did: String) = transaction{
+        WalletDids.update({ WalletDids.default eq true }) {
+            it[default] = false
+    }
+        WalletDids.update( {WalletDids.did eq did}){
+            it[default] = true
+        }
     } > 0
 
     /* Keys */

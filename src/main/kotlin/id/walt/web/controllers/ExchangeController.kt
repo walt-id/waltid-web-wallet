@@ -22,7 +22,7 @@ fun Application.exchange() = walletRoute {
             val wallet = getWalletService()
 
             val did = call.request.queryParameters["did"]
-                ?: wallet.listDids().firstOrNull()
+                ?: wallet.listDids().firstOrNull()?.did
                 ?: throw IllegalArgumentException("No DID to use supplied")
 
             val offer = call.receiveText()
@@ -47,7 +47,7 @@ fun Application.exchange() = walletRoute {
             val wallet = getWalletService()
 
             val did = call.request.queryParameters["did"]
-                ?: wallet.listDids().firstOrNull()
+                ?: wallet.listDids().firstOrNull()?.did
                 ?: throw IllegalArgumentException("No DID to use supplied")
 
             val request = call.receiveText()

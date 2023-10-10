@@ -7,6 +7,8 @@ object WalletDids: Table() {
     val did = varchar("did", 1024)
     val keyId = reference("keyId", WalletKeys.keyId)
     val document = text("document")
+    val alias = varchar("alias", 1024)
+    val default = bool("default").default(false)
 
     override val primaryKey = PrimaryKey(account, did)
 }

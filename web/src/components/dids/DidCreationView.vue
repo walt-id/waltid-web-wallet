@@ -15,6 +15,12 @@
                                        class="px-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                                        name="keyId" placeholder="(optional)" type="text"/>
                             </div>
+                            <label class="block font-medium text-gray-900">Alias</label>
+                            <div class="mt-1 sm:col-span-2 sm:mt-0">
+                                <input id="alias" v-model="alias"
+                                       class="px-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                                       name="keyId" placeholder="(optional)" type="text"/>
+                            </div>
                         </div>
 
                         <slot></slot>
@@ -70,6 +76,7 @@ import {CheckIcon, KeyIcon} from '@heroicons/vue/24/solid'
 import {ArrowUturnLeftIcon} from '@heroicons/vue/24/outline'
 import BackButton from "~/components/buttons/BackButton.vue";
 import InlineLoadingCircle from "~/components/loading/InlineLoadingCircle.vue";
+import { isTypeAliasDeclaration } from "typescript";
 
 const props = defineProps({
     "method": {
@@ -87,6 +94,7 @@ const loading = ref(false)
 const response = ref("")
 
 const keyId = ref("")
+const alias = ref("")
 
 async function createDid() {
     loading.value = true
@@ -94,7 +102,7 @@ async function createDid() {
     console.log(props.didParams)
     const postBodyCreatorParams = props.didParams ?? {}
 
-    let merged = {...{ keyId: keyId.value }, ...postBodyCreatorParams};
+    let merged = {...{ keyId: keyId.value }, ...postBodyCreatorParams, ...{alias: alias.value }};
     console.log(merged)
 
     const query = new URLSearchParams(merged).toString()

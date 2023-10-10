@@ -18,7 +18,7 @@ object AccountsService {
         is AddressLoginRequest -> walletStrategy.register(request)
     }.also {
         it.getOrNull()?.let {
-            runBlocking { WalletServiceManager.getWalletService(it.id).createDid("key") }
+            runBlocking { WalletServiceManager.getWalletService(it.id).createDid(method="key", alias = "Onboarding") }
         }
     }
 

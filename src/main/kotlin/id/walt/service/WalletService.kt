@@ -1,5 +1,6 @@
 package id.walt.service
 
+import id.walt.db.models.WalletDids
 import id.walt.db.models.WalletOperationHistory
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
@@ -22,13 +23,14 @@ abstract class WalletService(val accountId: UUID) {
     abstract suspend fun useOfferRequest(offer: String, did: String)
 
     // DIDs
-    abstract suspend fun listDids(): List<String>
+    abstract suspend fun listDids(): List<Did>
     abstract suspend fun loadDid(did: String): JsonObject
-    abstract suspend fun createDid(method: String, args: Map<String, JsonPrimitive> = emptyMap()): String
+    abstract suspend fun createDid(method: String, args: Map<String, JsonPrimitive> = emptyMap(), alias: String): String
     abstract suspend fun deleteDid(did: String): Boolean
-    suspend fun createDidWithParameters(method: String, args: Map<String, Any?>): String {
-        return createDid(method, args.toJsonPrimitives())
+    suspend fun createDidWithParameters(method: String, args: Map<String, Any?>, alias:String): String {
+        return createDid(method, args.toJsonPrimitives(), alias)
     }
+    abstract suspend fun setDefault(did: String) :Boolean
 
     // Keys
     abstract suspend fun listKeys(): List<SingleKeyResponse>

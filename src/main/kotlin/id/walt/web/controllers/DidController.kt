@@ -1,9 +1,12 @@
 package id.walt.web.controllers
 
+import id.walt.core.crypto.utils.JsonUtils.toJsonElement
+import id.walt.service.Did
 import id.walt.web.DidCreation.didCreate
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.get
+import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -59,12 +62,27 @@ fun Application.dids() = walletRoute {
         }) {
             getWalletService().deleteDid(
                 context.parameters["did"] ?: throw IllegalArgumentException("No DID supplied")
+
             )
+            context.respond(HttpStatusCode.Accepted)
+
+        }
+
+        post("default", {
+            request {
+                queryParameter<String>("did")
+            }
+        }) {
+            getWalletService().setDefault(
+                context.parameters["did"] ?: throw IllegalArgumentException("No DID supplied")
+            )
+            context.respond(HttpStatusCode.Accepted)
         }
 
         route("create", {
             request {
                 queryParameter<String>("keyId")
+                queryParameter<String>("alias")
             }
         }) {
             didCreate()
