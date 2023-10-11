@@ -18,6 +18,7 @@ import id.walt.oid4vc.responses.TokenResponse
 import id.walt.oid4vc.util.randomUUID
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
+import id.walt.service.keys.KeysService
 import id.walt.service.oidc4vc.TestCredentialWallet
 import id.walt.ssikit.did.DidService
 import id.walt.ssikit.did.registrar.dids.DidJwkCreateOptions
@@ -305,26 +306,22 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     /* DIDs */
 
-    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>, al:String): String {
-        // TODO: other DIDs, Keys
-        val newKey = LocalKey.generate(KeyType.Ed25519)
-        val newKeyId = newKey.getKeyId()
+    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>): String {
+        // TODO: other DIDs
+        val key = args["keyId"]?.content?.let { getKey(it) }?.getOrNull() ?: LocalKey.generate(KeyType.Ed25519)
+
+        val newKeyId = key.getKeyId()
         val options = getDidOptions(method, args)
 
-        val result = DidService.registerByKey(method, newKey, options)
+        val result = DidService.registerByKey(method, key, options)
+        KeysService.insert(accountId, key.getKeyId(), KeySerialization.serializeKey(key))
 
         transaction {
-            WalletKeys.insert {
-                it[account] = accountId
-                it[keyId] = newKeyId
-                it[document] = KeySerialization.serializeKey(newKey)
-
-            }
 
             WalletDids.insert {
                 it[account] = accountId
                 it[did] = result.did
-                it[alias] = al
+                it[this.alias] = args["alias"]?.content ?: ""
                 it[keyId] = newKeyId
                 it[document] = Json.encodeToString(result.didDocument)
             }
@@ -365,40 +362,36 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     /* Keys */
 
-    fun getKey(keyId: String) = KeySerialization.deserializeKey(transaction {
-        WalletKeys.select { (WalletKeys.account eq accountId) and (WalletKeys.keyId eq keyId) }
-            .single()[WalletKeys.document]
-    }).getOrElse { throw IllegalArgumentException("Could not deserialize resolved key: ${it.message}", it) }
-
-    suspend fun getKeyByDid(did: String): Key {
-        val publicKey = DidService.resolveToKey(did).getOrThrow()
-        val keyId = publicKey.getKeyId()
-
-        return getKey(keyId)
+    private fun getKey(keyId: String) = runCatching {
+        KeysService.getById(accountId, keyId)?.let {
+            KeySerialization.deserializeKey(it).getOrThrow()
+        } ?: throw IllegalArgumentException("Key not found: $keyId")
     }
 
-    override suspend fun exportKey(alias: String, format: String, private: Boolean): String {
-        val key = getKey(alias)
-
-        return when (format.lowercase()) {
-            "jwk" -> key.exportJWK()
-            "pem" -> key.exportPEM()
-            else -> throw IllegalArgumentException("Unknown format: $format")
+    suspend fun getKeyByDid(did: String): Key = DidService.resolveToKey(did).fold(
+        onSuccess = {
+            getKey(it.getKeyId()).getOrElse { throw IllegalArgumentException("Could not deserialize resolved key: ${it.message}", it) }
+        },
+        onFailure = {
+            throw it
         }
-    }
+    )
 
-    override suspend fun loadKey(alias: String): JsonObject = Json.parseToJsonElement( transaction {
-        WalletKeys.select{(WalletKeys.account eq accountId) and (WalletKeys.keyId eq alias)}.single()[WalletKeys.document]
-    }).jsonObject
-
-    override suspend fun listKeys(): List<SingleKeyResponse> {
-        val keyList = transaction {
-            WalletKeys.select { WalletKeys.account eq accountId }.map {
-                Pair(it[WalletKeys.keyId], it[WalletKeys.document])
+    override suspend fun exportKey(alias: String, format: String, private: Boolean): String =
+        getKey(alias).fold(onSuccess = {
+            when (format.lowercase()) {
+                "jwk" -> it.exportJWK()
+                "pem" -> it.exportPEM()
+                else -> throw IllegalArgumentException("Unknown format: $format")
             }
-        }
+        }, onFailure = {
+            throw it
+        })
 
-        return keyList.map { (id, keyJson) ->
+    override suspend fun loadKey(alias: String): JsonObject = getKey(alias).getOrThrow().exportJWKObject()
+
+    override suspend fun listKeys(): List<SingleKeyResponse> =
+        KeysService.getAllForAccount(accountId).map { (id, keyJson) ->
             val key = KeySerialization.deserializeKey(keyJson).getOrThrow()
 
             SingleKeyResponse(
@@ -409,20 +402,10 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
                 keysetHandle = JsonNull
             )
         }
-    }
 
-    override suspend fun generateKey(type: String): String {
-
-        val newKey = LocalKey.generate(KeyType.valueOf(type))
-        val newKeyId = newKey.getKeyId()
-        transaction {
-            WalletKeys.insert {
-                it[account] = accountId
-                it[keyId] = newKeyId
-                it[document] = KeySerialization.serializeKey(newKey)
-            }
-        }
-        return newKeyId
+    override suspend fun generateKey(type: String): String = LocalKey.generate(KeyType.valueOf(type)).let {
+        KeysService.insert(accountId, it.getKeyId(), KeySerialization.serializeKey(it))
+        it.getKeyId()
     }
 
     override suspend fun importKey(jwkOrPem: String): String {

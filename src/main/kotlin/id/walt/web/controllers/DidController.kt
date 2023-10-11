@@ -1,7 +1,5 @@
 package id.walt.web.controllers
 
-import id.walt.core.crypto.utils.JsonUtils.toJsonElement
-import id.walt.service.Did
 import id.walt.web.DidCreation.didCreate
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.delete

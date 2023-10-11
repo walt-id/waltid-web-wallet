@@ -254,22 +254,21 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
 
     /* DIDs */
 
-    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>, alias:String): String {
+    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>): String {
         val createParams = mutableMapOf("method" to method.toJsonPrimitive())
 
-        createParams.putAll(
-            args.mapKeys {
-                val k = it.key
-                when {
-                    method == "ebsi" && k == "bearerToken" -> "didEbsiBearerToken"
-                    method == "ebsi" && k == "version" -> "didEbsiVersion"
+        createParams.putAll(args.mapKeys {
+            val k = it.key
+            when {
+                method == "ebsi" && k == "bearerToken" -> "didEbsiBearerToken"
+                method == "ebsi" && k == "version" -> "didEbsiVersion"
 
-                    method == "web" && k == "domain" -> "didWebDomain"
-                    method == "web" && k == "path" -> "didWebPath"
+                method == "web" && k == "domain" -> "didWebDomain"
+                method == "web" && k == "path" -> "didWebPath"
 
-                    else -> it.key
-                }
-            })
+                else -> it.key
+            }
+        })
 
         return authenticatedJsonPost("/api/wallet/did/create", createParams).bodyAsText()
     }
