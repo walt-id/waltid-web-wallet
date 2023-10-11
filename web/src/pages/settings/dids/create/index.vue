@@ -28,9 +28,9 @@ const methods = new Map([
     ["key", ["useJwkJcsPub"]],
     ["jwk", []],
     ["web", ["domain", "path"]],
-    ["ebsi", ["bearer token", "version"]],
     ["cheqd", ["network"]],
-    ["iota", []]
+    // ["ebsi", ["bearer token", "version"]],
+    // ["iota", []]
 ])
 
 useHead({

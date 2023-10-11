@@ -5,7 +5,6 @@ import id.walt.config.RemoteWalletConfig
 import id.walt.db.models.*
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
-import id.walt.ssikit.utils.JsonUtils.toJsonElement
 import id.walt.utils.JsonUtils.toJsonPrimitive
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -24,7 +23,6 @@ import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction

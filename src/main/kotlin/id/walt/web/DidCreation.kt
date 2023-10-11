@@ -3,6 +3,7 @@ package id.walt.web
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.json.JsonPrimitive
 
 object DidCreation {
 
@@ -10,13 +11,15 @@ object DidCreation {
         post("key", {
             summary = "Create a did:key"
         }) {
-            val alias = context.request.queryParameters["alias"] ?: ""
-            val useJwkJcsPub = context.request.queryParameters["useJwkJcsPub"]?.toBoolean() ?: false
             context.respond(
-                getWalletService().createDidWithParameters(
-                    "key", mapOf(
-                        "useJwkJcsPub" to useJwkJcsPub
-                    ),alias
+                getWalletService().createDid(
+                    "key",
+                    mapOf(
+                        "useJwkJcsPub" to JsonPrimitive(
+                            context.request.queryParameters["useJwkJcsPub"]?.toBoolean() ?: false
+                        ),
+                        "alias" to JsonPrimitive(context.request.queryParameters["alias"])
+                    )
                 )
             )
         }
@@ -24,8 +27,12 @@ object DidCreation {
         post("jwk", {
             summary = "Create a did:jwk"
         }) {
-            val alias = context.request.queryParameters["alias"] ?: ""
-            context.respond(getWalletService().createDid("jwk", alias=alias))
+            context.respond(
+                getWalletService().createDid(
+                    "jwk",
+                    mapOf("alias" to JsonPrimitive(context.request.queryParameters["alias"]))
+                )
+            )
         }
 
         post("web", {
@@ -35,17 +42,13 @@ object DidCreation {
                 queryParameter<String>("path")
             }
         }) {
-            val domain = context.request.queryParameters["domain"]
-            val path = context.request.queryParameters["path"]
-
-            val alias = context.request.queryParameters["alias"] ?: ""
-
             context.respond(
-                getWalletService().createDidWithParameters(
+                getWalletService().createDid(
                     "web", mapOf(
-                        "domain" to domain,
-                        "path" to path
-                    ),alias
+                        "domain" to JsonPrimitive(context.request.queryParameters["domain"]),
+                        "path" to JsonPrimitive(context.request.queryParameters["path"]),
+                        "alias" to JsonPrimitive(context.request.queryParameters["alias"])
+                    )
                 )
             )
         }
@@ -57,18 +60,13 @@ object DidCreation {
                 queryParameter<String>("bearerToken") { description = "Required for v1 (LegalEntity)" }
             }
         }) {
-            val version = context.request.queryParameters["version"]?.toInt()
-            val bearerToken = context.request.queryParameters["bearerToken"]
-            var alias = context.request.queryParameters["alias"]
-            if (alias == null){
-                alias =""
-            }
             context.respond(
-                getWalletService().createDidWithParameters(
+                getWalletService().createDid(
                     "ebsi", mapOf(
-                        "bearerToken" to bearerToken,
-                        "version" to version
-                    ),alias
+                        "bearerToken" to JsonPrimitive(context.request.queryParameters["bearerToken"]),
+                        "version" to JsonPrimitive(context.request.queryParameters["version"]?.toInt()),
+                        "alias" to JsonPrimitive(context.request.queryParameters["alias"])
+                    )
                 )
             )
         }
@@ -79,14 +77,13 @@ object DidCreation {
                 queryParameter<String>("network") { description = "testnet or mainnet" }
             }
         }) {
-            val network = context.request.queryParameters["network"]
-            val alias = context.request.queryParameters["alias"] ?: ""
 
             context.respond(
-                getWalletService().createDidWithParameters(
+                getWalletService().createDid(
                     "cheqd", mapOf(
-                        "network" to network
-                    ),alias
+                        "network" to JsonPrimitive(context.request.queryParameters["network"]),
+                        "alias" to JsonPrimitive(context.request.queryParameters["alias"])
+                    )
                 )
             )
         }
@@ -94,9 +91,12 @@ object DidCreation {
         post("iota", {
             summary = "Create a did:iota"
         }) {
-            val alias = context.request.queryParameters["alias"] ?: ""
-
-            context.respond(getWalletService().createDid("iota", alias = alias))
+            context.respond(
+                getWalletService().createDid(
+                    "iota",
+                    mapOf("alias" to JsonPrimitive(context.request.queryParameters["alias"]))
+                )
+            )
         }
     }
 

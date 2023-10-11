@@ -5,6 +5,13 @@ import id.walt.core.crypto.keys.KeySerialization
 import id.walt.core.crypto.keys.KeyType
 import id.walt.core.crypto.keys.LocalKey
 import id.walt.db.models.*
+import id.walt.did.dids.DidService
+import id.walt.did.dids.registrar.dids.DidCheqdCreateOptions
+import id.walt.did.dids.registrar.dids.DidJwkCreateOptions
+import id.walt.did.dids.registrar.dids.DidKeyCreateOptions
+import id.walt.did.dids.registrar.dids.DidWebCreateOptions
+import id.walt.did.helpers.WaltidServices
+import id.walt.did.utils.EnumUtils.enumValueIgnoreCase
 import id.walt.oid4vc.data.GrantType
 import id.walt.oid4vc.data.OpenIDProviderMetadata
 import id.walt.oid4vc.providers.OpenIDClientConfig
@@ -20,11 +27,6 @@ import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.service.keys.KeysService
 import id.walt.service.oidc4vc.TestCredentialWallet
-import id.walt.ssikit.did.DidService
-import id.walt.ssikit.did.registrar.dids.DidJwkCreateOptions
-import id.walt.ssikit.did.registrar.dids.DidKeyCreateOptions
-import id.walt.ssikit.helpers.WaltidServices
-import id.walt.ssikit.utils.EnumUtils.enumValueIgnoreCase
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -46,7 +48,6 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.URLDecoder
 import java.util.*
-import kotlin.collections.HashMap
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Duration.Companion.seconds
@@ -309,20 +310,19 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>): String {
         // TODO: other DIDs
         val key = args["keyId"]?.content?.let { getKey(it) }?.getOrNull() ?: LocalKey.generate(KeyType.Ed25519)
-
-        val newKeyId = key.getKeyId()
+        val keyId = key.getKeyId()
         val options = getDidOptions(method, args)
 
         val result = DidService.registerByKey(method, key, options)
-        KeysService.insert(accountId, key.getKeyId(), KeySerialization.serializeKey(key))
+        KeysService.insert(accountId, keyId, KeySerialization.serializeKey(key))
 
         transaction {
 
             WalletDids.insert {
                 it[account] = accountId
                 it[did] = result.did
-                it[this.alias] = args["alias"]?.content ?: ""
-                it[keyId] = newKeyId
+                it[alias] = args["alias"]?.content ?: ""
+                it[WalletDids.keyId] = keyId
                 it[document] = Json.encodeToString(result.didDocument)
             }
         }
@@ -493,6 +493,12 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         "key" -> DidKeyCreateOptions(
             args["key"]?.let { enumValueIgnoreCase<KeyType>(it.content) } ?: KeyType.Ed25519,
             args["useJwkJcsPub"]?.let { it.content.toBoolean() } ?: false
+        )
+        "jwk" -> DidJwkCreateOptions()
+        "web" -> DidWebCreateOptions(domain = args["domain"]?.content ?: "", path = args["path"]?.content ?: "")
+        "cheqd" -> DidCheqdCreateOptions(
+            network = args["network"]?.content ?: "test",
+            document = Json.decodeFromString<JsonObject>(args["document"]?.content ?: "")
         )
         else -> DidJwkCreateOptions()
     }

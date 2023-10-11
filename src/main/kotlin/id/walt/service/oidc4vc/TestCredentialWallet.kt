@@ -3,6 +3,7 @@ package id.walt.service.oidc4vc
 import id.walt.core.crypto.keys.Key
 import id.walt.core.crypto.utils.JsonUtils.toJsonElement
 import id.walt.core.crypto.utils.JwsUtils.decodeJws
+import id.walt.did.dids.DidService
 import id.walt.oid4vc.data.OpenIDProviderMetadata
 import id.walt.oid4vc.data.dif.DescriptorMapping
 import id.walt.oid4vc.data.dif.PresentationDefinition
@@ -12,13 +13,11 @@ import id.walt.oid4vc.errors.PresentationError
 import id.walt.oid4vc.interfaces.PresentationResult
 import id.walt.oid4vc.providers.SIOPCredentialProvider
 import id.walt.oid4vc.providers.SIOPProviderConfig
-import id.walt.oid4vc.providers.SIOPSession
 import id.walt.oid4vc.providers.TokenTarget
 import id.walt.oid4vc.requests.AuthorizationRequest
 import id.walt.oid4vc.requests.TokenRequest
 import id.walt.oid4vc.responses.TokenErrorCode
 import id.walt.service.SSIKit2WalletService
-import id.walt.ssikit.did.DidService
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
