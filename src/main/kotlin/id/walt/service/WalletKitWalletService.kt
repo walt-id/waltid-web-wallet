@@ -5,7 +5,6 @@ import id.walt.config.RemoteWalletConfig
 import id.walt.db.models.*
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
-import id.walt.ssikit.utils.JsonUtils.toJsonElement
 import id.walt.utils.JsonUtils.toJsonPrimitive
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -24,7 +23,6 @@ import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -254,22 +252,21 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
 
     /* DIDs */
 
-    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>, alias:String): String {
+    override suspend fun createDid(method: String, args: Map<String, JsonPrimitive>): String {
         val createParams = mutableMapOf("method" to method.toJsonPrimitive())
 
-        createParams.putAll(
-            args.mapKeys {
-                val k = it.key
-                when {
-                    method == "ebsi" && k == "bearerToken" -> "didEbsiBearerToken"
-                    method == "ebsi" && k == "version" -> "didEbsiVersion"
+        createParams.putAll(args.mapKeys {
+            val k = it.key
+            when {
+                method == "ebsi" && k == "bearerToken" -> "didEbsiBearerToken"
+                method == "ebsi" && k == "version" -> "didEbsiVersion"
 
-                    method == "web" && k == "domain" -> "didWebDomain"
-                    method == "web" && k == "path" -> "didWebPath"
+                method == "web" && k == "domain" -> "didWebDomain"
+                method == "web" && k == "path" -> "didWebPath"
 
-                    else -> it.key
-                }
-            })
+                else -> it.key
+            }
+        })
 
         return authenticatedJsonPost("/api/wallet/did/create", createParams).bodyAsText()
     }

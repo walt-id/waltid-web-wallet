@@ -27,6 +27,10 @@ import CenterMain from "~/components/CenterMain.vue";
 const methods = new Map([
     ["key", ["useJwkJcsPub"]],
     ["jwk", []],
+    ["web", ["domain", "path"]],
+    ["cheqd", ["network"]],
+    // ["ebsi", ["bearer token", "version"]],
+    // ["iota", []]
 ])
 
 useHead({

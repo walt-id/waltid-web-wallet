@@ -1,13 +1,12 @@
 package id.walt.service.account
 
-import id.walt.db.models.Wallets
 import id.walt.service.WalletServiceManager
 import id.walt.web.generateToken
 import id.walt.web.model.AddressLoginRequest
 import id.walt.web.model.EmailLoginRequest
 import id.walt.web.model.LoginRequest
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.exposed.sql.transactions.transaction
+import kotlinx.serialization.json.JsonPrimitive
 import java.util.*
 
 object AccountsService {
@@ -18,7 +17,10 @@ object AccountsService {
         is AddressLoginRequest -> walletStrategy.register(request)
     }.also {
         it.getOrNull()?.let {
-            runBlocking { WalletServiceManager.getWalletService(it.id).createDid(method="key", alias = "Onboarding") }
+            runBlocking {
+                WalletServiceManager.getWalletService(it.id)
+                    .createDid(method = "key", mapOf("alias" to JsonPrimitive("Onboarding")))
+            }
         }
     }
 
