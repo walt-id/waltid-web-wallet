@@ -280,10 +280,10 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun deleteDid(did: String)=authenticatedJsonDelete("/api/wallet/did/delete/$did").status.isSuccess()
 
     override suspend fun setDefault(did: String)= transaction{
-        WalletDids.update({ WalletDids.default eq true }) {
+        AccountDids.update({ AccountDids.default eq true }) {
             it[default] = false
         }
-        WalletDids.update( { WalletDids.did eq did}){
+        AccountDids.update( { AccountDids.did eq did}){
             it[default] = true
         }
     } > 0

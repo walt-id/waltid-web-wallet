@@ -76,13 +76,13 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     @OptIn(ExperimentalEncodingApi::class)
     override suspend fun listCredentials(): List<Credential> =
         transaction {
-            WalletCredentials.select { WalletCredentials.account eq accountId }.map {
+            AccountCredentials.select { AccountCredentials.account eq accountId }.map {
                 it
             }
         }.mapNotNull { resultRow ->
-            val credentialId = resultRow[WalletCredentials.credentialId]
+            val credentialId = resultRow[AccountCredentials.credentialId]
             runCatching {
-                val cred = resultRow[WalletCredentials.credential]
+                val cred = resultRow[AccountCredentials.credential]
                 val parsedCred = if (cred.startsWith("{"))
                     Json.parseToJsonElement(cred).jsonObject
                 else if (cred.startsWith("ey"))
@@ -100,20 +100,20 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     override suspend fun listRawCredentials(): List<String> {
         return transaction {
-            WalletCredentials.select { WalletCredentials.account eq accountId }.map {
-                it[WalletCredentials.credential]
+            AccountCredentials.select { AccountCredentials.account eq accountId }.map {
+                it[AccountCredentials.credential]
             }
         }
     }
 
     override suspend fun deleteCredential(id: String) = transaction {
-        WalletCredentials.deleteWhere { (account eq accountId) and (credentialId eq id) }
+        AccountCredentials.deleteWhere { (account eq accountId) and (credentialId eq id) }
     } > 0
 
     override suspend fun getCredential(credentialId: String): String {
         return transaction {
-            WalletCredentials.select { (WalletCredentials.account eq accountId) and (WalletCredentials.credentialId eq credentialId) }
-                .single()[WalletCredentials.credential]
+            AccountCredentials.select { (AccountCredentials.account eq accountId) and (AccountCredentials.credentialId eq credentialId) }
+                .single()[AccountCredentials.credential]
         }
     }
 
@@ -294,10 +294,10 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val credentialId = Json.parseToJsonElement(Base64.decode(credential.split(".")[1]).decodeToString()).jsonObject["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content ?: randomUUID()
 
         transaction {
-            WalletCredentials.insert {
-                it[WalletCredentials.account] = accountId
-                it[WalletCredentials.credentialId] = credentialId
-                it[WalletCredentials.credential] = credential
+            AccountCredentials.insert {
+                it[AccountCredentials.account] = accountId
+                it[AccountCredentials.credentialId] = credentialId
+                it[AccountCredentials.credential] = credential
             }
         }
         println("Credential stored with Id: $credentialId")
@@ -318,11 +318,11 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
         transaction {
 
-            WalletDids.insert {
+            AccountDids.insert {
                 it[account] = accountId
                 it[did] = result.did
                 it[alias] = args["alias"]?.content ?: ""
-                it[WalletDids.keyId] = keyId
+                it[AccountDids.keyId] = keyId
                 it[document] = Json.encodeToString(result.didDocument)
             }
         }
@@ -332,30 +332,30 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     override suspend fun listDids(): List<Did> =
         transaction {
-        WalletDids.select { WalletDids.account eq accountId }.map {resultRow ->
+        AccountDids.select { AccountDids.account eq accountId }.map { resultRow ->
             Did(
-                did = resultRow[WalletDids.did],
-                alias = resultRow[WalletDids.alias],
-                default = resultRow[WalletDids.default]
+                did = resultRow[AccountDids.did],
+                alias = resultRow[AccountDids.alias],
+                default = resultRow[AccountDids.default]
             )
         }
     }
 
     override suspend fun loadDid(did: String): JsonObject = Json.parseToJsonElement(transaction {
-        WalletDids.select { (WalletDids.account eq accountId) and (WalletDids.did eq did) }
-            .single()[WalletDids.document]
+        AccountDids.select { (AccountDids.account eq accountId) and (AccountDids.did eq did) }
+            .single()[AccountDids.document]
     }).jsonObject
 
 
     override suspend fun deleteDid(did: String): Boolean = transaction {
-        WalletDids.deleteWhere { (account eq account) and (WalletDids.did eq did) }
+        AccountDids.deleteWhere { (account eq account) and (AccountDids.did eq did) }
     } > 0
 
     override suspend fun setDefault(did: String) = transaction{
-        WalletDids.update({ WalletDids.default eq true }) {
+        AccountDids.update({ AccountDids.default eq true }) {
             it[default] = false
     }
-        WalletDids.update( {WalletDids.did eq did}){
+        AccountDids.update( {AccountDids.did eq did}){
             it[default] = true
         }
     } > 0
@@ -429,9 +429,9 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val keyJson = KeySerialization.serializeKey(key)
 
         transaction {
-            WalletKeys.insert {
+            AccountKeys.insert {
                 it[account] = accountId
-                it[WalletKeys.keyId] = keyId
+                it[AccountKeys.keyId] = keyId
                 it[document] = keyJson
             }
         }
@@ -440,7 +440,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     }
 
     override suspend fun deleteKey(alias: String): Boolean = transaction {
-        WalletKeys.deleteWhere { (account eq accountId) and (keyId eq alias) }
+        AccountKeys.deleteWhere { (account eq accountId) and (keyId eq alias) }
     } > 0
 
     fun addToHistory() {
