@@ -1,9 +1,9 @@
 package id.walt.service
 
-import id.walt.core.crypto.keys.Key
-import id.walt.core.crypto.keys.KeySerialization
-import id.walt.core.crypto.keys.KeyType
-import id.walt.core.crypto.keys.LocalKey
+import id.walt.crypto.keys.Key
+import id.walt.crypto.keys.KeySerialization
+import id.walt.crypto.keys.KeyType
+import id.walt.crypto.keys.LocalKey
 import id.walt.db.models.*
 import id.walt.did.dids.DidService
 import id.walt.did.dids.registrar.dids.DidCheqdCreateOptions

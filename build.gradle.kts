@@ -93,10 +93,8 @@ dependencies {
     implementation("de.mkammerer:argon2-jvm:2.11")
 
 
-    // SSI Kit 2
-    implementation("id.walt.did:waltid-did:1.0.0")
-//    implementation("id.walt:waltid-ssikit2:1.0.4-SNAPSHOT")
-    // implementation id.walt:core-crypto -> provided by id.walt:waltid-ssikit2
+    // waltid-did
+    implementation("id.walt.did:waltid-did:1.0.0")//id.walt.crypto provided by id.walt.did:waltid-did
 
     // OIDC
     implementation("id.walt:waltid-openid4vc:1.2310051536.0")

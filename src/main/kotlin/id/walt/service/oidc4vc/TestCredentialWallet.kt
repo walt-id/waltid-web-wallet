@@ -1,8 +1,8 @@
 package id.walt.service.oidc4vc
 
-import id.walt.core.crypto.keys.Key
-import id.walt.core.crypto.utils.JsonUtils.toJsonElement
-import id.walt.core.crypto.utils.JwsUtils.decodeJws
+import id.walt.crypto.keys.Key
+import id.walt.crypto.utils.JsonUtils.toJsonElement
+import id.walt.crypto.utils.JwsUtils.decodeJws
 import id.walt.did.dids.DidService
 import id.walt.oid4vc.data.OpenIDProviderMetadata
 import id.walt.oid4vc.data.dif.DescriptorMapping
