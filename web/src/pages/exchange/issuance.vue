@@ -49,10 +49,10 @@
       </LoadingIndicator>
       <div class="flex col-2">
         <div class="relative w-full">
-          <Listbox as="div" v-model="selectedDid" aria-multiselectable="true">
+          <Listbox as="div" v-model="selectedDid">
             <ListboxLabel class="block text-sm font-medium leading-6 text-gray-900">Select Did</ListboxLabel>
             <div class="relative mt-2">
-                <ListboxButton v-if="selectedDid != null" aria-placeholder="bla-bla" class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
+                <ListboxButton v-if="selectedDid != null" class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
                     <span class="flex items-center">
                         <p class="truncate font-bold">{{ selectedDid.alias }}</p>
                         <span class="ml-3 block truncate">{{ selectedDid.did }}</span>
@@ -154,6 +154,12 @@ const { data: dids, pending: pendingDids } = await useLazyAsyncData(
     () => $fetch("/r/wallet/dids")
 )
 const selectedDid = ref({})
+//TODO: fix this hack for did-dropdown default selection
+watch(dids, (newDids) => {
+  selectedDid.value = newDids?.find(item => {
+    return item.alias == "Onboarding"
+  })
+})
 
 const query = useRoute().query;
 
