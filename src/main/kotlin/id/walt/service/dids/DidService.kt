@@ -1,7 +1,5 @@
 package id.walt.service.dids
 
-import id.walt.config.ConfigManager
-import id.walt.config.DatasourceConfiguration
 import id.walt.db.models.AccountDids
 import id.walt.db.models.Accounts
 import id.walt.db.models.Dids
@@ -10,8 +8,10 @@ import id.walt.db.repositories.DbAccountDids
 import id.walt.db.repositories.DbDid
 import id.walt.db.repositories.DidsRepository
 import id.walt.service.Did
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.innerJoin
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 import java.util.*
 
 object DidsService {
@@ -90,26 +90,4 @@ object DidsService {
             alias?.let { statement[AccountDids.alias] = it }
             isDefault?.let { statement[AccountDids.default] = it }
         }
-}
-
-fun main() {
-    ConfigManager.loadConfigs(emptyArray())
-    val datasourceConfig = ConfigManager.getConfig<DatasourceConfiguration>()
-    Database.connect(datasourceConfig.hikariDataSource)
-//    AccountsService.register(EmailLoginRequest("username", "password"))
-//    KeysRepository.insert(DbKey(keyId = "keyId", document = "key-jwk"))
-    val key = UUID.fromString("3d20dcc4-0988-4f7a-aff7-28a268c1ccb3")
-    val account = UUID.fromString("b4746506-fb50-4f0d-9425-d688999e066c")
-    val did = DidsRepository.insert(
-        DbDid(
-            key = key, did = "did", document = "document"
-        )
-    )
-    val res = AccountDidsRepository.insert(DbAccountDids(
-        account = account,
-        did = did,
-        alias = "alias",
-        default = false
-    ))
-    println(res)
 }

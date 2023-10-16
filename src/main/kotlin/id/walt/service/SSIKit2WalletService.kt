@@ -104,7 +104,8 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun deleteCredential(id: String) = CredentialsService.delete(accountId, id)
 
     override suspend fun getCredential(credentialId: String): String =
-        CredentialsService.get(accountId, credentialId).document
+        CredentialsService.get(accountId, credentialId)?.document
+            ?: throw IllegalArgumentException("Credential not found for credentialId: $credentialId")
 
     private fun getQueryParams(url: String): Map<String, MutableList<String>> {
         val params: MutableMap<String, MutableList<String>> = HashMap()
