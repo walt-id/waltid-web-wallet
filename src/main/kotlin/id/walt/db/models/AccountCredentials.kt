@@ -1,11 +1,8 @@
 package id.walt.db.models
 
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.dao.id.UUIDTable
 
-object AccountCredentials : Table() {
-    val account = reference("account", Accounts.id)
-    val credentialId = varchar("id", 256)
-    val credential = text("credential")
-
-    override val primaryKey = PrimaryKey(account, credentialId)
+object AccountCredentials : UUIDTable() {
+    val account = reference("account", Accounts)
+    val credential = reference("credential", Credentials)
 }

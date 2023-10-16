@@ -1,6 +1,6 @@
 package id.walt.web.controllers
 
-import id.walt.db.models.WalletOperationHistory
+import id.walt.service.dto.WalletOperationHistory
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route

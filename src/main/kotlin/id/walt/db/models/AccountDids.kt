@@ -1,14 +1,10 @@
 package id.walt.db.models
 
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.dao.id.UUIDTable
 
-object AccountDids: Table() {
-    val account = reference("account", Accounts.id)
-    val did = varchar("did", 1024)
-    val keyId = reference("keyId", AccountKeys.keyId)
-    val document = text("document")
+object AccountDids: UUIDTable() {
+    val account = reference("account", Accounts)
+    val did = reference("did", Dids)
     val alias = varchar("alias", 1024)
     val default = bool("default").default(false)
-
-    override val primaryKey = PrimaryKey(account, did)
 }

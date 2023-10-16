@@ -3,9 +3,11 @@ package id.walt.db
 import id.walt.config.ConfigManager
 import id.walt.config.DatabaseConfiguration
 import id.walt.config.DatasourceConfiguration
+import id.walt.db.models.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.TransactionManager
@@ -53,5 +55,25 @@ object Db {
         "TRANSACTION_REPEATABLE_READ" -> Connection.TRANSACTION_REPEATABLE_READ
         "TRANSACTION_SERIALIZABLE" -> Connection.TRANSACTION_SERIALIZABLE
         else -> Connection.TRANSACTION_SERIALIZABLE
+    }
+}
+fun main(){
+    ConfigManager.loadConfigs(emptyArray())
+    val datasourceConfig = ConfigManager.getConfig<DatasourceConfiguration>()
+    Database.connect(datasourceConfig.hikariDataSource)
+    transaction {
+        SchemaUtils.create(
+            Accounts,
+            Emails,
+            Wallets,
+            AccountWallets,
+            WalletOperationHistories,
+            Keys,
+            Dids,
+            Credentials,
+            AccountKeys,
+            AccountDids,
+            AccountCredentials,
+        )
     }
 }

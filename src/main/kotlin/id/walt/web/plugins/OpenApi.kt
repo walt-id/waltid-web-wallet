@@ -17,10 +17,10 @@ fun Application.configureOpenApi() {
             version = "latest"
             description = "Interact with the wallet backend"
         }
-        server {
-            url = "http://localhost:4545"
-            description = "Development Server"
-        }
+//        server {
+//            url = "http://localhost:4545"
+//            description = "Development Server"
+//        }
 
         securityScheme("authenticated-session") {
             type = AuthType.API_KEY
