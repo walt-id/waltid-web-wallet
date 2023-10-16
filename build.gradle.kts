@@ -35,7 +35,7 @@ tasks.withType<KotlinCompile> {
 
 dependencies {
     // nftkit
-    implementation("id.walt:waltid-nftkit:1.2310021030.0") {
+    implementation("id.walt:waltid-nftkit:1.2310100840.0") {
         exclude("com.sksamuel.hoplite", "hoplite-core")
         exclude("com.sksamuel.hoplite", "hoplite-yaml")
         exclude("com.sksamuel.hoplite", "hoplite-hikaricp")
