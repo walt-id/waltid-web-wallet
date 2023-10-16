@@ -1,16 +1,16 @@
 package id.walt.service.credentials
 
-import id.walt.config.ConfigManager
-import id.walt.config.DatasourceConfiguration
 import id.walt.db.models.AccountCredentials
 import id.walt.db.models.Accounts
 import id.walt.db.models.Credentials
-import id.walt.db.repositories.*
+import id.walt.db.repositories.AccountCredentialsRepository
+import id.walt.db.repositories.CredentialsRepository
+import id.walt.db.repositories.DbAccountCredentials
+import id.walt.db.repositories.DbCredential
 import id.walt.service.dids.DidUpdateDataObject
-import id.walt.service.dids.DidsService
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.innerJoin
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import java.util.*
 
@@ -66,31 +66,18 @@ object CredentialsService {
                     }
                 }).selectAll()
 
-    private fun getOrInsert(credentialId: String, document: String) = CredentialsRepository.find(Credentials.credentialId, credentialId).takeIf {
-        it.isNotEmpty()
-    }?.single()?.id ?: let {
-        CredentialsRepository.insert(DbCredential(
-            credentialId = credentialId,
-            document = document,
-        ))
-    }
-}
+    private fun find(credentialId: String) = Credentials.select { Credentials.credentialId eq credentialId }
 
-fun main() {
-    ConfigManager.loadConfigs(emptyArray())
-    val datasourceConfig = ConfigManager.getConfig<DatasourceConfiguration>()
-    Database.connect(datasourceConfig.hikariDataSource)
-//    AccountsService.register(EmailLoginRequest("username", "password"))
-//    KeysRepository.insert(DbKey(keyId = "keyId", document = "key-jwk"))
-    val key = UUID.fromString("3d20dcc4-0988-4f7a-aff7-28a268c1ccb3")
-    val account = UUID.fromString("b4746506-fb50-4f0d-9425-d688999e066c")
-    val did = DidsService.get(account, "did")
-    println(did)
-    val res = CredentialsRepository.find(Credentials.credentialId, "credentialId")
-    println(res)
-    val cid = CredentialsService.add(account, DbCredential(
-        credentialId = "credentialId",
-        document = "document"
-    ))
-    println(cid)
+    private fun getOrInsert(credentialId: String, document: String) = find(credentialId).let {
+        CredentialsRepository.query(it) {
+            it[Credentials.id]
+        }.singleOrNull()?.value
+    } ?: let {
+        CredentialsRepository.insert(
+            DbCredential(
+                credentialId = credentialId,
+                document = document,
+            )
+        )
+    }
 }

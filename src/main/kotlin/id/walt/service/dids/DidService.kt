@@ -8,10 +8,8 @@ import id.walt.db.repositories.DbAccountDids
 import id.walt.db.repositories.DbDid
 import id.walt.db.repositories.DidsRepository
 import id.walt.service.Did
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.innerJoin
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 object DidsService {
@@ -74,20 +72,26 @@ object DidsService {
                 }
             }).selectAll()
 
-    private fun getOrInsert(key: UUID, did: String, document: String) = DidsRepository.find(Dids.did, did).takeIf {
-        it.isNotEmpty()
-    }?.single()?.id ?: let {
-        DidsRepository.insert(DbDid(
-            key = key,
-            did = did,
-            document = document,
-        ))
+    private fun find(did: String) = Dids.select { Dids.did eq did }
+    private fun getOrInsert(key: UUID, did: String, document: String) = find(did).let {
+        DidsRepository.query(it) {
+            it[Dids.id]
+        }.singleOrNull()?.value
+    } ?: let {
+        DidsRepository.insert(
+            DbDid(
+                key = key,
+                did = did,
+                document = document,
+            )
+        )
     }
 
     // TODO: implement in repository
-    private fun updateQuery(id: UUID, alias: String? = null, isDefault: Boolean? = null) =
+    private fun updateQuery(id: UUID, alias: String? = null, isDefault: Boolean? = null) = transaction {
         AccountDids.update({ AccountDids.id eq id }) { statement ->
             alias?.let { statement[AccountDids.alias] = it }
             isDefault?.let { statement[AccountDids.default] = it }
         }
+    }
 }
