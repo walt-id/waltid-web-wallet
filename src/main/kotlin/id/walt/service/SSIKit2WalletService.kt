@@ -316,7 +316,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     override suspend fun loadDid(did: String): JsonObject = DidsService.get(accountId, did)?.let {
         Json.parseToJsonElement(it.document).jsonObject
-    } ?: throw NotFoundException("Did not found: $did for account: $accountId")
+    } ?: throw IllegalArgumentException("Did not found: $did for account: $accountId")
 
 
     override suspend fun deleteDid(did: String): Boolean = DidsService.delete(accountId, did)

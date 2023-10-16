@@ -2,60 +2,69 @@
 -- Keys table
 -- ----------------------------------
 CREATE TABLE "keys" (
-	"id"	BINARY(16) NOT NULL,
-	"kid"	VARCHAR(512) NOT NULL,
-	"document"	TEXT NOT NULL,
-	PRIMARY KEY("id")
+    "id" BINARY(16) NOT NULL PRIMARY KEY,
+    "kid" VARCHAR(512) NOT NULL,
+    "document" TEXT NOT NULL
 );
 -- ----------------------------------
 -- Dids table
 -- ----------------------------------
 CREATE TABLE "dids" (
-	"id"	BINARY(16) NOT NULL,
-	"did"	VARCHAR(1024) NOT NULL,
-	"document"	TEXT NOT NULL,
-	PRIMARY KEY("id")
+    "id" BINARY(16) NOT NULL PRIMARY KEY,
+    "did" VARCHAR(1024) NOT NULL,
+    "document" TEXT NOT NULL,
+    "key" BINARY(16) NOT NULL,
+    CONSTRAINT "fk_dids_key__id" FOREIGN KEY ("key") REFERENCES "keys"("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 -- ----------------------------------
 -- Credentials table
 -- ----------------------------------
 CREATE TABLE "credentials" (
-	"id"	BINARY(16) NOT NULL,
-	"cid"	VARCHAR(256) NOT NULL,
-	"document"	TEXT NOT NULL,
-	PRIMARY KEY("id")
+    "id" BINARY(16) NOT NULL PRIMARY KEY,
+    "cid" VARCHAR(256) NOT NULL,
+    "document" TEXT NOT NULL
 );
 -- ----------------------------------
 -- AccountKeys table
 -- ----------------------------------
 CREATE TABLE "account_keys" (
+    "id" BINARY(16) NOT NULL PRIMARY KEY,
     "account" BINARY(16) NOT NULL,
-    "kid" VARCHAR(512) NOT NULL,
-    "key" TEXT NOT NULL,
-    CONSTRAINT "pk_account_keys" PRIMARY KEY ("account", "kid"),
-    CONSTRAINT "fk_account_keys_account__id" FOREIGN KEY ("account") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "key" BINARY(16) NOT NULL,
+    CONSTRAINT "fk_account_keys_account__id" FOREIGN KEY ("account") REFERENCES "accounts"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "fk_account_keys_key__id" FOREIGN KEY ("key") REFERENCES "keys"("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 -- ----------------------------------
 -- AccountDids table
 -- ----------------------------------
 CREATE TABLE "account_dids" (
+    "id" BINARY(16) NOT NULL PRIMARY KEY,
     "account" BINARY(16) NOT NULL,
-    "did" VARCHAR(1024) NOT NULL,
-    "keyId" VARCHAR(512) NOT NULL,
-    "document" TEXT NOT NULL,
+    "did" BINARY(16) NOT NULL,
     "alias" VARCHAR(1024) NOT NULL,
     "default" BOOLEAN DEFAULT 0 NOT NULL,
-    CONSTRAINT "pk_account_dids" PRIMARY KEY ("account", "did"),
-    CONSTRAINT "fk_account_dids_account__id" FOREIGN KEY ("account") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "fk_account_dids_keyId__kid" FOREIGN KEY ("keyId") REFERENCES "account_keys"("kid") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "fk_account_dids_account__id" FOREIGN KEY ("account") REFERENCES "accounts"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "fk_account_dids_did__id" FOREIGN KEY ("did") REFERENCES "dids"("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 -- ----------------------------------
 -- AccountCredentials table
 -- ----------------------------------
 CREATE TABLE "account_credentials" (
+    "id" BINARY(16) NOT NULL PRIMARY KEY,
     "account" BINARY(16) NOT NULL,
-    "id" VARCHAR(256) NOT NULL,
-    "credential" TEXT NOT NULL,
-    CONSTRAINT "pk_account_credentials" PRIMARY KEY (account, id),
-    CONSTRAINT "fk_account_credentials_account__id" FOREIGN KEY("account") REFERENCES "accounts"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "credential" BINARY(16) NOT NULL,
+    CONSTRAINT "fk_account_credentials_account__id" FOREIGN KEY ("account") REFERENCES "accounts"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "fk_account_credentials_credential__id" FOREIGN KEY ("credential") REFERENCES "credentials"("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
+-- ----------------------------------
+-- Keys index
+-- ----------------------------------
+CREATE UNIQUE INDEX "keys_kid" ON "keys" ("kid");
+-- ----------------------------------
+-- Dids index
+-- ----------------------------------
+CREATE UNIQUE INDEX "dids_did" ON "dids" ("did");
+-- ----------------------------------
+-- Credentials index
+-- ----------------------------------
+CREATE UNIQUE INDEX "credentials_cid" ON "credentials" ("cid")
