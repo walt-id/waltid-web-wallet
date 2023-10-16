@@ -157,7 +157,7 @@ const selectedDid = ref({})
 //TODO: fix this hack for did-dropdown default selection
 watch(dids, (newDids) => {
   selectedDid.value = newDids?.find(item => {
-    return item.alias == "Onboarding"
+    return item.default == true
   })
 })
 
