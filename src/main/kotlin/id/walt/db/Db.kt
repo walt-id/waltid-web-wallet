@@ -59,21 +59,23 @@ object Db {
 }
 fun main(){
     ConfigManager.loadConfigs(emptyArray())
-    val datasourceConfig = ConfigManager.getConfig<DatasourceConfiguration>()
-    Database.connect(datasourceConfig.hikariDataSource)
-    transaction {
-        SchemaUtils.create(
-            Accounts,
-            Emails,
-            Wallets,
-            AccountWallets,
-            WalletOperationHistories,
-            Keys,
-            Dids,
-            Credentials,
-            AccountKeys,
-            AccountDids,
-            AccountCredentials,
-        )
-    }
+    Db.start()
+//    ConfigManager.loadConfigs(emptyArray())
+//    val datasourceConfig = ConfigManager.getConfig<DatasourceConfiguration>()
+//    Database.connect(datasourceConfig.hikariDataSource)
+//    transaction {
+//        SchemaUtils.create(
+//            Accounts,
+//            Emails,
+//            Wallets,
+//            AccountWallets,
+//            WalletOperationHistories,
+//            Keys,
+//            Dids,
+//            Credentials,
+//            AccountKeys,
+//            AccountDids,
+//            AccountCredentials,
+//        )
+//    }
 }
