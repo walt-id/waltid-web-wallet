@@ -17,6 +17,7 @@ object DidsRepository : RepositoryBase<DbDid>(Dids) {
     override fun DbDid.toRow(insertStatement: InsertStatement<EntityID<UUID>>): InsertStatement<EntityID<UUID>> = let {
         insertStatement[Dids.did] = it.did
         insertStatement[Dids.document] = it.document
+        insertStatement[Dids.key] = it.key
         insertStatement
     }
 }

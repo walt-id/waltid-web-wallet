@@ -3,6 +3,7 @@ package id.walt.service
 import id.walt.config.ConfigManager
 import id.walt.config.RemoteWalletConfig
 import id.walt.db.models.*
+import id.walt.service.dids.DidDefaultUpdateDataObject
 import id.walt.service.dids.DidsService
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
@@ -281,7 +282,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
 
     override suspend fun deleteDid(did: String)=authenticatedJsonDelete("/api/wallet/did/delete/$did").status.isSuccess()
 
-    override suspend fun setDefault(did: String) = TODO()// DidsService.update(accountId, Did())
+    override suspend fun setDefault(did: String) = DidsService.update(accountId, DidDefaultUpdateDataObject(did, true))
 
 
     /* Keys */

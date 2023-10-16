@@ -25,6 +25,7 @@ import id.walt.oid4vc.responses.CredentialResponse
 import id.walt.oid4vc.responses.TokenResponse
 import id.walt.oid4vc.util.randomUUID
 import id.walt.service.credentials.CredentialsService
+import id.walt.service.dids.DidDefaultUpdateDataObject
 import id.walt.service.dids.DidInsertDataObject
 import id.walt.service.dids.DidsService
 import id.walt.service.dto.LinkedWalletDataTransferObject
@@ -41,6 +42,7 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.plugins.*
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.toJavaInstant
@@ -311,13 +313,14 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     override suspend fun listDids(): List<Did> = DidsService.list(accountId)
 
-    override suspend fun loadDid(did: String): JsonObject =
-        Json.parseToJsonElement(DidsService.get(accountId, did).document).jsonObject
+    override suspend fun loadDid(did: String): JsonObject = DidsService.get(accountId, did)?.let {
+        Json.parseToJsonElement(it.document).jsonObject
+    } ?: throw NotFoundException("Did not found: $did for account: $accountId")
 
 
     override suspend fun deleteDid(did: String): Boolean = DidsService.delete(accountId, did)
 
-    override suspend fun setDefault(did: String) = TODO()//DidsService.update(accountId, Did())
+    override suspend fun setDefault(did: String) = DidsService.update(accountId, DidDefaultUpdateDataObject(did, true))
 
     /* Keys */
 
