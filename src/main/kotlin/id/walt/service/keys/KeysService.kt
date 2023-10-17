@@ -26,7 +26,7 @@ object KeysService {
     fun add(account: UUID, key: DbKey): UUID = getOrInsert(key.keyId, key.document).let { kid ->
         join(account, key.keyId).let {
             AccountKeysRepository.query(it) {
-                it[AccountKeys.id]
+                it[Keys.id]
             }.takeIf {
                 it.isNotEmpty()
                 // account has the key already associated
@@ -34,6 +34,7 @@ object KeysService {
             // otherwise, associate the key to account
                 ?: let {
                     AccountKeysRepository.insert(DbAccountKeys(account = account, key = kid))
+                    kid
                 }
         }
     }
