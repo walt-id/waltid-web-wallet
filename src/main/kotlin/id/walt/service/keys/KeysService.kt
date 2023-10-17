@@ -2,13 +2,11 @@ package id.walt.service.keys
 
 import id.walt.db.models.AccountKeys
 import id.walt.db.models.Accounts
-import id.walt.db.models.Credentials
 import id.walt.db.models.Keys
 import id.walt.db.repositories.AccountKeysRepository
 import id.walt.db.repositories.DbAccountKeys
 import id.walt.db.repositories.DbKey
 import id.walt.db.repositories.KeysRepository
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.select

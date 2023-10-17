@@ -13,7 +13,6 @@ interface Repository<T : DbEntity> {
     fun get(id: UUID): T
     fun delete(id: UUID): Int
     fun <K> query(query: Query, distinct: Boolean = true, transform: (ResultRow) -> K): List<K>
-//    fun <K> find(column: Column<K>, value: K): List<T>
 }
 
 interface Transformer<T> {
@@ -28,12 +27,6 @@ abstract class RepositoryBase<T : DbEntity>(
     override fun insert(model: T): UUID = transaction {
         table.insertAndGetId { model.toRow(it) }.value
     }
-
-//    override fun <K> find(column: Column<K>, value: K): List<T> = transaction {
-//        table.select { column eq value }
-//    }.map {
-//        it.fromRow()
-//    }
 
     override fun delete(id: UUID): Int = transaction {
         table.deleteWhere { table.id eq id }

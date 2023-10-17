@@ -2,7 +2,9 @@ package id.walt.service
 
 import id.walt.config.ConfigManager
 import id.walt.config.RemoteWalletConfig
-import id.walt.db.models.*
+import id.walt.db.models.Accounts
+import id.walt.db.models.Emails
+import id.walt.db.models.WalletOperationHistories
 import id.walt.service.dids.DidDefaultUpdateDataObject
 import id.walt.service.dids.DidsService
 import id.walt.service.dto.LinkedWalletDataTransferObject
@@ -29,7 +31,6 @@ import kotlinx.serialization.json.*
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
 import java.net.URLDecoder
 import java.nio.charset.Charset
 import java.util.*
