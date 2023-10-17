@@ -107,6 +107,7 @@ async function acceptPresentation() {
             body: request
         })
 
+        /*
         setInterval(async () => {
             let sessionId = presentationUrl.searchParams.get('state');
             let response = await fetch(`https://verifier.portal.walt.id/vp/session/${sessionId}`);
@@ -115,6 +116,7 @@ async function acceptPresentation() {
                 window.location.href = `https://portal.walt.id/success/${sessionId}`;
             }
         }, 1000);
+        */
     } catch (e) {
         failed.value = true
         throw e
