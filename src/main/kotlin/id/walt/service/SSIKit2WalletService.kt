@@ -309,10 +309,13 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
                 document = KeySerialization.serializeKey(key)
             )
         )
-        DidsService.add(accountId,
-            DidInsertDataObject(
-                key = keyRef,
-                did = Did(did = result.did, document = Json.encodeToString(result.didDocument))
+        DidsService.add(
+            accountId, DidInsertDataObject(
+                key = keyRef, did = Did(
+                    did = result.did,
+                    document = Json.encodeToString(result.didDocument),
+                    alias = args["alias"]?.content ?: "n/a"
+                )
             )
         )
         return result.did
