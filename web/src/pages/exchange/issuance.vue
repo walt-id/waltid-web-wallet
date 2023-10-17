@@ -103,7 +103,7 @@
                                 <InformationCircleIcon class="h-5 w-5 text-blue-400" aria-hidden="true" />
                             </div>-->
                             <div class="ml-3 flex-1 flex flex-col md:flex-row md:justify-between">
-                                <span class="text-sm text-blue-700 max-w-xs overflow-x-scroll mr-3 truncate">
+                                <span v-if="selectedDid != null" class="text-sm text-blue-700 max-w-xs overflow-x-scroll mr-3 truncate">
                                     Will issue to DID: {{ selectedDid.alias }} ({{ selectedDid.did }})
                                 </span>
                                 <button class="text-sm md:ml-6">
@@ -194,7 +194,7 @@ watch(dids, async (newDids) => {
 
     const newDid: string | null = newDids?.find(item => {
         return item.default == true
-    }) ?? newDids[0]
+    }) ?? newDids[0] ?? null
 
     console.log("Setting new DID: " + newDid)
 
