@@ -3,8 +3,11 @@ package id.walt.service
 import id.walt.config.ConfigManager
 import id.walt.config.RemoteWalletConfig
 import id.walt.db.models.*
+import id.walt.service.dids.DidDefaultUpdateDataObject
+import id.walt.service.dids.DidsService
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
+import id.walt.service.dto.WalletOperationHistory
 import id.walt.utils.JsonUtils.toJsonPrimitive
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -279,14 +282,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
 
     override suspend fun deleteDid(did: String)=authenticatedJsonDelete("/api/wallet/did/delete/$did").status.isSuccess()
 
-    override suspend fun setDefault(did: String)= transaction{
-        WalletDids.update({ WalletDids.default eq true }) {
-            it[default] = false
-        }
-        WalletDids.update( { WalletDids.did eq did}){
-            it[default] = true
-        }
-    } > 0
+    override suspend fun setDefault(did: String) = DidsService.update(accountId, DidDefaultUpdateDataObject(did, true))
 
 
     /* Keys */

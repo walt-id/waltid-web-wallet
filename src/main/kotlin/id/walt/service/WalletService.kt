@@ -1,10 +1,8 @@
 package id.walt.service
 
-import id.walt.db.models.WalletDids
-import id.walt.db.models.WalletOperationHistory
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
-import id.walt.utils.JsonUtils.toJsonPrimitives
+import id.walt.service.dto.WalletOperationHistory
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.util.*
