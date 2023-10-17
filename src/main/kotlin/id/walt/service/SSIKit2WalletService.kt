@@ -253,9 +253,13 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         )
         println("tokenReq: $tokenReq")
 
-        var tokenResp = ktorClient.submitForm(
+        val tokenResp = ktorClient.submitForm(
             providerMetadata.tokenEndpoint!!, formParameters = parametersOf(tokenReq.toHttpParameters())
-        ).body<JsonObject>().let { TokenResponse.fromJSON(it) }
+        ).let {
+            println("tokenResp raw: $it")
+            it.body<JsonObject>().let { TokenResponse.fromJSON(it) }
+        }
+
         println("tokenResp: $tokenResp")
 
         println(">>> Token response = success: ${tokenResp.isSuccess}")
