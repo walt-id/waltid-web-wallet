@@ -30,7 +30,7 @@ object DidsService {
         getOrInsert(data.key, data.did.did, data.did.document).let { did ->
             join(account, data.did.did).let {
                 AccountDidsRepository.query(it) {
-                    it[AccountDids.id]
+                    it[Dids.id]
                 }
             }.takeIf { it.isNotEmpty() }?.single()?.value ?: let {
                 AccountDidsRepository.insert(
@@ -38,6 +38,7 @@ object DidsService {
                         account = account, did = did, alias = data.did.alias, default = data.did.default
                     )
                 )
+                did
             }
         }
 

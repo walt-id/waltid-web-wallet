@@ -88,7 +88,7 @@ object DidCreation {
 
     private fun extractDidCreateParameters(method: String, parameters: Parameters): Map<String, JsonPrimitive> = mapOf(
         // common
-        "alias" to JsonPrimitive(parameters["alias"]),
+        "alias" to JsonPrimitive(parameters["alias"]?.takeIf { it.isNotEmpty() } ?: "n/a"),
         "keyId" to JsonPrimitive(parameters["keyId"]),
     ).plus(
         // specific
@@ -100,16 +100,16 @@ object DidCreation {
             )
 
             DidWebMethodName -> mapOf(
-                "domain" to JsonPrimitive(parameters["domain"]),
+                "domain" to JsonPrimitive(parameters["domain"]?.takeIf { it.isNotEmpty() } ?: "localhost:3000"),
                 "path" to JsonPrimitive(parameters["path"]),
             )
 
             DidEbsiMethodName -> mapOf(
                 "bearerToken" to JsonPrimitive(parameters["bearerToken"]),
-                "version" to JsonPrimitive(parameters["version"]?.toInt()),
+                "version" to JsonPrimitive(parameters["version"]?.toInt() ?: 1),
             )
 
-            DidCheqdMethodName -> mapOf("network" to JsonPrimitive(parameters["network"]))
+            DidCheqdMethodName -> mapOf("network" to JsonPrimitive(parameters["network"]?.takeIf { it.isNotEmpty() } ?: "testnet"))
             DidJwkMethodName, DidIotaMethodName -> emptyMap()
             else -> emptyMap()
         }
