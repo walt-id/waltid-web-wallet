@@ -56,21 +56,39 @@ object DidsService {
     }?.let {
         when (did) {
             is DidAliasUpdateDataObject -> updateQuery(it, alias = did.alias)
-            is DidDefaultUpdateDataObject -> updateQuery(it, isDefault = did.isDefault)
+            is DidDefaultUpdateDataObject -> {
+                // reset default, if any
+                join(account, joinOnDefault = true).let {
+                    AccountDidsRepository.query(it) {
+                        it[AccountDids.id]
+                    }.singleOrNull()?.value
+                }?.let {
+                    updateQuery(it, isDefault = false)
+                }
+                // set default for the requested one
+                updateQuery(it, isDefault = did.isDefault)
+            }
             else -> throw IllegalArgumentException("Unsupported update field: ${did.javaClass.name}")
         }
     }?.let { it > 0 } ?: false
 
-    private fun join(account: UUID, did: String? = null) =
-        Accounts.innerJoin(AccountDids, onColumn = { Accounts.id }, otherColumn = { AccountDids.account }).innerJoin(
-            Dids,
-            onColumn = { Dids.id },
-            otherColumn = { AccountDids.did },
-            additionalConstraint = did?.let {
-                {
-                    Dids.did eq did and (Accounts.id eq account)
-                }
-            }).selectAll()
+    private fun join(account: UUID, did: String? = null, joinOnDefault: Boolean = false) =
+        joinOnDefault.takeIf { it }?.let {
+            Accounts.innerJoin(AccountDids,
+                onColumn = { Accounts.id },
+                otherColumn = { AccountDids.account },
+                additionalConstraint = {
+                    AccountDids.default eq true and (Accounts.id eq account)
+                }).innerJoin(Dids, onColumn = { Dids.id }, otherColumn = { AccountDids.did }).selectAll()
+        } ?: Accounts.innerJoin(AccountDids, onColumn = { Accounts.id }, otherColumn = { AccountDids.account })
+            .innerJoin(Dids,
+                onColumn = { Dids.id },
+                otherColumn = { AccountDids.did },
+                additionalConstraint = did?.let {
+                    {
+                        Dids.did eq did and (Accounts.id eq account)
+                    }
+                }).selectAll()
 
     private fun find(did: String) = Dids.select { Dids.did eq did }
     private fun getOrInsert(key: UUID, did: String, document: String) = find(did).let {
