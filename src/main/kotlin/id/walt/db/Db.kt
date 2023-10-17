@@ -3,12 +3,9 @@ package id.walt.db
 import id.walt.config.ConfigManager
 import id.walt.config.DatabaseConfiguration
 import id.walt.config.DatasourceConfiguration
-import id.walt.db.models.*
-import id.walt.service.account.AccountsService
-import id.walt.web.model.EmailLoginRequest
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.TransactionManager
@@ -25,11 +22,11 @@ object Db {
         val databaseConfig = ConfigManager.getConfig<DatabaseConfiguration>()
 
         //migrate
-        /*Flyway.configure()
+        Flyway.configure()
             .locations(databaseConfig.database.replace(".", "/"))
             .dataSource(datasourceConfig.hikariDataSource)
             .load()
-            .migrate()*/
+            .migrate()
 
         // connect
         log.info { "Connecting to database at \"${datasourceConfig.hikariDataSource.jdbcUrl}\"..." }
@@ -56,43 +53,5 @@ object Db {
         "TRANSACTION_REPEATABLE_READ" -> Connection.TRANSACTION_REPEATABLE_READ
         "TRANSACTION_SERIALIZABLE" -> Connection.TRANSACTION_SERIALIZABLE
         else -> Connection.TRANSACTION_SERIALIZABLE
-    }
-
-    suspend fun init() {
-        val databaseConfig = ConfigManager.getConfig<DatabaseConfiguration>()
-        transaction {
-            if (databaseConfig.recreate_schema) {
-                println("DROP SCHEMA")
-                SchemaUtils.drop(
-                    WalletOperationHistories,
-                    WalletKeys,
-                    WalletDids,
-                    WalletCredentials,
-                    AccountWallets,
-                    Accounts,
-                    Emails,
-                    Wallets
-                )
-            }
-            println("CREATE SCHEMA IF NOT EXISTING")
-            SchemaUtils.create(
-                Wallets,
-                Emails,
-                Accounts,
-                AccountWallets,
-                WalletCredentials,
-                WalletDids,
-                WalletKeys,
-                WalletOperationHistories
-            )
-        }
-
-        if (databaseConfig.recreate_schema) {
-            val accountId = AccountsService.register(EmailLoginRequest("user@email.com", "password")).getOrThrow().id
-            println("CREATED ACCOUNT: $accountId")
-        }
-        /** moved to [AccountsService.register] **/
-//        val did = WalletServiceManager.getWalletService(accountId).createDid("key")
-//        println("CREATED DID: $did")
     }
 }

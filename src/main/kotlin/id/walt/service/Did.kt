@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Did(
     val did : String,
-    val alias : String,
-    val default : Boolean
+    val alias : String = "n/a",
+    val default : Boolean = false,
+    val document: String,
 )

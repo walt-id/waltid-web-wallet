@@ -1,14 +1,22 @@
 package id.walt.web
 
 import io.github.smiley4.ktorswaggerui.dsl.post
+import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.JsonPrimitive
 
+private const val DidKeyMethodName = "key"
+private const val DidJwkMethodName = "jwk"
+private const val DidWebMethodName = "web"
+private const val DidEbsiMethodName = "ebsi"
+private const val DidCheqdMethodName = "cheqd"
+private const val DidIotaMethodName = "iota"
+
 object DidCreation {
 
     fun Route.didCreate() {
-        post("key", {
+        post(DidKeyMethodName, {
             summary = "Create a did:key"
             request {
                 queryParameter<Boolean?>("useJwkJcsPub") {
@@ -18,23 +26,19 @@ object DidCreation {
             }
         }) {
             getWalletService().createDid(
-                "key", mapOf(
-                    "useJwkJcsPub" to JsonPrimitive(
-                        context.request.queryParameters["useJwkJcsPub"]?.toBoolean() ?: false
-                    ), "alias" to JsonPrimitive(context.request.queryParameters["alias"])
-                )
+                DidKeyMethodName, extractDidCreateParameters(DidKeyMethodName, context.request.queryParameters)
             ).let { context.respond(it) }
         }
 
-        post("jwk", {
+        post(DidJwkMethodName, {
             summary = "Create a did:jwk"
         }) {
             getWalletService().createDid(
-                "jwk", mapOf("alias" to JsonPrimitive(context.request.queryParameters["alias"]))
+                DidJwkMethodName, extractDidCreateParameters(DidJwkMethodName, context.request.queryParameters)
             ).let { context.respond(it) }
         }
 
-        post("web", {
+        post(DidWebMethodName, {
             summary = "Create a did:web"
             request {
                 queryParameter<String>("domain") {
@@ -46,15 +50,11 @@ object DidCreation {
             }
         }) {
             getWalletService().createDid(
-                "web", mapOf(
-                    "domain" to JsonPrimitive(context.request.queryParameters["domain"]),
-                    "path" to JsonPrimitive(context.request.queryParameters["path"]),
-                    "alias" to JsonPrimitive(context.request.queryParameters["alias"])
-                )
+                DidWebMethodName, extractDidCreateParameters(DidWebMethodName, context.request.queryParameters)
             ).let { context.respond(it) }
         }
 
-        post("ebsi", {
+        post(DidEbsiMethodName, {
             summary = "Create a did:ebsi"
             request {
                 queryParameter<Int>("version") { description = "Version 2 (NaturalPerson) or 1 (LegalEntity)" }
@@ -62,35 +62,56 @@ object DidCreation {
             }
         }) {
             getWalletService().createDid(
-                "ebsi", mapOf(
-                    "bearerToken" to JsonPrimitive(context.request.queryParameters["bearerToken"]),
-                    "version" to JsonPrimitive(context.request.queryParameters["version"]?.toInt()),
-                    "alias" to JsonPrimitive(context.request.queryParameters["alias"])
-                )
+                DidEbsiMethodName, extractDidCreateParameters(DidEbsiMethodName, context.request.queryParameters)
             ).let { context.respond(it) }
         }
 
-        post("cheqd", {
+        post(DidCheqdMethodName, {
             summary = "Create a did:cheqd"
             request {
                 queryParameter<String>("network") { description = "testnet or mainnet" }
             }
         }) {
             getWalletService().createDid(
-                "cheqd", mapOf(
-                    "network" to JsonPrimitive(context.request.queryParameters["network"]),
-                    "alias" to JsonPrimitive(context.request.queryParameters["alias"])
-                )
+                DidCheqdMethodName, extractDidCreateParameters(DidCheqdMethodName, context.request.queryParameters)
             ).let { context.respond(it) }
         }
 
-        post("iota", {
+        post(DidIotaMethodName, {
             summary = "Create a did:iota"
         }) {
             getWalletService().createDid(
-                "iota", mapOf("alias" to JsonPrimitive(context.request.queryParameters["alias"]))
+                DidIotaMethodName, extractDidCreateParameters(DidIotaMethodName, context.request.queryParameters)
             ).let { context.respond(it) }
         }
     }
 
+    private fun extractDidCreateParameters(method: String, parameters: Parameters): Map<String, JsonPrimitive> = mapOf(
+        // common
+        "alias" to JsonPrimitive(parameters["alias"]),
+        "keyId" to JsonPrimitive(parameters["keyId"]),
+    ).plus(
+        // specific
+        when (method) {
+            DidKeyMethodName -> mapOf(
+                "useJwkJcsPub" to JsonPrimitive(
+                    parameters["useJwkJcsPub"]?.toBoolean() ?: false
+                )
+            )
+
+            DidWebMethodName -> mapOf(
+                "domain" to JsonPrimitive(parameters["domain"]),
+                "path" to JsonPrimitive(parameters["path"]),
+            )
+
+            DidEbsiMethodName -> mapOf(
+                "bearerToken" to JsonPrimitive(parameters["bearerToken"]),
+                "version" to JsonPrimitive(parameters["version"]?.toInt()),
+            )
+
+            DidCheqdMethodName -> mapOf("network" to JsonPrimitive(parameters["network"]))
+            DidJwkMethodName, DidIotaMethodName -> emptyMap()
+            else -> emptyMap()
+        }
+    )
 }
