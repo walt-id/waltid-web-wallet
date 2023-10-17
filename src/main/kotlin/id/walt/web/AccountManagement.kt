@@ -7,6 +7,7 @@ import id.walt.web.model.EmailLoginRequest
 import id.walt.web.model.LoginRequest
 import id.walt.web.model.LoginRequestJson
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
@@ -87,32 +88,34 @@ fun Application.configureSecurity() {
 }
 
 
-val securityUserTokenMapping = HashMap<String, UUID>()
+val securityUserTokenMapping = HashMap<String, UUID>() // Token -> UUID
 
 
 fun Application.auth() {
     routing {
         route("r/auth", {
-            tags = listOf("auth")
+            tags = listOf("Authentication")
         }) {
             post("login", {
-                description = "Login with email + password"
+                summary = "Login with [email + password] or [wallet address + ecosystem]"
                 request {
                     body<EmailLoginRequest> {
-                        example("example", buildJsonObject {
+                        example("E-mail + password", buildJsonObject {
                             put("username", JsonPrimitive("user@email.com"))
                             put("password", JsonPrimitive("password"))
                             put("type", JsonPrimitive("email"))
                         }.toString())
+                        example("Wallet address + ecosystem", buildJsonObject {
+                            put("address", JsonPrimitive("0xABC"))
+                            put("ecosystem", JsonPrimitive("ecosystem"))
+                            put("type", JsonPrimitive("address"))
+                        }.toString())
                     }
                 }
                 response {
-                    HttpStatusCode.Accepted to {
-                        description = "Login successful"
-                    }
-                    HttpStatusCode.Unauthorized to {
-                        description = "Login failed"
-                    }
+                    HttpStatusCode.OK to { description = "Login successful" }
+                    HttpStatusCode.Unauthorized to { description = "Login failed" }
+                    HttpStatusCode.BadRequest to { description = "Login failed" }
                 }
             }) {
                 println("Login request")
@@ -135,7 +138,25 @@ fun Application.auth() {
             }
 
             post("create", {
-                request { body<LoginRequest>() }
+                summary = "Register with [email + password] or [wallet address + ecosystem]"
+                request {
+                    body<EmailLoginRequest> {
+                        example("E-mail + password", buildJsonObject {
+                            put("username", JsonPrimitive("user@email.com"))
+                            put("password", JsonPrimitive("password"))
+                            put("type", JsonPrimitive("email"))
+                        }.toString())
+                        example("Wallet address + ecosystem", buildJsonObject {
+                            put("address", JsonPrimitive("0xABC"))
+                            put("ecosystem", JsonPrimitive("ecosystem"))
+                            put("type", JsonPrimitive("address"))
+                        }.toString())
+                    }
+                }
+                response {
+                    HttpStatusCode.Created to { description = "Register successful" }
+                    HttpStatusCode.BadRequest to { description = "Register failed" }
+                }
             }) {
                 val req = LoginRequestJson.decodeFromString<LoginRequest>(call.receive())
                 AccountsService.register(req).onSuccess {
@@ -149,14 +170,16 @@ fun Application.auth() {
             }
 
             authenticate("authenticated-session", "authenticated-bearer") {
-                get("user-info") {
+                get("user-info", {
+                    summary = "Return user ID if logged in"
+                }) {
                     call.respond(getUserId().name)
                 }
-                get("session") {
+                get("session", {
+                    summary = "Return session ID if logged in"
+                }) {
                     //val token = getUserId().name
-                    val token =
-                        call.sessions.get(LoginTokenSession::class)?.token ?: call.request.authorization()?.removePrefix("Bearer ")
-                        ?: throw UnauthorizedException("Invalid session")
+                    val token = getUsersSessionToken() ?: throw UnauthorizedException("Invalid session")
 
                     if (securityUserTokenMapping.contains(token))
                         call.respond(mapOf("token" to mapOf("accessToken" to token)))
@@ -165,9 +188,13 @@ fun Application.auth() {
             }
 
             post("logout", {
-                summary = "Logout"
+                summary = "Logout (delete session)"
                 response { HttpStatusCode.OK to { description = "Logged out." } }
             }) {
+                val token = getUsersSessionToken()
+
+                securityUserTokenMapping.remove(token)
+
                 call.sessions.clear<LoginTokenSession>()
                 call.respond(HttpStatusCode.OK)
             }
@@ -177,7 +204,8 @@ fun Application.auth() {
 
 
 fun PipelineContext<Unit, ApplicationCall>.getUserId() = call.principal<UserIdPrincipal>("authenticated-session")
-    ?: call.principal<UserIdPrincipal>("authenticated-bearer") ?: throw UnauthorizedException("Could not retrieve authorized user.")
+    ?: call.principal<UserIdPrincipal>("authenticated-bearer")
+    ?: throw UnauthorizedException("Could not retrieve authorized user.")
 
 fun PipelineContext<Unit, ApplicationCall>.getUserUUID() =
     runCatching { UUID.fromString(getUserId().name) }
@@ -185,5 +213,9 @@ fun PipelineContext<Unit, ApplicationCall>.getUserUUID() =
 
 fun PipelineContext<Unit, ApplicationCall>.getWalletService() =
     WalletServiceManager.getWalletService(getUserUUID())
+
+fun PipelineContext<Unit, ApplicationCall>.getUsersSessionToken(): String? =
+    call.sessions.get(LoginTokenSession::class)?.token ?: call.request.authorization()
+        ?.removePrefix("Bearer ")
 
 fun getNftService() = WalletServiceManager.getNftService()

@@ -10,7 +10,9 @@ fun Application.history() = walletRoute {
     route("history", {
         tags = listOf("History")
     }) {
-        get({}) {
+        get({
+            summary = "Show operation history"
+        }) {
             val wallet = getWalletService()
 
             context.respond(wallet.getHistory())

@@ -8,15 +8,25 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import kotlinx.serialization.json.JsonObject
 
 fun Application.exchange() = walletRoute {
     route("exchange", {
         tags = listOf("Credential exchange")
     }) {
         post("useOfferRequest", {
+            summary = "Claim credential(s) from an issuer"
+
             request {
-                queryParameter<String>("did")
-                body<String> { description = "offer" }
+                queryParameter<String>("did") { description = "The DID to issue the credential(s) to" }
+                body<String> {
+                    description = "The offer request to use"
+                }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    description = "Successfully claimed credentials"
+                }
             }
         }) {
             val wallet = getWalletService()
@@ -39,9 +49,19 @@ fun Application.exchange() = walletRoute {
         }
 
         post("usePresentationRequest", {
+            summary = "Present credential(s) to a Relying Party"
+
             request {
-                queryParameter<String>("did")
-                body<String> { description = "request" }
+                queryParameter<String>("did") { description = "The DID to present the credential(s) from" }
+                body<String> { description = "Presentation request" }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    description = "Successfully claimed credentials"
+                    body<JsonObject> {
+                        description = """{"redirectUri": String}"""
+                    }
+                }
             }
         }) {
             val wallet = getWalletService()
@@ -63,8 +83,15 @@ fun Application.exchange() = walletRoute {
             context.respond(HttpStatusCode.OK, mapOf("redirectUri" to redirect))
         }
         post("resolvePresentationRequest", {
+            summary = "Return resolved / parsed presentation request"
+
             request {
-                body<String> { description = "request" }
+                body<String> { description = "PresentationRequest to resolve/parse" }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    body<String>()
+                }
             }
         }) {
             val wallet = getWalletService()

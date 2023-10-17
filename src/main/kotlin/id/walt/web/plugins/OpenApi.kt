@@ -15,11 +15,10 @@ fun Application.configureOpenApi() {
         info {
             title = "walt.id wallet API"
             version = "latest"
-            description = "Interact with the wallet backend"
-        }
-        server {
-            url = "http://localhost:4545"
-            description = "Development Server"
+            description = """
+                Interact with the wallet backend.
+                Any HTTP status code of 200 - 299 indicates request success, 400 - 499 client error / invalid request, 500+ internal server processing exception.
+            """.trimIndent().replace("\n", "<br/>")
         }
 
         securityScheme("authenticated-session") {
@@ -35,6 +34,11 @@ fun Application.configureOpenApi() {
 
         defaultUnauthorizedResponse {
             description = "Invalid authentication"
+        }
+
+        externalDocs {
+            url = "https://docs.walt.id"
+            description = "docs.walt.id"
         }
     }
 }

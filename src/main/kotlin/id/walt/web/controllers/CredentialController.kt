@@ -1,10 +1,7 @@
 package id.walt.web.controllers
 
 import id.walt.web.getWalletService
-import io.github.smiley4.ktorswaggerui.dsl.delete
-import io.github.smiley4.ktorswaggerui.dsl.get
-import io.github.smiley4.ktorswaggerui.dsl.put
-import io.github.smiley4.ktorswaggerui.dsl.route
+import io.github.smiley4.ktorswaggerui.dsl.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -32,15 +29,16 @@ fun Application.credentials() = walletRoute {
             TODO()
         }
 
-        route("{credentialId}") {
+        route("{credentialId}", {
+            request {
+                pathParameter<String>("credentialId") {
+                    description = "the credential id (or alias)"
+                    example = "urn:uuid:d36986f1-3cc0-4156-b5a4-6d3deab84270"
+                }
+            }
+        }) {
             get({
                 summary = "View a credential"
-                request {
-                    pathParameter<String>("credentialId") {
-                        description = "the credential id (or alias)"
-                        example = "urn:uuid:d36986f1-3cc0-4156-b5a4-6d3deab84270"
-                    }
-                }
                 response {
                     HttpStatusCode.OK to {
                         body<String> {
@@ -58,13 +56,18 @@ fun Application.credentials() = walletRoute {
 
             delete({
                 summary = "Delete a credential"
+
+                response {
+                    HttpStatusCode.Accepted to { description = "Credential deleted" }
+                    HttpStatusCode.BadRequest to { description = "Credential could not be deleted" }
+                }
             }) {
                 val credentialId =
                     call.parameters["credentialId"] ?: throw IllegalArgumentException("No credentialId provided")
 
                 val success = getWalletService().deleteCredential(credentialId)
 
-                context.respond(if (success) HttpStatusCode.OK else HttpStatusCode.BadRequest)
+                context.respond(if (success) HttpStatusCode.Accepted else HttpStatusCode.BadRequest)
             }
         }
     }

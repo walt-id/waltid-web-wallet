@@ -2,6 +2,7 @@ package id.walt.web
 
 import id.walt.push.PushManager
 import io.github.smiley4.ktorswaggerui.dsl.post
+import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -37,9 +38,12 @@ object Notifications {
 
     fun Application.notifications() {
         routing {
-            route("/api/notifications") {
+            route("/api/notifications", {
+                tags = listOf("Notifications")
+            }) {
                 post("send", {
-
+                    summary = "Experimental: Push notification system"
+                    // TODO
                 }) {
                     var id = call.request.queryParameters["id"] ?: return@post call.respond(HttpStatusCode.OK)
                     val type = call.request.queryParameters["type"] ?: "issuance"
