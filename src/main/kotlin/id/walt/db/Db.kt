@@ -61,7 +61,7 @@ object Db {
     suspend fun init() {
         val databaseConfig = ConfigManager.getConfig<DatabaseConfiguration>()
         transaction {
-            if(databaseConfig.recreate_schema) {
+            if (databaseConfig.recreate_schema) {
                 println("DROP SCHEMA")
                 SchemaUtils.drop(
                     WalletOperationHistories,
@@ -87,7 +87,7 @@ object Db {
             )
         }
 
-        if(databaseConfig.recreate_schema) {
+        if (databaseConfig.recreate_schema) {
             val accountId = AccountsService.register(EmailLoginRequest("user@email.com", "password")).getOrThrow().id
             println("CREATED ACCOUNT: $accountId")
         }
