@@ -106,6 +106,7 @@ async function acceptPresentation() {
             method: 'POST',
             body: request
         })
+        navigateTo("/")
 
         /*
         setInterval(async () => {
