@@ -19,10 +19,8 @@ import id.walt.oid4vc.data.GrantType
 import id.walt.oid4vc.data.OpenIDProviderMetadata
 import id.walt.oid4vc.providers.OpenIDClientConfig
 import id.walt.oid4vc.providers.SIOPProviderConfig
-import id.walt.oid4vc.requests.AuthorizationRequest
-import id.walt.oid4vc.requests.CredentialOfferRequest
-import id.walt.oid4vc.requests.CredentialRequest
-import id.walt.oid4vc.requests.TokenRequest
+import id.walt.oid4vc.requests.*
+import id.walt.oid4vc.responses.BatchCredentialResponse
 import id.walt.oid4vc.responses.CredentialResponse
 import id.walt.oid4vc.responses.TokenResponse
 import id.walt.oid4vc.util.randomUUID
@@ -232,8 +230,8 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val offeredCredentials = parsedOfferReq.credentialOffer!!.resolveOfferedCredentials(providerMetadata)
         println("offeredCredentials: $offeredCredentials")
 
-        val offeredCredential = offeredCredentials.first()
-        println("offeredCredentials[0]: $offeredCredential")
+        //val offeredCredential = offeredCredentials.first()
+        //println("offeredCredentials[0]: $offeredCredential")
 
         println("// fetch access token using pre-authorized code (skipping authorization step)")
         var tokenReq = TokenRequest(
@@ -259,42 +257,66 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         println("// receive credential")
         var nonce = tokenResp.cNonce
 
+
         println("Using issuer URL: ${parsedOfferReq.credentialOfferUri ?: parsedOfferReq.credentialOffer!!.credentialIssuer}")
-        val credReq = CredentialRequest.forOfferedCredential(
-            offeredCredential = offeredCredential,
-            proof = credentialWallet.generateDidProof(
-                did = credentialWallet.did,
-                issuerUrl =  /*ciTestProvider.baseUrl*/ parsedOfferReq.credentialOfferUri
-                    ?: parsedOfferReq.credentialOffer!!.credentialIssuer,
-                nonce = nonce
+        val credReqs = offeredCredentials.map { offeredCredential ->
+            CredentialRequest.forOfferedCredential(
+                offeredCredential = offeredCredential,
+                proof = credentialWallet.generateDidProof(
+                    did = credentialWallet.did,
+                    issuerUrl =  /*ciTestProvider.baseUrl*/ parsedOfferReq.credentialOfferUri
+                        ?: parsedOfferReq.credentialOffer!!.credentialIssuer,
+                    nonce = nonce
+                )
             )
-        )
-        println("credReq: $credReq")
-
-        val credentialResp = ktorClient.post(providerMetadata.credentialEndpoint!!) {
-            contentType(ContentType.Application.Json)
-            bearerAuth(tokenResp.accessToken!!)
-            setBody(credReq.toJSON())
-        }.body<JsonObject>().let { CredentialResponse.fromJSON(it) }
-        println("credentialResp: $credentialResp")
+        }
+        println("credReqs: $credReqs")
 
 
-        println("// parse and verify credential")
-        if (credentialResp.credential == null) {
-            throw IllegalStateException("No credential was returned from credentialEndpoint: $credentialResp")
+        val credentialResponses = when {
+            credReqs.size >= 2 -> {
+                val batchCredentialRequest = BatchCredentialRequest(credReqs)
+
+                val credentialResponses = ktorClient.post(providerMetadata.batchCredentialEndpoint!!) {
+                    contentType(ContentType.Application.Json)
+                    bearerAuth(tokenResp.accessToken!!)
+                    setBody(batchCredentialRequest.toJSON())
+                }.body<JsonObject>().let { BatchCredentialResponse.fromJSON(it) }
+                println("credentialResponses: $credentialResponses")
+
+                credentialResponses.credentialResponses ?: throw IllegalArgumentException("No credential responses returned")
+            }
+            credReqs.size == 1 -> {
+                val credReq = credReqs.first()
+
+                val credentialResponse = ktorClient.post(providerMetadata.credentialEndpoint!!) {
+                    contentType(ContentType.Application.Json)
+                    bearerAuth(tokenResp.accessToken!!)
+                    setBody(credReq.toJSON())
+                }.body<JsonObject>().let { CredentialResponse.fromJSON(it) }
+                println("credentialResponse: $credentialResponse")
+
+                listOf(credentialResponse)
+            }
+            else -> throw IllegalStateException("No credentials offered")
         }
 
-        val credential = credentialResp.credential!!.jsonPrimitive.content
-        println(">>> CREDENTIAL IS: $credential")
+        println("// parse and verify credential(s)")
+        if (credentialResponses.all { it.credential == null }) {
+            throw IllegalStateException("No credential was returned from credentialEndpoint: $credentialResponses")
+        }
 
-        val credentialId = Json.parseToJsonElement(
-            Base64.decode(credential.split(".")[1]).decodeToString()
-        ).jsonObject["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content ?: randomUUID()
+        credentialResponses.forEachIndexed { index, credentialResp ->
+            val credential = credentialResp.credential!!.jsonPrimitive.content
+            println(">>> $index. CREDENTIAL IS: $credential")
 
-        CredentialsService.add(accountId, DbCredential(credentialId = credentialId, document = credential))
-        println("Credential stored with Id: $credentialId")
+            val credentialId = Json.parseToJsonElement(
+                Base64.decode(credential.split(".")[1]).decodeToString()
+            ).jsonObject["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content ?: randomUUID()
 
-
+            CredentialsService.add(accountId, DbCredential(credentialId = credentialId, document = credential))
+            println(">>> $index. CREDENTIAL stored with Id: $credentialId")
+        }
     }
 
     /* DIDs */
