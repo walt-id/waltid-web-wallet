@@ -1,16 +1,15 @@
 package id.walt.web.controllers
 
-import id.walt.service.issuers.IssuersService
 import id.walt.service.issuers.CredentialDataTransferObject
 import id.walt.service.issuers.IssuerCredentialsDataTransferObject
 import id.walt.service.issuers.IssuerDataTransferObject
+import id.walt.service.issuers.IssuersService
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
-import kotlin.random.Random
 
 fun Application.issuers() = walletRoute {
     route("issuers", {

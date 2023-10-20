@@ -31,8 +31,6 @@ import id.walt.service.dids.DidsService
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.service.dto.WalletOperationHistory
-import id.walt.service.issuers.CredentialDataTransferObject
-import id.walt.service.issuers.IssuerCredentialsDataTransferObject
 import id.walt.service.issuers.IssuerDataTransferObject
 import id.walt.service.issuers.IssuersService
 import id.walt.service.keys.KeysService
