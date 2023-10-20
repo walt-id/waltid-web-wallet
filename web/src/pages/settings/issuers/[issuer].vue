@@ -5,7 +5,12 @@
             <li v-for="credential in credentials" :key="credential" class="flex items-center justify-between gap-x-6 py-4">
                 <div class="min-w-0">
                     <div class="flex items-start gap-x-3">
-                        <p class="mx-2 text-base font-semibold leading-6 text-gray-900">{{ credential.type }}</p>
+                        <p class="mx-2 text-base font-semibold leading-6 text-gray-900">{{ credential.id }}</p>
+                    </div>
+                    <div class="flex items-start gap-x-3">
+                        <p class="mx-2 overflow-x-auto text-base font-normal leading-6 text-gray-500">
+                            {{ credential.types.join(',') }}
+                        </p>
                     </div>
                 </div>
                 <div class="flex flex-none items-center gap-x-4">
@@ -17,7 +22,7 @@
                 </div>
             </li>
         </ol>
-        <p v-if="issuers && issuers.length == 0" class="mt-2">No issuers.</p>
+        <p v-if="credentials && credentials.length == 0" class="mt-2">No credentials.</p>
     </CenterMain>
   </template>
   
@@ -37,7 +42,7 @@
   }
   
   useHead({
-    title: `${issuer} Supported credentials`,
+    title: `${issuer} - supported credentials`,
   });
   </script>
   

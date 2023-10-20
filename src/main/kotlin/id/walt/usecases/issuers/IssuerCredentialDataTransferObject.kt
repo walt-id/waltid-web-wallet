@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class IssuerCredentialDataTransferObject(
-    val type: String,
-    val uiEndpoint: String,
-    val callbackUrl: String,
+    val id: String,
+    val types: List<String>,
 )

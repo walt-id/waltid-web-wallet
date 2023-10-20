@@ -6,4 +6,6 @@ import kotlinx.serialization.Serializable
 data class IssuerDataTransferObject(
     val name: String,
     val description: String = "no description",
+    val uiEndpoint: String,
+    val configurationEndpoint: String,
 )

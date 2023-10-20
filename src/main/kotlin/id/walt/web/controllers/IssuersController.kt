@@ -1,5 +1,6 @@
 package id.walt.web.controllers
 
+import id.walt.service.issuers.IssuersService
 import id.walt.usecases.issuers.IssuerCredentialDataTransferObject
 import id.walt.usecases.issuers.IssuerDataTransferObject
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -7,6 +8,7 @@ import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
+import kotlin.random.Random
 
 fun Application.issuers() = walletRoute {
     route("issuers", {
@@ -22,6 +24,27 @@ fun Application.issuers() = walletRoute {
             }
         }) {
             context.respond(mockIssuersList())
+        }
+        route("{issuer}", {
+            request {
+                pathParameter<String>("issuer") {
+                    description = "The issuer name"
+                    example = "walt.id"
+                }
+            }
+        }) {
+            get({
+                summary = "Fetch issuer data"
+
+                response {
+                    HttpStatusCode.OK to {
+                        description = "Issuer data object"
+                        body<IssuerDataTransferObject>()
+                    }
+                }
+            }) {
+                context.respond(mockIssuersList()[Random.nextInt(mockIssuersList().size)])
+            }
         }
         route("{issuer}/credentials", {
             request {
@@ -41,7 +64,8 @@ fun Application.issuers() = walletRoute {
                     }
                 }
             }) {
-                context.respond(mockCredentialsList())
+                val issuer = mockIssuersList()[Random.nextInt(mockIssuersList().size)]
+                context.respond(IssuersService.fetchCredentials(issuer.configurationEndpoint))
             }
         }
     }
@@ -51,27 +75,13 @@ internal fun mockIssuersList() = listOf(
     IssuerDataTransferObject(
         name = "walt.id",
         description = "walt.id issuer portal",
+        uiEndpoint = "https://portal.walt.id",
+        configurationEndpoint = "https://issuer.portal.walt.id/.well-known/openid-credential-issuer",
     ),
     IssuerDataTransferObject(
         name = "walt-test#cloud",
         description = "walt-test.cloud issuer portal",
-    ),
-)
-
-internal fun mockCredentialsList() = listOf(
-    IssuerCredentialDataTransferObject(
-        type = "PermanentResidentCard",
         uiEndpoint = "https://portal.walt.id",
-        callbackUrl = "https://wallet.portal.walt.id",
-    ),
-    IssuerCredentialDataTransferObject(
-        type = "VerifiableAttestation",
-        uiEndpoint = "https://portal.walt.id",
-        callbackUrl = "https://wallet.portal.walt.id",
-    ),
-    IssuerCredentialDataTransferObject(
-        type = "OpenBadgeCredential",
-        uiEndpoint = "https://portal.walt.id",
-        callbackUrl = "https://wallet.portal.walt.id",
+        configurationEndpoint = "https://issuer.portal.walt.id/.well-known/openid-credential-issuer",
     ),
 )

@@ -26,7 +26,16 @@
             <li v-for="key in keys" :key="key" class="flex items-center justify-between gap-x-6 py-4">
                 <div class="min-w-0">
                     <div class="flex items-start gap-x-3">
-                        <p class="text-base font-semibold leading-6 text-gray-900 overflow-x-scroll py-1 mx-2">{{ key.algorithm }}: <span class="text-base font-normal">{{ key.keyId.id }}</span></p>
+                        <p class="mx-2 text-base font-semibold leading-6 text-gray-900">
+                            {{ key.algorithm }}
+                        </p>
+                    </div>
+                    <div class="flex items-start gap-x-3">
+                        <p
+                                class="mx-2 overflow-x-auto text-base font-normal leading-6 text-gray-500"
+                        >
+                            {{ key.keyId.id }}
+                        </p>
                     </div>
                 </div>
                 <div class="flex flex-none items-center gap-x-4">
