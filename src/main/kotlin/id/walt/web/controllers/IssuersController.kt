@@ -1,7 +1,8 @@
 package id.walt.web.controllers
 
 import id.walt.service.issuers.IssuersService
-import id.walt.usecases.issuers.IssuerCredentialDataTransferObject
+import id.walt.usecases.issuers.CredentialDataTransferObject
+import id.walt.usecases.issuers.IssuerCredentialsDataTransferObject
 import id.walt.usecases.issuers.IssuerDataTransferObject
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.route
@@ -60,12 +61,25 @@ fun Application.issuers() = walletRoute {
                 response {
                     HttpStatusCode.OK to {
                         description = "Array of issuer credential objects"
-                        body<List<IssuerCredentialDataTransferObject>>()
+                        body<List<CredentialDataTransferObject>>()
+                    }
+                    HttpStatusCode.InternalServerError to {
+                        description = "Error message"
+                        body<String>()
                     }
                 }
             }) {
                 val issuer = mockIssuersList()[Random.nextInt(mockIssuersList().size)]
-                context.respond(IssuersService.fetchCredentials(issuer.configurationEndpoint))
+                runCatching {
+                    IssuersService.fetchCredentials(issuer.configurationEndpoint)
+                }.onSuccess {
+                    context.respond(IssuerCredentialsDataTransferObject(
+                        issuer = issuer,
+                        credentials = it
+                    ))
+                }.onFailure {
+                    context.respondText(it.localizedMessage, ContentType.Text.Plain, HttpStatusCode.InternalServerError)
+                }
             }
         }
     }
@@ -75,13 +89,13 @@ internal fun mockIssuersList() = listOf(
     IssuerDataTransferObject(
         name = "walt.id",
         description = "walt.id issuer portal",
-        uiEndpoint = "https://portal.walt.id",
+        uiEndpoint = "https://portal.walt.id/credentials?ids=",
         configurationEndpoint = "https://issuer.portal.walt.id/.well-known/openid-credential-issuer",
     ),
     IssuerDataTransferObject(
         name = "walt-test#cloud",
         description = "walt-test.cloud issuer portal",
-        uiEndpoint = "https://portal.walt.id",
+        uiEndpoint = "https://portal.walt.id/credentials?ids=",
         configurationEndpoint = "https://issuer.portal.walt.id/.well-known/openid-credential-issuer",
     ),
 )

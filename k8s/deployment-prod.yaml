@@ -201,8 +201,8 @@ spec:
         - name: wallet-frontend
           image: waltid/wallet-frontend:latest
           env:
-            - name: NUXT_PUBLIC_ISSUER_URL
-              value: "https://issuer.walt.id"
+            - name: NUXT_PUBLIC_ISSUER_CALLBACK_URL
+              value: "https://wallet.walt.id"
           ports:
             - containerPort: 3000
               name: http-api

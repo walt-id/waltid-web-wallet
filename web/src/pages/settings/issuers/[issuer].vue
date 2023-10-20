@@ -2,19 +2,24 @@
     <CenterMain>
       <BackButton />
       <ol class="divide-y divide-gray-100 list-decimal border rounded-2xl mt-2 px-2" role="list">
-            <li v-for="credential in credentials" :key="credential" class="flex items-center justify-between gap-x-6 py-4">
+            <li v-for="credential in issuerCredentials.credentials" :key="credential" class="flex items-center justify-between gap-x-6 py-4">
                 <div class="min-w-0">
                     <div class="flex items-start gap-x-3">
                         <p class="mx-2 text-base font-semibold leading-6 text-gray-900">{{ credential.id }}</p>
                     </div>
                     <div class="flex items-start gap-x-3">
                         <p class="mx-2 overflow-x-auto text-base font-normal leading-6 text-gray-500">
-                            {{ credential.types.join(',') }}
+                            {{ credential.format }}
                         </p>
                     </div>
+                    <!-- <div class="flex items-start gap-x-3">
+                        <p class="mx-2 overflow-x-auto text-base font-normal leading-6 text-gray-500">
+                            <span>types:</span> {{ credential.types.join(',') }}
+                        </p>
+                    </div> -->
                 </div>
                 <div class="flex flex-none items-center gap-x-4">
-                    <NuxtLink @click="requestCredential(credential)"
+                    <NuxtLink :to="issuerCredentials.issuer.uiEndpoint + credential.id + '&callback=' + config.issuerCallbackUrl"
                               class="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block"
                               type="button">
                         Request credential offer
@@ -22,7 +27,7 @@
                 </div>
             </li>
         </ol>
-        <p v-if="credentials && credentials.length == 0" class="mt-2">No credentials.</p>
+        <p v-if="credentials && issuerCredentials.credentials.length == 0" class="mt-2">No credentials.</p>
     </CenterMain>
   </template>
   
@@ -30,16 +35,13 @@
   import CenterMain from "~/components/CenterMain.vue";
   import BackButton from "~/components/buttons/BackButton.vue";
   
+  const config = useRuntimeConfig();
   const route = useRoute();
   
   const issuer = route.params.issuer;
   
-  const credentials = await $fetch(`/r/wallet/issuers/${issuer}/credentials`);
+  const issuerCredentials = await $fetch(`/r/wallet/issuers/${issuer}/credentials`);
   refreshNuxtData();
-  
-  function requestCredential(credential: any){
-    console.log(credential)
-  }
   
   useHead({
     title: `${issuer} - supported credentials`,
