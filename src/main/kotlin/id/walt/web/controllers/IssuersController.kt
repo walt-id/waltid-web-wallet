@@ -13,7 +13,7 @@ fun Application.issuers() = walletRoute {
         tags = listOf("Issuers")
     }) {
         get({
-            summary = "List issuers"
+            summary = "List the configured issuers"
             response {
                 HttpStatusCode.OK to {
                     description = "Array of issuer objects"
