@@ -7,7 +7,6 @@ import id.walt.db.repositories.AccountKeysRepository
 import id.walt.db.repositories.DbAccountKeys
 import id.walt.db.repositories.DbKey
 import id.walt.db.repositories.KeysRepository
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
@@ -52,15 +51,22 @@ object KeysService {
     }
 
     private fun join(account: UUID, keyId: String? = null) =
-        Accounts.innerJoin(AccountKeys, onColumn = { Accounts.id }, otherColumn = { AccountKeys.account }).innerJoin(
-                Keys,
-                onColumn = { Keys.id },
-                otherColumn = { AccountKeys.key },
-                additionalConstraint = keyId?.let {
-                    {
-                        Keys.keyId eq keyId and (Accounts.id eq account)
-                    }
-                }).selectAll()
+        Accounts.innerJoin(
+            AccountKeys,
+            onColumn = { Accounts.id },
+            otherColumn = { AccountKeys.account },
+            additionalConstraint = {
+                Accounts.id eq account
+            }
+        ).innerJoin(
+            Keys,
+            onColumn = { Keys.id },
+            otherColumn = { AccountKeys.key },
+            additionalConstraint = keyId?.let {
+                {
+                    Keys.keyId eq keyId
+                }
+            }).selectAll()
 
     private fun find(keyId: String) = Keys.select { Keys.keyId eq keyId }
     private fun getOrInsert(keyId: String, document: String) = find(keyId).let {

@@ -31,11 +31,9 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
 }
 
-
-
 dependencies {
     // nftkit
-    implementation("id.walt:waltid-nftkit:1.2310160815.0") {
+    implementation("id.walt:waltid-nftkit:1.2310191239.0") {
         exclude("com.sksamuel.hoplite", "hoplite-core")
         exclude("com.sksamuel.hoplite", "hoplite-yaml")
         exclude("com.sksamuel.hoplite", "hoplite-hikaricp")

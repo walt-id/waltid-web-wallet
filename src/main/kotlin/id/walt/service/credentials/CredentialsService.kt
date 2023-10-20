@@ -8,10 +8,10 @@ import id.walt.db.repositories.CredentialsRepository
 import id.walt.db.repositories.DbAccountCredentials
 import id.walt.db.repositories.DbCredential
 import id.walt.service.dids.DidUpdateDataObject
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
+import java.net.URLEncoder
 import java.util.*
 
 //TODO: replace DbCredential with a dto
@@ -55,16 +55,19 @@ object CredentialsService {
         TODO()
     }
 
-    private fun join(account: UUID, credentialId: String? = null) =
-        Accounts.innerJoin(AccountCredentials, onColumn = { Accounts.id }, otherColumn = { AccountCredentials.account })
-            .innerJoin(Credentials,
-                onColumn = { Credentials.id },
-                otherColumn = { AccountCredentials.credential },
-                additionalConstraint = credentialId?.let {
-                    {
-                        Credentials.credentialId eq credentialId and (Accounts.id eq account)
-                    }
-                }).selectAll()
+    private fun join(account: UUID, credentialId: String? = null) = Accounts.innerJoin(AccountCredentials,
+        onColumn = { Accounts.id },
+        otherColumn = { AccountCredentials.account },
+        additionalConstraint = {
+            Accounts.id eq account
+        }).innerJoin(Credentials,
+        onColumn = { Credentials.id },
+        otherColumn = { AccountCredentials.credential },
+        additionalConstraint = credentialId?.let {
+            {
+                Credentials.credentialId eq credentialId
+            }
+        }).selectAll()
 
     private fun find(credentialId: String) = Credentials.select { Credentials.credentialId eq credentialId }
 
@@ -75,7 +78,7 @@ object CredentialsService {
     } ?: let {
         CredentialsRepository.insert(
             DbCredential(
-                credentialId = credentialId,
+                credentialId = URLEncoder.encode(credentialId, "UTF-8"),
                 document = document,
             )
         )

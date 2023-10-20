@@ -2,11 +2,8 @@ package id.walt.db.repositories
 
 import id.walt.db.models.AccountDids
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.statements.InsertStatement
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 object AccountDidsRepository : RepositoryBase<DbAccountDids>(AccountDids) {

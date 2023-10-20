@@ -31,6 +31,8 @@ import id.walt.service.dids.DidsService
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.service.dto.WalletOperationHistory
+import id.walt.service.issuers.IssuerDataTransferObject
+import id.walt.service.issuers.IssuersService
 import id.walt.service.keys.KeysService
 import id.walt.service.oidc4vc.TestCredentialWallet
 import io.ktor.client.*
@@ -471,6 +473,11 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun connectWallet(walletId: UUID) = Web3WalletService.connect(accountId, walletId)
 
     override suspend fun disconnectWallet(wallet: UUID) = Web3WalletService.disconnect(accountId, wallet)
+
+    override suspend fun listIssuers(): List<IssuerDataTransferObject> = IssuersService.list(accountId)
+
+    override suspend fun getIssuer(name: String): IssuerDataTransferObject =
+        IssuersService.get(accountId, name) ?: throw IllegalArgumentException("Issuer: $name not found for: $accountId")
 
     private fun getDidOptions(method: String, args: Map<String, JsonPrimitive>) = when (method.lowercase()) {
         "key" -> DidKeyCreateOptions(

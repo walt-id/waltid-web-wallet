@@ -10,6 +10,7 @@ import id.walt.service.dids.DidsService
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import id.walt.service.dto.WalletOperationHistory
+import id.walt.service.issuers.IssuerDataTransferObject
 import id.walt.utils.JsonUtils.toJsonPrimitive
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -135,10 +136,12 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
 
     //private val prettyJson = Json { prettyPrint = true }
 
-    override suspend fun deleteCredential(id: String) = authenticatedJsonDelete("/api/wallet/credentials/delete/$id").status.isSuccess()
+    override suspend fun deleteCredential(id: String) =
+        authenticatedJsonDelete("/api/wallet/credentials/delete/$id").status.isSuccess()
 
     override suspend fun getCredential(credentialId: String): String =
-        /*prettyJson.encodeToString(*/listCredentials().first { it.parsedCredential["id"]?.jsonPrimitive?.content == credentialId }.toString()//)
+        /*prettyJson.encodeToString(*/
+        listCredentials().first { it.parsedCredential["id"]?.jsonPrimitive?.content == credentialId }.toString()//)
     /* override suspend fun getCredential(credentialId: String): String =
          authenticatedJsonGet("/api/wallet/credentials/$credentialId")
              .bodyAsText()*/
@@ -192,7 +195,8 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun usePresentationRequest(request: String, did: String): String? {
         val decoded = URLDecoder.decode(request, Charset.defaultCharset())
         val queryParams = getQueryParams(decoded)
-        val redirectUri = queryParams["redirect_uri"]?.first() ?: throw IllegalArgumentException("Could not get redirect_uri from request!")
+        val redirectUri = queryParams["redirect_uri"]?.first()
+            ?: throw IllegalArgumentException("Could not get redirect_uri from request!")
 
         val sessionId = authenticatedJsonPost(
             "/api/wallet/presentation/startPresentation",
@@ -281,14 +285,15 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun loadDid(did: String) = authenticatedJsonGet("/api/wallet/did/$did")
         .body<JsonObject>()
 
-    override suspend fun deleteDid(did: String)=authenticatedJsonDelete("/api/wallet/did/delete/$did").status.isSuccess()
+    override suspend fun deleteDid(did: String) =
+        authenticatedJsonDelete("/api/wallet/did/delete/$did").status.isSuccess()
 
     override suspend fun setDefault(did: String) = DidsService.update(accountId, DidDefaultUpdateDataObject(did, true))
 
 
     /* Keys */
 
-    override suspend fun loadKey(alias: String) =  authenticatedJsonGet("/api/wallet/keys/$alias").body<JsonObject>()
+    override suspend fun loadKey(alias: String) = authenticatedJsonGet("/api/wallet/keys/$alias").body<JsonObject>()
 
 
     override suspend fun exportKey(alias: String, format: String, private: Boolean): String =
@@ -302,10 +307,10 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
             .body<String>()
 
     override suspend fun listKeys() = authenticatedJsonGet("/api/wallet/keys/list")
-        .body<JsonObject>()["list"]!!.jsonArray.map{ Json.decodeFromJsonElement<SingleKeyResponse>(it) }
+        .body<JsonObject>()["list"]!!.jsonArray.map { Json.decodeFromJsonElement<SingleKeyResponse>(it) }
 
-    override suspend fun generateKey(type: String)=
-        authenticatedJsonPost("/api/wallet/keys/generate", type ).body<String>()
+    override suspend fun generateKey(type: String) =
+        authenticatedJsonPost("/api/wallet/keys/generate", type).body<String>()
 
 
     override suspend fun importKey(jwkOrPem: String) =
@@ -355,10 +360,19 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
 
     override suspend fun unlinkWallet(wallet: UUID) = Web3WalletService.unlink(accountId, wallet)
 
-    override suspend fun getLinkedWallets(): List<LinkedWalletDataTransferObject> = Web3WalletService.getLinked(accountId)
+    override suspend fun getLinkedWallets(): List<LinkedWalletDataTransferObject> =
+        Web3WalletService.getLinked(accountId)
 
     override suspend fun connectWallet(walletId: UUID) = Web3WalletService.connect(accountId, walletId)
 
     override suspend fun disconnectWallet(wallet: UUID) = Web3WalletService.disconnect(accountId, wallet)
+
+    override suspend fun listIssuers(): List<IssuerDataTransferObject> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getIssuer(name: String): IssuerDataTransferObject {
+        TODO("Not yet implemented")
+    }
 }
 

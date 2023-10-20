@@ -68,4 +68,5 @@ fun Application.module() {
     history()
     account()
     nfts()
+    issuers()
 }

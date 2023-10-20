@@ -177,7 +177,7 @@ export default defineNuxtConfig({
     runtimeConfig: {
         public: {
             projectId: process.env.ProjectId,
-            issuerUrl: process.env.IssuerUrl ?? "http://localhost:8080"
+            issuerCallbackUrl: process.env.IssuerCallbackUrl ?? "http://localhost:3000"
         }
     },
 

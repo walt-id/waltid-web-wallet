@@ -203,8 +203,8 @@ spec:
           image: waltid/wallet-frontend:portal-latest
           imagePullPolicy: Always
           env:
-            - name: NUXT_PUBLIC_ISSUER_URL
-              value: "https://portal.walt.id"
+            - name: NUXT_PUBLIC_ISSUER_CALLBACK_URL
+              value: "https://wallet.portal.walt.id"
           ports:
             - containerPort: 3000
               name: http-api
