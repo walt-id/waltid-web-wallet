@@ -31,7 +31,15 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "16"
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
+}
 
+
+//kotlin {
+//    jvmToolchain(16)
+//}
 
 dependencies {
     // nftkit
