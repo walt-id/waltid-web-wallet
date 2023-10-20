@@ -79,7 +79,7 @@ object DidsService {
                 onColumn = { Accounts.id },
                 otherColumn = { AccountDids.account },
                 additionalConstraint = {
-                    AccountDids.default eq true and (Accounts.id eq account)
+                    AccountDids.default eq true
                 }).innerJoin(Dids, onColumn = { Dids.id }, otherColumn = { AccountDids.did }).selectAll()
         } ?: Accounts.innerJoin(AccountDids, onColumn = { Accounts.id }, otherColumn = { AccountDids.account })
             .innerJoin(Dids,
@@ -87,7 +87,7 @@ object DidsService {
                 otherColumn = { AccountDids.did },
                 additionalConstraint = did?.let {
                     {
-                        Dids.did eq did and (Accounts.id eq account)
+                        Dids.did eq did
                     }
                 }).selectAll()
 

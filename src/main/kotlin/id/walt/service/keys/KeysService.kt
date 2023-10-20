@@ -58,7 +58,7 @@ object KeysService {
                 otherColumn = { AccountKeys.key },
                 additionalConstraint = keyId?.let {
                     {
-                        Keys.keyId eq keyId and (Accounts.id eq account)
+                        Keys.keyId eq keyId
                     }
                 }).selectAll()
 

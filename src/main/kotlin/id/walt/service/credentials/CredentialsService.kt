@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
+import java.net.URLEncoder
 import java.util.*
 
 //TODO: replace DbCredential with a dto
@@ -62,7 +63,7 @@ object CredentialsService {
                 otherColumn = { AccountCredentials.credential },
                 additionalConstraint = credentialId?.let {
                     {
-                        Credentials.credentialId eq credentialId and (Accounts.id eq account)
+                        Credentials.credentialId eq credentialId
                     }
                 }).selectAll()
 
@@ -75,7 +76,7 @@ object CredentialsService {
     } ?: let {
         CredentialsRepository.insert(
             DbCredential(
-                credentialId = credentialId,
+                credentialId = URLEncoder.encode(credentialId, "UTF-8"),
                 document = document,
             )
         )
