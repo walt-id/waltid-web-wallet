@@ -1,9 +1,10 @@
 package id.walt.web.controllers
 
 import id.walt.service.issuers.IssuersService
-import id.walt.usecases.issuers.CredentialDataTransferObject
-import id.walt.usecases.issuers.IssuerCredentialsDataTransferObject
-import id.walt.usecases.issuers.IssuerDataTransferObject
+import id.walt.service.issuers.CredentialDataTransferObject
+import id.walt.service.issuers.IssuerCredentialsDataTransferObject
+import id.walt.service.issuers.IssuerDataTransferObject
+import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
@@ -24,7 +25,7 @@ fun Application.issuers() = walletRoute {
                 }
             }
         }) {
-            context.respond(mockIssuersList())
+            context.respond(getWalletService().listIssuers())
         }
         route("{issuer}", {
             request {
@@ -42,9 +43,21 @@ fun Application.issuers() = walletRoute {
                         description = "Issuer data object"
                         body<IssuerDataTransferObject>()
                     }
+                    HttpStatusCode.NotFound to {
+                        description = "Error message"
+                        body<String>()
+                    }
                 }
             }) {
-                context.respond(mockIssuersList()[Random.nextInt(mockIssuersList().size)])
+                runCatching {
+                    getWalletService().getIssuer(
+                        call.parameters["issuer"] ?: throw IllegalArgumentException("No issuer name provided.")
+                    )
+                }.onSuccess {
+                    context.respond(it)
+                }.onFailure {
+                    context.respondText(it.localizedMessage, ContentType.Text.Plain, HttpStatusCode.NotFound)
+                }
             }
         }
         route("{issuer}/credentials", {
@@ -69,14 +82,15 @@ fun Application.issuers() = walletRoute {
                     }
                 }
             }) {
-                val issuer = mockIssuersList()[Random.nextInt(mockIssuersList().size)]
                 runCatching {
-                    IssuersService.fetchCredentials(issuer.configurationEndpoint)
+                    val issuer = getWalletService().getIssuer(
+                        call.parameters["issuer"] ?: throw IllegalArgumentException("No issuer name provided.")
+                    )
+                    IssuerCredentialsDataTransferObject(
+                        issuer = issuer, credentials = IssuersService.fetchCredentials(issuer.configurationEndpoint)
+                    )
                 }.onSuccess {
-                    context.respond(IssuerCredentialsDataTransferObject(
-                        issuer = issuer,
-                        credentials = it
-                    ))
+                    context.respond(it)
                 }.onFailure {
                     context.respondText(it.localizedMessage, ContentType.Text.Plain, HttpStatusCode.InternalServerError)
                 }
@@ -84,18 +98,3 @@ fun Application.issuers() = walletRoute {
         }
     }
 }
-
-internal fun mockIssuersList() = listOf(
-    IssuerDataTransferObject(
-        name = "walt.id",
-        description = "walt.id issuer portal",
-        uiEndpoint = "https://portal.walt.id/credentials?ids=",
-        configurationEndpoint = "https://issuer.portal.walt.id/.well-known/openid-credential-issuer",
-    ),
-    IssuerDataTransferObject(
-        name = "walt-test#cloud",
-        description = "walt-test.cloud issuer portal",
-        uiEndpoint = "https://portal.walt.id/credentials?ids=",
-        configurationEndpoint = "https://issuer.portal.walt.id/.well-known/openid-credential-issuer",
-    ),
-)

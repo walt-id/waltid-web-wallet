@@ -79,17 +79,21 @@ object DidsService {
                 onColumn = { Accounts.id },
                 otherColumn = { AccountDids.account },
                 additionalConstraint = {
-                    AccountDids.default eq true
+                    AccountDids.default eq true and (Accounts.id eq account)
                 }).innerJoin(Dids, onColumn = { Dids.id }, otherColumn = { AccountDids.did }).selectAll()
-        } ?: Accounts.innerJoin(AccountDids, onColumn = { Accounts.id }, otherColumn = { AccountDids.account })
-            .innerJoin(Dids,
-                onColumn = { Dids.id },
-                otherColumn = { AccountDids.did },
-                additionalConstraint = did?.let {
-                    {
-                        Dids.did eq did
-                    }
-                }).selectAll()
+        } ?: Accounts.innerJoin(AccountDids,
+            onColumn = { Accounts.id },
+            otherColumn = { AccountDids.account },
+            additionalConstraint = {
+                Accounts.id eq account
+            }).innerJoin(Dids,
+            onColumn = { Dids.id },
+            otherColumn = { AccountDids.did },
+            additionalConstraint = did?.let {
+                {
+                    Dids.did eq did
+                }
+            }).selectAll()
 
     private fun find(did: String) = Dids.select { Dids.did eq did }
     private fun getOrInsert(key: UUID, did: String, document: String) = find(did).let {

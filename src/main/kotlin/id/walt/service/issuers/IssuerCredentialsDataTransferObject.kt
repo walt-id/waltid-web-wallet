@@ -1,4 +1,4 @@
-package id.walt.usecases.issuers
+package id.walt.service.issuers
 
 import kotlinx.serialization.Serializable
 
