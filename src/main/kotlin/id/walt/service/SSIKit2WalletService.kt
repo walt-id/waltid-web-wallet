@@ -487,8 +487,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         "jwk" -> DidJwkCreateOptions()
         "web" -> DidWebCreateOptions(domain = args["domain"]?.content ?: "", path = args["path"]?.content ?: "")
         "cheqd" -> DidCheqdCreateOptions(
-            network = args["network"]?.content ?: "test",
-            document = Json.decodeFromString<JsonObject>(args["document"]?.content ?: "")
+            network = args["network"]?.content ?: "testnet",
         )
         else -> throw IllegalArgumentException("Did method not supported: $method")
     }
