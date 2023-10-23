@@ -89,7 +89,7 @@ object DidCreation {
     private fun extractDidCreateParameters(method: String, parameters: Parameters): Map<String, JsonPrimitive> = mapOf(
         // common
         "alias" to JsonPrimitive(parameters["alias"]?.takeIf { it.isNotEmpty() } ?: "n/a"),
-        "keyId" to JsonPrimitive(parameters["keyId"]),
+        "keyId" to JsonPrimitive(parameters["keyId"] ?: ""),
     ).plus(
         // specific
         when (method) {
