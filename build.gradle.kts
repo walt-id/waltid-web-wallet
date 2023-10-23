@@ -92,7 +92,7 @@ dependencies {
 
 
     // waltid-did
-    implementation("id.walt.did:waltid-did:1.0.0")//id.walt.crypto provided by id.walt.did:waltid-did
+    implementation("id.walt.did:waltid-did:1.0.1")//id.walt.crypto provided by id.walt.did:waltid-did
 
     // OIDC
     implementation("id.walt:waltid-openid4vc:1.2310051536.0")
