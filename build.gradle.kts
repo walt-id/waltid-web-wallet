@@ -137,4 +137,7 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:5.5.5")
     testImplementation("io.kotest.extensions:kotest-assertions-ktor:2.0.0")*/
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
+
+    // Logging
+    implementation("io.github.oshai:kotlin-logging:5.1.0")
 }
