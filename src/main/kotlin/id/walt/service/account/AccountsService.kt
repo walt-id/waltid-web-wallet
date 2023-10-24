@@ -41,10 +41,11 @@ object AccountsService {
         }
     }
 
-    private fun queryDefaultIssuer(name: String) =
-        transaction { Issuers.select(Issuers.name eq name) }.singleOrNull()?.let {
+    private fun queryDefaultIssuer(name: String) = transaction {
+        Issuers.select(Issuers.name eq name).singleOrNull()?.let {
             it[Issuers.id]
         }?.value
+    }
 
     fun authenticate(request: LoginRequest): Result<AuthenticationResult> = runCatching {
         when (request) {
