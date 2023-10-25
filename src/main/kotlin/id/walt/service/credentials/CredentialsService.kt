@@ -78,7 +78,7 @@ object CredentialsService {
     } ?: let {
         CredentialsRepository.insert(
             DbCredential(
-                credentialId = URLEncoder.encode(credentialId, "UTF-8"),
+                credentialId = credentialId,
                 document = document,
             )
         )
