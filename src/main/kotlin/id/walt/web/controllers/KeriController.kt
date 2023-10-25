@@ -3,6 +3,7 @@ package id.walt.web.controllers
 import id.walt.service.dto.KeriCreateDbRequest
 import id.walt.service.dto.KeriCreateDbResponse
 import id.walt.service.dto.KeriInceptionRequest
+import id.walt.service.dto.KeriInceptionResponse
 import id.walt.service.keri.KeriInceptionService
 import id.walt.service.keri.KeriInitService
 import io.github.smiley4.ktorswaggerui.dsl.post
@@ -57,7 +58,32 @@ fun Application.keri() = walletRoute {
         }
 
         post("incept/{name}", {
-            summary = "Initialize a prefix"
+            summary = "Create an inception event to initiate a controller"
+
+            request {
+                pathParameter<String>("name") {
+                    description = "keystore name and file location of KERI keystore"
+                    example = "waltid"
+                }
+
+                body<KeriInceptionRequest> {
+                    description = "Required data for the inception of a controller"
+                    example("application/json", KeriInceptionRequest(alias = "waltid-alias", passcode = "0123456789abcdefghijk"))
+                }
+
+            }
+            response {
+                HttpStatusCode.Created to {
+                    body<String> {
+                        description = "The identifiers of the controller. An AID, DID and public keys"
+                        example("application/json", KeriInceptionResponse(aid = "EPjNBI4spoZ3lU5OCtNO4QgJmhIw7P1T-JOtwit36do4", did = "did:keri:EPjNBI4spoZ3lU5OCtNO4QgJmhIw7P1T-JOtwit36do4", publicKeys = listOf(
+                            "DOERpUwwYCSyWH8e8yLJDKZpvEly_oJ8QJPw2wH3qRVQ"
+                        ))) {
+                            summary = "Example of creating an inception event (First event in a Key Event Log (KEL))"
+                        }
+                    }
+                }
+            }
         }) {
             val name = call.parameters["name"] ?: return@post call.respond(HttpStatusCode.BadRequest)
             val dto = call.receive<KeriInceptionRequest>()
