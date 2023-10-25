@@ -17,7 +17,7 @@ import java.util.*
 //TODO: replace DbCredential with a dto
 object CredentialsService {
     fun get(account: UUID, credentialId: String): DbCredential? =
-        list(account).singleOrNull { it.credentialId == credentialId }
+        list(account).singleOrNull { it.credentialId == URLEncoder.encode(credentialId, "UTF-8") }
 
     fun list(account: UUID): List<DbCredential> = join(account).let {
         AccountCredentialsRepository.query(it) {
