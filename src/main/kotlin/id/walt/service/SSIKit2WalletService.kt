@@ -88,7 +88,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
             val cred = it.document
             val parsedCred = if (cred.startsWith("{")) Json.parseToJsonElement(cred).jsonObject
             else if (cred.startsWith("ey")) Json.parseToJsonElement(
-                Base64.decode(cred.split(".")[1]).decodeToString()
+                Base64.UrlSafe.decode(cred.split(".")[1]).decodeToString()
             ).jsonObject["vc"]!!.jsonObject
             else throw IllegalArgumentException("Unknown credential format")
             Credential(parsedCred, cred)
@@ -313,7 +313,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
             println(">>> $index. CREDENTIAL IS: $credential")
 
             val credentialId = Json.parseToJsonElement(
-                Base64.decode(credential.split(".")[1]).decodeToString()
+                Base64.UrlSafe.decode(credential.split(".")[1]).decodeToString()
             ).jsonObject["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content ?: randomUUID()
 
             CredentialsService.add(accountId, DbCredential(credentialId = credentialId, document = credential))
