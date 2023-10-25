@@ -2,6 +2,8 @@ package id.walt.web.controllers
 
 import id.walt.service.dto.KeriCreateDbRequest
 import id.walt.service.dto.KeriCreateDbResponse
+import id.walt.service.dto.KeriInceptionRequest
+import id.walt.service.keri.KeriInceptionService
 import id.walt.service.keri.KeriInitService
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
@@ -47,6 +49,19 @@ fun Application.keri() = walletRoute {
             val name = call.parameters["name"] ?: return@post call.respond(HttpStatusCode.BadRequest)
             val dto = call.receive<KeriCreateDbRequest>()
             val response = KeriInitService().createKeystoreDatabase(name, dto.passcode)
+
+
+            call.respond(HttpStatusCode.Created, response)
+
+
+        }
+
+        post("incept/{name}", {
+            summary = "Initialize a prefix"
+        }) {
+            val name = call.parameters["name"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+            val dto = call.receive<KeriInceptionRequest>()
+            val response = KeriInceptionService().inceptController(name, dto.alias, dto.passcode)
 
 
             call.respond(HttpStatusCode.Created, response)
