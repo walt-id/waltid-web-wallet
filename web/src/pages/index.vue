@@ -33,7 +33,7 @@
         <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-6" role="list">
           <li v-for="credential in credentials" :key="credential.id"
             class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow w-[96%] transform hover:scale-105 cursor-pointer duration-200">
-            <NuxtLink :to="'/credentials/' + credential.id">
+            <NuxtLink :to="'/credentials/' + encodeURIComponent(credential.id)">
               <div class="bg-white p-6 rounded-2xl shadow-2xl h-full">
                 <div class="flex justify-end">
                   <div
