@@ -354,13 +354,13 @@ const {
     pending,
     refresh,
     error,
-} = await useLazyFetch(`/r/wallet/credentials/${credentialId}`);
+} = await useLazyFetch(`/r/wallet/credentials/${encodeURIComponent(credentialId)}`);
 refreshNuxtData();
 
 useHead({title: "View credential - walt.id"});
 
 async function deleteCredential() {
-    await $fetch(`/r/wallet/credentials/${credentialId}`, {
+    await $fetch(`/r/wallet/credentials/${encodeURIComponent(credentialId)}`, {
         method: "DELETE",
     });
     await navigateTo({path: "/"});
