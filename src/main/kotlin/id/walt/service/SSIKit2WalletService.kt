@@ -164,7 +164,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     /**
      * @return redirect uri
      */
-    override suspend fun usePresentationRequest(request: String, did: String): String {
+    override suspend fun usePresentationRequest(request: String, did: String): Result<String?> {
         val credentialWallet = getCredentialWallet(did)
 
         val authReq = AuthorizationRequest.fromHttpQueryString(Url(request).encodedQuery)
@@ -178,12 +178,15 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
                     entry.value.forEach { append(entry.key, it) }
                 }
             })
-        println(resp)
+        println("HTTP Response: $resp, body: ${resp.bodyAsText()}")
 
-        if (!resp.status.isSuccess()) {
-            return "https://error.org/"
+        return if (resp.status.isSuccess()) {
+            val redirectUri = resp.bodyAsText()
+            if (redirectUri.startsWith("http"))
+                Result.success(redirectUri)
+            else Result.success(null)
         } else {
-            return ""
+            Result.failure(IllegalStateException("https://error.org/"))
         }
     }
 
@@ -203,6 +206,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
             did
         )
     }
+
     fun getAnyCredentialWallet() = credentialWallets.values.firstOrNull() ?: getCredentialWallet("did:test:test")
 
     private val testCIClientConfig = OpenIDClientConfig("test-client", null, redirectUri = "http://blank")
@@ -288,6 +292,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
                 credentialResponses.credentialResponses ?: throw IllegalArgumentException("No credential responses returned")
             }
+
             credReqs.size == 1 -> {
                 val credReq = credReqs.first()
 
@@ -300,6 +305,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
                 listOf(credentialResponse)
             }
+
             else -> throw IllegalStateException("No credentials offered")
         }
 
@@ -327,7 +333,8 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val key = args["keyId"]?.content?.takeIf { it.isNotEmpty() }?.let { getKey(it) } ?: LocalKey.generate(KeyType.Ed25519)
         val options = getDidOptions(method, args)
         val result = DidService.registerByKey(method, key, options)
-        val keyRef = KeysService.add(accountId,
+        val keyRef = KeysService.add(
+            accountId,
             DbKey(
                 keyId = key.getKeyId(),
                 document = KeySerialization.serializeKey(key)
@@ -484,11 +491,13 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
             args["key"]?.let { enumValueIgnoreCase<KeyType>(it.content) } ?: KeyType.Ed25519,
             args["useJwkJcsPub"]?.let { it.content.toBoolean() } ?: false
         )
+
         "jwk" -> DidJwkCreateOptions()
         "web" -> DidWebCreateOptions(domain = args["domain"]?.content ?: "", path = args["path"]?.content ?: "")
         "cheqd" -> DidCheqdCreateOptions(
             network = args["network"]?.content ?: "testnet",
         )
+
         else -> throw IllegalArgumentException("Did method not supported: $method")
     }
 }

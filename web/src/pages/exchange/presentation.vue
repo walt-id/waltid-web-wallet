@@ -106,16 +106,24 @@ async function acceptPresentation() {
             method: 'POST',
             body: request
         })
-        setInterval(async () => {
+
+        console.log(response)
+
+        if (response.redirectUri) {
+            window.location.href = response.redirectUri
+        }
+
+        /*setInterval(async () => {
             let sessionId = presentationUrl.searchParams.get('state');
             let response = await fetch(`https://verifier.portal.walt.id/vp/session/${sessionId}`);
             response = await response.json();
             if (response.verificationResult) {
                 window.location.href = `https://portal.walt.id/success/${sessionId}`;
             }
-        }, 1000);
+        }, 1000);*/
     } catch (e) {
         failed.value = true
+        window.alert(e)
         throw e
     }
 }
