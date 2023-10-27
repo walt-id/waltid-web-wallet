@@ -108,10 +108,45 @@ class TestCredentialWallet(
         // for this test wallet implementation, present all credentials in the wallet
 
         val credentialList = runBlocking { walletService.listCredentials() }
-        val presentationDefinition = session.presentationDefinition ?: throw PresentationError(TokenErrorCode.invalid_request, tokenRequest, session.presentationDefinition)
+        println("Credential list is: ${credentialList.map { it.parsedCredential["type"]!!.jsonArray }}")
 
-        val filterString = presentationDefinition.inputDescriptors.flatMap { it.constraints?.fields ?: listOf() }.firstOrNull { field -> field.path.any { it.contains("type") } }?.filter?.jsonObject.toString()
-        val credentials = credentialList.filter { filterString.contains(it.parsedCredential["type"]!!.jsonArray.last().jsonPrimitive.content) }
+        val presentationDefinition = session.presentationDefinition ?: throw PresentationError(
+            TokenErrorCode.invalid_request,
+            tokenRequest,
+            session.presentationDefinition
+        )
+
+        data class TypeFilter(val path: String, val type: String? = null, val pattern: String)
+
+        val filters = presentationDefinition.inputDescriptors.mapNotNull {
+            it.constraints?.fields?.map {
+                val path = it.path.first().removePrefix("$.")
+                val filterType = it.filter?.get("type")?.jsonPrimitive?.content
+                val filterPattern = it.filter?.get("pattern")?.jsonPrimitive?.content
+                    ?: throw IllegalArgumentException("No filter pattern in presentation definition constraint")
+
+                TypeFilter(path, filterType, filterPattern)
+            }
+        }
+        println("Using filters: $filters")
+
+        val matchedCredentials = credentialList.filter { credential -> filters.any { fields -> fields.all { typeFilter ->
+            val credField = credential.parsedCredential[typeFilter.path] ?: return@all false
+
+            when (credField) {
+                is JsonPrimitive -> credField.jsonPrimitive.content == typeFilter.pattern
+                is JsonArray -> credField.jsonArray.last().jsonPrimitive.content == typeFilter.pattern
+                else -> false
+            }
+        } } }
+        println("Matched credentials: $matchedCredentials")
+
+        /*val filterString = presentationDefinition.inputDescriptors.flatMap { it.constraints?.fields ?: listOf() }
+            .firstOrNull { field -> field.path.any { it.contains("type") } }?.filter?.jsonObject.toString()
+        println("Filter string is: $filterString")
+        val credentials =
+            credentialList.filter { filterString.contains(it.parsedCredential["type"]!!.jsonArray.last().jsonPrimitive.content) }
+        println("Will use credentials: ${credentials.map { it.parsedCredential["type"]!!.jsonArray }}")*/
 
 
         val vp = Json.encodeToString(
@@ -127,7 +162,7 @@ class TestCredentialWallet(
                     "type" to listOf("VerifiablePresentation"),
                     "id" to "urn:uuid:${UUID.randomUUID().toString().lowercase()}",
                     "holder" to this.did,
-                    "verifiableCredential" to credentials.map { it.rawCredential }
+                    "verifiableCredential" to matchedCredentials.map { it.rawCredential }
                 )
             ).toJsonElement()
         )
@@ -162,7 +197,7 @@ class TestCredentialWallet(
             listOf(JsonPrimitive(signed)), PresentationSubmission(
                 id = "submission 1",
                 definitionId = presentationDefinition.id,
-                descriptorMap = credentials.map { it.rawCredential }.mapIndexed { index, vcJwsStr ->
+                descriptorMap = matchedCredentials.map { it.rawCredential }.mapIndexed { index, vcJwsStr ->
                     val vcJws = vcJwsStr.base64UrlToBase64().decodeJws()
                     val type =
                         vcJws.payload["vc"]?.jsonObject?.get("type")?.jsonArray?.last()?.jsonPrimitive?.contentOrNull
