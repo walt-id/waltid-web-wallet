@@ -57,7 +57,7 @@
                     )
                   }}
                 </h2>
-                <div class="flex items-center">
+                <div v-if="credential.issuer" class="flex items-center">
                   <img class="w-12" :src="credential.issuer?.image?.id
                         ? credential.issuer?.image?.id
                         : credential.issuer?.image
