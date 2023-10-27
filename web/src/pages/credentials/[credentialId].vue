@@ -37,7 +37,7 @@
                              class="w-12"
                         />
                         <div class="text-natural-600 ml-2 w-32">
-                            {{ jwtJson.vc.issuer.name }}
+                            {{ jwtJson.vc.issuer?.name }}
                         </div>
                     </div>
                 </div>
@@ -252,12 +252,12 @@
                 <div class="text-gray-500 mb-4 font-bold">Issuer</div>
                 <div class="md:flex text-gray-500 mb-3 md:mb-1">
                     <div class="min-w-[19vw]">Name</div>
-                    <div class="font-bold">{{ jwtJson.vc.issuer.name }}</div>
+                    <div class="font-bold">{{ jwtJson.vc.issuer?.name }}</div>
                 </div>
                 <div class="md:flex text-gray-500 mb-3 md:mb-1">
                     <div class="min-w-[19vw]">DID</div>
                     <div class="font-bold overflow-scroll lg:overflow-auto">
-                        {{ jwtJson.vc.issuer.id }}
+                        {{ jwtJson.vc.issuer?.id }}
                     </div>
                 </div>
                 <hr class="mt-5 mb-3"/>

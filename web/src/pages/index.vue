@@ -63,7 +63,7 @@
                         : credential.issuer?.image
                       " />
                   <div class="text-natural-600 ml-2 w-32">
-                    {{ credential.issuer.name }}
+                    {{ credential.issuer?.name }}
                   </div>
                 </div>
               </div>
