@@ -34,6 +34,12 @@ RUN apt install pip -y && \
     mkdir -p /usr/local/var/keri && \
     pip install -e .
 
+# vLEI spec leverage `did:keri` to make acdc schemas, credentials and OOBIs (through durls field) discoverable
+WORKDIR /vLEI
+RUN git clone -b dev https://github.com/WebOfTrust/vLEI.git . && \
+    git checkout ed982313dab86bfada3825857601a10d71ce9631 && \
+    pip install -e ./
+
 COPY --from=buildstage /work/build/install/ /
 WORKDIR /waltid-web-wallet
 
