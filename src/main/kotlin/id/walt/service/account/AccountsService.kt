@@ -1,5 +1,8 @@
 package id.walt.service.account
 
+import id.walt.db.models.Issuers
+import id.walt.db.repositories.AccountIssuersRepository
+import id.walt.db.repositories.DbAccountIssuers
 import id.walt.service.WalletServiceManager
 import id.walt.web.generateToken
 import id.walt.web.model.AddressLoginRequest
@@ -7,6 +10,9 @@ import id.walt.web.model.EmailLoginRequest
 import id.walt.web.model.LoginRequest
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonPrimitive
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 object AccountsService {
@@ -18,10 +24,27 @@ object AccountsService {
     }.also {
         it.getOrNull()?.let {
             runBlocking {
+                // create a default did
                 WalletServiceManager.getWalletService(it.id)
                     .createDid(method = "key", mapOf("alias" to JsonPrimitive("Onboarding")))
+                // associate the default issuer
+                //TODO: use issuers-service
+                queryDefaultIssuer("walt.id")?.let { iss ->
+                    AccountIssuersRepository.insert(
+                        DbAccountIssuers(
+                            account = it.id,
+                            issuer =  iss
+                        )
+                    )
+                }
             }
         }
+    }
+
+    private fun queryDefaultIssuer(name: String) = transaction {
+        Issuers.select(Issuers.name eq name).singleOrNull()?.let {
+            it[Issuers.id]
+        }?.value
     }
 
     fun authenticate(request: LoginRequest): Result<AuthenticationResult> = runCatching {

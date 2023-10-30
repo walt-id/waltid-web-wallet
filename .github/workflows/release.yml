@@ -52,14 +52,14 @@ jobs:
         with:
           push: true
           file: backend.Dockerfile
-          tags: waltid/wallet-backend:latest, waltid/wallet-backend:${{ env.release_version }}
+          tags: waltid/wallet-backend:latest, waltid/wallet-backend:${{ env.release_version }}, waltid/wallet-backend:portal-latest
 
       - name: Build and push Docker images (frontend)
         uses: docker/build-push-action@v4.0.0
         with:
           push: true
           file: frontend.Dockerfile
-          tags: waltid/wallet-frontend:latest, waltid/wallet-frontend:${{ env.release_version }}
+          tags: waltid/wallet-frontend:latest, waltid/wallet-frontend:${{ env.release_version }}, waltid/wallet-frontend:portal-latest
 
       - name: Changelog
         uses: ardalanamini/auto-changelog@v3
@@ -96,11 +96,19 @@ jobs:
           body: |
             ${{ steps.changelog.outputs.changelog }}
           prerelease: ${{ steps.changelog.outputs.prerelease }}
-      - name: Prepare CD
+      - name: Prepare CD - wallet.walt.id
         run: sed "s/_DEFAULT_DEPLOYMENT_/$GITHUB_SHA/g" k8s/deployment-dev.yaml > k8s/deployment_mod.yaml
-      - name: Continuous deployment
+      - name: Continuous deployment - wallet.walt.id
         uses: actions-hub/kubectl@master
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
           args: apply -n dev -f k8s/deployment_mod.yaml
+      - name: Prepare CD - wallet.portal.walt.id
+        run: sed "s/_DEFAULT_DEPLOYMENT_/$GITHUB_SHA/g" k8s/deployment-portal.yaml > k8s/deployment_mod.yaml
+      - name: Continuous deployment - wallet.portal.walt.id
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: apply -n portals -f k8s/deployment_mod.yaml

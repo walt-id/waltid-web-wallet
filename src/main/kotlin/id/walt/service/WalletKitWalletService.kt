@@ -192,7 +192,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         val state: String?
     )
 
-    override suspend fun usePresentationRequest(request: String, did: String): String? {
+    override suspend fun usePresentationRequest(request: String, did: String): Result<String?> {
         val decoded = URLDecoder.decode(request, Charset.defaultCharset())
         val queryParams = getQueryParams(decoded)
         val redirectUri = queryParams["redirect_uri"]?.first()
@@ -235,7 +235,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
 
         val redirect = redirectUriResp.headers[HttpHeaders.Location]
 
-        return redirect
+        return Result.success(redirect)
     }
 
     override suspend fun resolvePresentationRequest(request: String): String {

@@ -56,7 +56,7 @@ const keyId = route.params.keyId
 async function loadExportedKey() {
     const data = await $fetch(`/r/wallet/keys/load/${keyId}?format=${format}&loadPrivateKey=${loadPrivateKey}`)
 
-    exportedKey.value = data
+    exportedKey.value = JSON.stringify(data);
 }
 
 if (process.client && !loadPrivateKey) {

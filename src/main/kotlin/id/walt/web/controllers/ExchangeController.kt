@@ -72,15 +72,28 @@ fun Application.exchange() = walletRoute {
 
             val request = call.receiveText()
 
-            val redirect = wallet.usePresentationRequest(request, did)
-            wallet.addOperationHistory(
-                WalletOperationHistory.new(
-                    wallet, "usePresentationRequest",
-                    mapOf("did" to did, "request" to request, "redirect" to redirect)
-                )
-            )
+            val result = wallet.usePresentationRequest(request, did)
 
-            context.respond(HttpStatusCode.OK, mapOf("redirectUri" to redirect))
+
+            if (result.isSuccess) {
+                wallet.addOperationHistory(
+                    WalletOperationHistory.new(
+                        wallet, "usePresentationRequest",
+                        mapOf("did" to did, "request" to request, "success" to "true", "redirect" to result.getOrThrow()) // change string true to bool
+                    )
+                )
+
+                context.respond(HttpStatusCode.OK, mapOf("redirectUri" to result.getOrThrow()))
+            } else {
+                wallet.addOperationHistory(
+                    WalletOperationHistory.new(
+                        wallet, "usePresentationRequest",
+                        mapOf("did" to did, "request" to request, "success" to "false", "redirect" to result.getOrThrow()) // change string true to bool
+                    )
+                )
+
+                context.respond(HttpStatusCode.BadRequest, mapOf("redirectUri" to result.exceptionOrNull()!!.message))
+            }
         }
         post("resolvePresentationRequest", {
             summary = "Return resolved / parsed presentation request"
