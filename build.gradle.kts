@@ -40,6 +40,7 @@ dependencies {
         exclude("com.sksamuel.hoplite", "hoplite-yaml")
         exclude("com.sksamuel.hoplite", "hoplite-hikaricp")
     }
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
 
     /* -- KTOR -- */
 
@@ -137,6 +138,8 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:5.5.5")
     testImplementation("io.kotest.extensions:kotest-assertions-ktor:2.0.0")*/
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
     // Logging
     implementation("io.github.oshai:kotlin-logging:5.1.0")
