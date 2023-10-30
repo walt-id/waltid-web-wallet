@@ -320,7 +320,8 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
             val credentialId = Json.parseToJsonElement(
                 Base64.UrlSafe.decode(credential.split(".")[1]).decodeToString()
-            ).jsonObject["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content ?: randomUUID()
+            ).jsonObject["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
+                ?: randomUUID()
 
             CredentialsService.add(accountId, DbCredential(credentialId = credentialId, document = credential))
             println(">>> $index. CREDENTIAL stored with Id: $credentialId")
