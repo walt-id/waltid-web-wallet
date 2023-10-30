@@ -254,7 +254,7 @@
         <div class="md:flex text-gray-500 mb-3 md:mb-1">
           <div class="min-w-[19vw]">DID</div>
           <div class="font-bold overflow-scroll lg:overflow-auto">
-            {{ jwtJson.vc.issuer.id }}
+            {{ jwtJson.vc.issuer.id ? jwtJson.vc.issuer.id : jwtJson.vc.issuer }}
           </div>
         </div>
         <hr class="mt-5 mb-3" />
