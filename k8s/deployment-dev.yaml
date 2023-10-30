@@ -246,11 +246,18 @@ spec:
               service:
                 name: wallet-backend
                 port:
-                  number: 80
+                  name: http
+          - path: /swagger
+            pathType: Prefix
+            backend:
+              service:
+                name: wallet-backend
+                port:
+                  name: http
           - path: /
             pathType: Prefix
             backend:
               service:
                 name: wallet-frontend
                 port:
-                  number: 80
+                  name: http
