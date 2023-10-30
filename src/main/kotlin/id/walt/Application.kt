@@ -71,4 +71,5 @@ fun Application.module() {
     nfts()
 
     keri()
+    acdc()
 }
