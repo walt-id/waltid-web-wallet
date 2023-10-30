@@ -79,6 +79,7 @@ dependencies {
 
     // Kotlinx.serialization
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation("com.google.code.gson:gson:2.10.1")
 
     // Date
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
