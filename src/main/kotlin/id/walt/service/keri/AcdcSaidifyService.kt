@@ -31,9 +31,6 @@ class AcdcSaidifyService: AcdcSaidifyInterface {
 
             content = readFileContent(file)
             said = extractSAID(file)!!
-            println("####################")
-            println(said)
-            println("####################")
 
         } catch(e: IOException) {
             e.printStackTrace()
