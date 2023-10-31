@@ -4,6 +4,7 @@ import id.walt.service.dto.*
 import id.walt.service.keri.KeriInceptionService
 import id.walt.service.keri.KeriInitService
 import id.walt.service.keri.KeriOobiService
+import id.walt.service.keri.KeriRegistryService
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
@@ -87,11 +88,55 @@ fun Application.keri() = walletRoute {
             val dto = call.receive<KeriInceptionRequest>()
             val response = KeriInceptionService().inceptController(name, dto.alias, dto.passcode)
 
+            call.respond(HttpStatusCode.Created, response)
+        }
+
+        post("keystore/{keystore}/alias/{alias}/registry/{registry}", {
+            summary = "Create a registry to manage credentials"
+
+            request {
+                pathParameter<String>("keystore") {
+                    description = "keystore name and file location of KERI keystore"
+                    example = "waltid"
+                }
+
+                pathParameter<String>("alias") {
+                    description = "human readable alias for the AID"
+                    example = "waltid-alias"
+                }
+
+                pathParameter<String>("registry") {
+                    description = "name of the registry that handles the Transaction Event Logs (TEL) to handle ACDC credentials"
+                    example = "waltid-registry"
+                }
+
+                body<KeriInceptionRequest> {
+                    description = "Required data for the inception of a controller"
+                    example("application/json", KeriCreateDbRequest(passcode = "0123456789abcdefghijk"))
+                }
+            }
+            response {
+                HttpStatusCode.Created to {
+                    body<String> {
+                      description = "The Self-Certifying IDentifier (SCID) of the registry"
+                        example("application/json", KeriRegistryInceptionResponse(scid = "ECoM0vzkc9sWvKdr08bLlHH2d_pik-ZCbSNzQRd2RoBU"
+                      )) {
+                          summary = "Example of creating an inception of a Registry in KERI"
+                      }
+                  }
+                }
+            }
+        }) {
+            val keystore = call.parameters["keystore"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+            val alias = call.parameters["alias"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+            val registry = call.parameters["registry"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+
+            val dto = call.receive<KeriCreateDbRequest>()
+            val response = KeriRegistryService().incept(keystore, alias, registry, dto.passcode)
 
             call.respond(HttpStatusCode.Created, response)
-
-
         }
+                    
 
         post("oobi/resolve/keystore/{keystore}/oobiAlias/{oobiAlias}", {
             summary = "Resolve the provided OOBI"
@@ -112,12 +157,12 @@ fun Application.keri() = walletRoute {
                     example("application/json", KeriOobiResolveRequest(passcode = "0123456789abcdefghijk", oobiAlias = "holder", url = "http://127.0.0.1:5642/oobi/EL" +
                             "jSFdrTdCebJlmvbFNX9-TLhR2PO0_60al1kQp5_e6k/witness/BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha"))
                 }
-
+                
             }
             response {
                 HttpStatusCode.Created to {
                     body<String> {
-                        description = "A boolean, whether the OOBI was resolved or not"
+                      description = "A boolean, whether the OOBI was resolved or not"
                     }
                 }
             }
@@ -129,6 +174,5 @@ fun Application.keri() = walletRoute {
 
             call.respond(HttpStatusCode.Created, response)
         }
-
     }
 }
