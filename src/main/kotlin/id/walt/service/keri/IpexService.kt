@@ -9,6 +9,9 @@ import java.io.IOException
 import java.io.InputStreamReader
 
 class IpexService: IpexInterface {
+
+    // GRANT=$(kli ipex list --name holder --alias holder --poll --said)
+    // kli ipex admit --name holder --alias holder --said "${GRANT}"
     override fun admit(keystore: String, alias: String, passcode: String, said: String, message: String?) {
         TODO("Not yet implemented")
     }
@@ -61,6 +64,7 @@ class IpexService: IpexInterface {
         return IpexSaid(said=said)
     }
 
+    // kli ipex grant --name issuer --alias issuer --said "${SAID}" --recipient ELjSFdrTdCebJlmvbFNX9-TLhR2PO0_60al1kQp5_e6k
     override fun grant(
         keystore: String,
         alias: String,
@@ -68,8 +72,39 @@ class IpexService: IpexInterface {
         said: String,
         recipient: String,
         message: String?
-    ) {
-        TODO("Not yet implemented")
+    ): IpexSaid {
+        var result = ""
+        val command: List<String> = listOf(
+            "kli", "ipex",
+            "grant",
+            "--name", keystore,
+            "--alias", alias,
+            "--passcode", passcode,
+            "--said", said,
+            "--recipient", recipient
+        )
+        try {
+            val processBuilder = ProcessBuilder(command)
+            val process = processBuilder.start()
+
+            val reader = BufferedReader(InputStreamReader(process.inputStream))
+            result = reader.readLine()!!.trimEnd('\n')
+
+            val errorReader = BufferedReader(InputStreamReader(process.errorStream))
+            var errorLine: String?
+            while (errorReader.readLine().also { errorLine = it } != null) {
+                System.err.println(errorLine)
+            }
+
+            process.waitFor()
+        } catch(e: IOException) {
+            e.printStackTrace()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
+
+
+        return IpexSaid(said=result)
     }
 
     override fun list(

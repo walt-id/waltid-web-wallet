@@ -18,6 +18,14 @@ data class IpexSaid (
     val said: String
 )
 
+@Serializable
+data class IpexGrant (
+    val passcode: String,
+    val credentialSaid: String,
+    val recipient: String,
+    val message: String? = null
+)
+
 enum class IPEX_EVENT(val type: String) {
     APPLY("apply"),
     OFFER("offer"),

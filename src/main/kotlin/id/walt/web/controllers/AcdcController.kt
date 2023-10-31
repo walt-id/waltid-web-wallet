@@ -97,5 +97,26 @@ fun Application.acdc() = walletRoute {
             call.respond(HttpStatusCode.OK, response)
         }
 
+        post("ipex/grant/keystore/{keystore}/alias/{alias}", {
+            summary = ""
+
+            response {
+                HttpStatusCode.OK to {
+                    body<IpexSaid> {
+                        example("application/json", IpexSaid(said = "AGjwWfC9LlDCCsSPdPomRmMZOIIeqPfHIA5V3hjyzf7D")) {
+                        }
+                    }
+                }
+            }
+
+        }) {
+            val keystore = call.parameters["keystore"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+            val alias = call.parameters["alias"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+
+            val dto = call.receive<IpexGrant>()
+            val response = IpexService().grant(keystore, alias, dto.passcode, dto.credentialSaid, dto.recipient, dto.message)
+            call.respond(HttpStatusCode.OK, response)
+        }
+
     }
 }

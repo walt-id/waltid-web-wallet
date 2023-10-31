@@ -39,7 +39,7 @@ interface IpexInterface {
     /**
      * Reply to IPEX agree message or initiate an IPEX exchange with a credential issuance or presentation
      */
-    fun grant(keystore: String, alias: String, passcode: String, said: String, recipient: String, message: String?);
+    fun grant(keystore: String, alias: String, passcode: String, said: String, recipient: String, message: String?): IpexSaid;
 
     /**
      * List notifications related to IPEX protocol messages
