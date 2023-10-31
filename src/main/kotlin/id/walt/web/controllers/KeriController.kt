@@ -3,6 +3,7 @@ package id.walt.web.controllers
 import id.walt.service.dto.*
 import id.walt.service.keri.KeriInceptionService
 import id.walt.service.keri.KeriInitService
+import id.walt.service.keri.KeriOobiService
 import id.walt.service.keri.KeriRegistryService
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
@@ -113,17 +114,16 @@ fun Application.keri() = walletRoute {
                     description = "Required data for the inception of a controller"
                     example("application/json", KeriCreateDbRequest(passcode = "0123456789abcdefghijk"))
                 }
-
             }
             response {
                 HttpStatusCode.Created to {
                     body<String> {
-                        description = "The Self-Certifying IDentifier (SCID) of the registry"
+                      description = "The Self-Certifying IDentifier (SCID) of the registry"
                         example("application/json", KeriRegistryInceptionResponse(scid = "ECoM0vzkc9sWvKdr08bLlHH2d_pik-ZCbSNzQRd2RoBU"
-                        )) {
-                            summary = "Example of creating an inception of a Registry in KERI"
-                        }
-                    }
+                      )) {
+                          summary = "Example of creating an inception of a Registry in KERI"
+                      }
+                  }
                 }
             }
         }) {
@@ -133,6 +133,44 @@ fun Application.keri() = walletRoute {
 
             val dto = call.receive<KeriCreateDbRequest>()
             val response = KeriRegistryService().incept(keystore, alias, registry, dto.passcode)
+
+            call.respond(HttpStatusCode.Created, response)
+        }
+                    
+
+        post("oobi/resolve/keystore/{keystore}/oobiAlias/{oobiAlias}", {
+            summary = "Resolve the provided OOBI"
+
+            request {
+                pathParameter<String>("keystore") {
+                    description = "keystore name and file location of KERI keystore"
+                    example = "waltid"
+                }
+
+                pathParameter<String>("oobiAlias") {
+                    description = "human-readable alternative for KERI"
+                    example = "waltid-alias"
+                }
+
+                body<KeriInceptionRequest> {
+                    description = "Required data for resolving an OOBI"
+                    example("application/json", KeriOobiResolveRequest(passcode = "0123456789abcdefghijk", oobiAlias = "holder", url = "http://127.0.0.1:5642/oobi/EL" +
+                            "jSFdrTdCebJlmvbFNX9-TLhR2PO0_60al1kQp5_e6k/witness/BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha"))
+                }
+                
+            }
+            response {
+                HttpStatusCode.Created to {
+                    body<String> {
+                      description = "A boolean, whether the OOBI was resolved or not"
+                    }
+                }
+            }
+        }) {
+            val keystore = call.parameters["keystore"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+            val oobiAlias = call.parameters["oobiAlias"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+            val dto = call.receive<KeriOobiResolveRequest>()
+            val response = KeriOobiService().resolve(keystore, dto.passcode, oobiAlias, dto.url)
 
             call.respond(HttpStatusCode.Created, response)
         }

@@ -24,7 +24,15 @@ data class KeriInceptionResponse (
     val did: String,
     val publicKeys: List<String>
 )
+
 @Serializable
 data class KeriRegistryInceptionResponse (
     val scid: String
+)
+
+@Serializable
+data class KeriOobiResolveRequest (
+    val passcode: String,
+    val oobiAlias: String,
+    val url: String
 )
