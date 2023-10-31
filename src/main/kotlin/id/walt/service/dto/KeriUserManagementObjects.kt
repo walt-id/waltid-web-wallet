@@ -24,3 +24,7 @@ data class KeriInceptionResponse (
     val did: String,
     val publicKeys: List<String>
 )
+@Serializable
+data class KeriRegistryInceptionResponse (
+    val scid: String
+)
