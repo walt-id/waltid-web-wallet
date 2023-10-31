@@ -32,12 +32,12 @@
                             )
                         }}
                     </h2>
-                    <div class="flex items-center">
+                    <div v-if="jwtJson.vc.issuer" class="flex items-center">
                         <img :src="jwtJson.vc.issuer?.image?.id ? jwtJson.vc.issuer?.image?.id : jwtJson.vc.issuer?.image"
                              class="w-12"
                         />
                         <div class="text-natural-600 ml-2 w-32">
-                            {{ jwtJson.vc.issuer.name }}
+                            {{ jwtJson.vc.issuer?.name }}
                         </div>
                     </div>
                 </div>
@@ -249,30 +249,32 @@
                 </div>
 
                 <hr class="my-5"/>
-                <div class="text-gray-500 mb-4 font-bold">Issuer</div>
-                <div class="md:flex text-gray-500 mb-3 md:mb-1">
-                    <div class="min-w-[19vw]">Name</div>
-                    <div class="font-bold">{{ jwtJson.vc.issuer.name }}</div>
-                </div>
-                <div class="md:flex text-gray-500 mb-3 md:mb-1">
-                    <div class="min-w-[19vw]">DID</div>
-                    <div class="font-bold overflow-scroll lg:overflow-auto">
-                        {{ jwtJson.vc.issuer.id ? jwtJson.vc.issuer.id : jwtJson.vc.issuer }}
+                <div v-if="jwtJson.vc.issuer">
+                    <div class="text-gray-500 mb-4 font-bold">Issuer</div>
+                    <div class="md:flex text-gray-500 mb-3 md:mb-1">
+                        <div class="min-w-[19vw]">Name</div>
+                        <div class="font-bold">{{ jwtJson.vc.issuer.name }}</div>
                     </div>
-                </div>
-                <hr class="mt-5 mb-3"/>
-                <div class="text-gray-600 flex justify-between">
-                    <div>
-                        {{
-                            jwtJson.vc.expirationDate && jwtJson.vc.issuanceDate
-                                    ? "Valid from " + new Date(jwtJson.vc.issuanceDate).toISOString().slice(0, 10) + " to " + new
-                            Date(jwtJson.vc.expirationDate).toISOString().slice(0, 10)
-                                    : ""
-                        }}
+                    <div class="md:flex text-gray-500 mb-3 md:mb-1">
+                        <div class="min-w-[19vw]">DID</div>
+                        <div class="font-bold overflow-scroll lg:overflow-auto">
+                            {{ jwtJson.vc.issuer.id ? jwtJson.vc.issuer.id : jwtJson.vc.issuer }}
+                        </div>
                     </div>
-                    <div class="text-gray-900">
-                        Issued
-                        {{jwtJson.vc.issuanceDate ? new Date(jwtJson.vc.issuanceDate).toISOString().slice(0, 10) : "No issuancedate" }}
+                    <hr class="mt-5 mb-3"/>
+                    <div class="text-gray-600 flex justify-between">
+                        <div>
+                            {{
+                                jwtJson.vc.expirationDate && jwtJson.vc.issuanceDate
+                                ? "Valid from " + new Date(jwtJson.vc.issuanceDate).toISOString().slice(0, 10) + " to " + new
+                                    Date(jwtJson.vc.expirationDate).toISOString().slice(0, 10)
+                                : ""
+                            }}
+                        </div>
+                        <div class="text-gray-900">
+                            Issued
+                            {{ jwtJson.vc.issuanceDate ? new Date(jwtJson.vc.issuanceDate).toISOString().slice(0, 10) : "No issuancedate" }}
+                        </div>
                     </div>
                 </div>
             </div>

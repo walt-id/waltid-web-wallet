@@ -57,13 +57,13 @@
                     )
                   }}
                 </h2>
-                <div class="flex items-center">
+                <div v-if="credential.issuer" class="flex items-center">
                   <img class="w-12" :src="credential.issuer?.image?.id
                         ? credential.issuer?.image?.id
                         : credential.issuer?.image
                       " />
                   <div class="text-natural-600 ml-2 w-32">
-                    {{ credential.issuer.name }}
+                    {{ credential.issuer?.name }}
                   </div>
                 </div>
               </div>
