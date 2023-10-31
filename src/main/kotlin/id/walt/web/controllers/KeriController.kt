@@ -1,11 +1,9 @@
 package id.walt.web.controllers
 
-import id.walt.service.dto.KeriCreateDbRequest
-import id.walt.service.dto.KeriCreateDbResponse
-import id.walt.service.dto.KeriInceptionRequest
-import id.walt.service.dto.KeriInceptionResponse
+import id.walt.service.dto.*
 import id.walt.service.keri.KeriInceptionService
 import id.walt.service.keri.KeriInitService
+import id.walt.service.keri.KeriOobiService
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
@@ -93,6 +91,43 @@ fun Application.keri() = walletRoute {
             call.respond(HttpStatusCode.Created, response)
 
 
+        }
+
+        post("oobi/resolve/keystore/{keystore}/oobiAlias/{oobiAlias}", {
+            summary = "Resolve the provided OOBI"
+
+            request {
+                pathParameter<String>("keystore") {
+                    description = "keystore name and file location of KERI keystore"
+                    example = "waltid"
+                }
+
+                pathParameter<String>("oobiAlias") {
+                    description = "human-readable alternative for KERI"
+                    example = "waltid-alias"
+                }
+
+                body<KeriInceptionRequest> {
+                    description = "Required data for resolving an OOBI"
+                    example("application/json", KeriOobiResolveRequest(passcode = "0123456789abcdefghijk", oobiAlias = "holder", url = "http://127.0.0.1:5642/oobi/EL" +
+                            "jSFdrTdCebJlmvbFNX9-TLhR2PO0_60al1kQp5_e6k/witness/BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha"))
+                }
+
+            }
+            response {
+                HttpStatusCode.Created to {
+                    body<String> {
+                        description = "A boolean, whether the OOBI was resolved or not"
+                    }
+                }
+            }
+        }) {
+            val keystore = call.parameters["keystore"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+            val oobiAlias = call.parameters["oobiAlias"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+            val dto = call.receive<KeriOobiResolveRequest>()
+            val response = KeriOobiService().resolve(keystore, dto.passcode, oobiAlias, dto.url)
+
+            call.respond(HttpStatusCode.Created, response)
         }
 
     }
