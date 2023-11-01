@@ -149,7 +149,7 @@ class IpexService: IpexInterface {
 
         val command: MutableList<String> = mutableListOf(
             "kli", "ipex",
-            "grant",
+            "list",
             "--name", keystore,
             "--alias", alias,
             "--passcode", passcode,
@@ -204,7 +204,7 @@ class IpexService: IpexInterface {
     override fun spurn(keystore: String, alias: String, passcode: String, said: String, message: String?) {
         val command: MutableList<String> = mutableListOf(
             "kli", "ipex",
-            "admit",
+            "spurn",
             "--name", keystore,
             "--alias", alias,
             "--passcode", passcode,

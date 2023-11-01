@@ -71,5 +71,5 @@ enum class IPEX_EVENT(val type: String) {
     OFFER("offer"),
     AGREE("agree"),
     GRANT("grant"),
-    SUBMIT("submit")
+    ADMIT("admit")
 }
