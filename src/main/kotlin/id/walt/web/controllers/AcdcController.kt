@@ -212,7 +212,26 @@ fun Application.acdc() = walletRoute {
         delete("ipex/admit/keystore/{keystore}/alias/{alias}", {
             summary = "Reject an IPEX apply, offer, agree or grant message"
 
+            request {
+                pathParameter<String>("keystore") {
+                    description = "keystore name and file location of KERI keystore"
+                    example = "waltid"
+                }
 
+                pathParameter<String>("alias") {
+                    description = "human readable alias for the identifier to whom the credential was issued"
+                    example = "waltid-alias"
+                }
+
+                body<KeriInceptionRequest> {
+                    description = "Required data for rejecting an event"
+                    example("application/json", IpexSpurn(
+                        passcode = "0123456789abcdefghijk",
+                        said = "EBfdlu8R27Fbx-ehrqwImnK-8Cm79sqbAQ4MmvEAYqao",
+                        message = "Sent to a friend"
+                    ))
+                }
+            }
         }) {
             val keystore = call.parameters["keystore"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
             val alias = call.parameters["alias"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
