@@ -34,6 +34,13 @@ data class IpexAdmit (
 )
 
 @Serializable
+data class IpexSpurn (
+    val passcode: String,
+    val said: String,
+    val message: String? = null
+)
+
+@Serializable
 data class IpexList (
     val passcode: String,
     val schema: String,

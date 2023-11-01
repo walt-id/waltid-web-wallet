@@ -5,6 +5,7 @@ import id.walt.service.keri.AcdcSaidifyService
 import id.walt.service.keri.IpexService
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.post
+import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -134,7 +135,7 @@ fun Application.acdc() = walletRoute {
                 }
 
                 body<KeriInceptionRequest> {
-                    description = "Required data for listing an event"
+                    description = "Required data for admitting an event"
                     example("application/json", IpexAdmit(
                         passcode = "0123456789abcdefghijk",
                         said = "EBfdlu8R27Fbx-ehrqwImnK-8Cm79sqbAQ4MmvEAYqao",
@@ -206,6 +207,19 @@ fun Application.acdc() = walletRoute {
                 dto.said
             )
             call.respond(HttpStatusCode.OK, response)
+        }
+
+        delete("ipex/admit/keystore/{keystore}/alias/{alias}", {
+            summary = "Reject an IPEX apply, offer, agree or grant message"
+
+
+        }) {
+            val keystore = call.parameters["keystore"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
+            val alias = call.parameters["alias"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
+
+            val dto = call.receive<IpexSpurn>()
+            IpexService().spurn(keystore, alias, dto.passcode, dto.said, dto.message)
+            call.respond(HttpStatusCode.NoContent)
         }
 
     }

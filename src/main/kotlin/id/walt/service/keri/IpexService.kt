@@ -202,6 +202,28 @@ class IpexService: IpexInterface {
     }
 
     override fun spurn(keystore: String, alias: String, passcode: String, said: String, message: String?) {
-        TODO("Not yet implemented")
+        val command: MutableList<String> = mutableListOf(
+            "kli", "ipex",
+            "admit",
+            "--name", keystore,
+            "--alias", alias,
+            "--passcode", passcode,
+            "--said", said
+        )
+
+        if (message != null) {
+            command.add("--message"); command.add(message)
+        }
+
+        try {
+            val processBuilder = ProcessBuilder(command)
+            val process = processBuilder.start()
+            process.waitFor()
+
+        } catch(e: IOException) {
+            e.printStackTrace()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
     }
 }
