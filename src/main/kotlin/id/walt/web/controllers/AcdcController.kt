@@ -1,6 +1,7 @@
 package id.walt.web.controllers
 
 import id.walt.service.dto.*
+import id.walt.service.keri.AcdcManagementService
 import id.walt.service.keri.AcdcSaidifyService
 import id.walt.service.keri.IpexService
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -241,6 +242,25 @@ fun Application.acdc() = walletRoute {
             call.respond(HttpStatusCode.NoContent)
         }
 
+    }
+
+    get("list/keystore/{keystore}/alias/{alias}", {
+        summary = "List credentials and check mailboxes for any newly issued credentials"
+
+    }) {
+        val keystore = call.parameters["keystore"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+        val alias = call.parameters["alias"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+        val dto = call.receive<AcdcList>()
+        val response = AcdcManagementService().list(keystore,
+            alias,
+            dto.passcode,
+            dto.verbose,
+            dto.poll,
+            dto.issued,
+            dto.said,
+            dto.schema)
+        call.respond(HttpStatusCode.OK, response)
     }
 
 }

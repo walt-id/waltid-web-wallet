@@ -13,11 +13,19 @@ interface AcdcManagementInterface {
                alias: String,
                private: Boolean,
                time: String)
+
+    /**
+     * Send credential presentation for specified credential to recipient
+     */
     fun present(keystore: String,
                 alias: String,
                 passcode: String,
                 said: String,
                 recipient: String)
+
+    /**
+     * List credentials and check mailboxes for any newly issued credentials
+     */
     fun list(keystore: String,
              alias: String,
              passcode: String,
@@ -25,7 +33,8 @@ interface AcdcManagementInterface {
              poll: Boolean,
              issued: Boolean,
              said: Boolean,
-             schema: Boolean)
+             schema: Boolean): String
+
     fun revoke(keystore: String,
                alias: String,
                registry: String,
