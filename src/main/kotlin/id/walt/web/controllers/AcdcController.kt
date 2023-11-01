@@ -121,6 +121,28 @@ fun Application.acdc() = walletRoute {
 
         post("ipex/admit/keystore/{keystore}/alias/{alias}", {
             summary = "Accept a credential being issued or presented in response to an IPEX grant"
+
+            request {
+                pathParameter<String>("keystore") {
+                    description = "keystore name and file location of KERI keystore"
+                    example = "waltid"
+                }
+
+                pathParameter<String>("alias") {
+                    description = "human readable alias for the identifier to whom the credential was issued"
+                    example = "waltid-alias"
+                }
+
+                body<KeriInceptionRequest> {
+                    description = "Required data for listing an event"
+                    example("application/json", IpexAdmit(
+                        passcode = "0123456789abcdefghijk",
+                        said = "EBfdlu8R27Fbx-ehrqwImnK-8Cm79sqbAQ4MmvEAYqao",
+                        message = "Sent to a friend"
+                    ))
+                }
+            }
+
         }) {
             val keystore = call.parameters["keystore"] ?: return@post call.respond(HttpStatusCode.BadRequest)
             val alias = call.parameters["alias"] ?: return@post call.respond(HttpStatusCode.BadRequest)
