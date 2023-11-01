@@ -51,6 +51,21 @@ data class IpexList (
     val verbose: Boolean = false
 )
 
+@Serializable
+data class AcdcList (
+    val passcode: String,
+    val verbose: Boolean,
+    val poll: Boolean = true,
+    val issued: Boolean = false,
+    val said: Boolean = true,
+    val schema: Boolean = false,
+)
+
+@Serializable
+data class AcdcRevoke (
+    val passcode: String,
+    val said: String
+)
 enum class IPEX_EVENT(val type: String) {
     APPLY("apply"),
     OFFER("offer"),
