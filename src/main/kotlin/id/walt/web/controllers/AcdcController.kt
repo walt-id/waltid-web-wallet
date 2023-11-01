@@ -122,6 +122,31 @@ fun Application.acdc() = walletRoute {
         get("ipex/list/keystore/{keystore}/alias/{alias}", {
             summary = ""
 
+            request {
+                pathParameter<String>("keystore") {
+                    description = "keystore name and file location of KERI keystore"
+                    example = "waltid"
+                }
+
+                pathParameter<String>("alias") {
+                    description = "human readable alias for the identifier to whom the credential was issued"
+                    example = "waltid-alias"
+                }
+
+                body<KeriInceptionRequest> {
+                    description = "Required data for listing an event"
+                    example("application/json", IpexList(
+                        passcode = "0123456789abcdefghijk",
+                        schema = "m2rz53livjpiINfPYRIO_VWje6VfhF6CtHJcbzyyNtE",
+                        type = IPEX_EVENT.GRANT,
+                        poll = true,
+                        said = true,
+                        sent = false,
+                        verbose = false
+                        ))
+                }
+            }
+
             response {
                 HttpStatusCode.OK to {
                     body<IpexSaid> {
