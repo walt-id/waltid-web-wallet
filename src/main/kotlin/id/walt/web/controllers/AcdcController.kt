@@ -242,6 +242,43 @@ fun Application.acdc() = walletRoute {
             call.respond(HttpStatusCode.NoContent)
         }
 
+        delete("revoke/keystore/{keystore}/alias/{alias}/registry/{registry}", {
+            summary = "Revoke an ACDC"
+
+            request {
+                pathParameter<String>("keystore") {
+                    description = "keystore name and file location of KERI keystore"
+                    example = "waltid"
+                }
+
+                pathParameter<String>("alias") {
+                    description = "human readable alias for the new identifier prefix"
+                    example = "waltid-alias"
+                }
+
+                pathParameter<String>("registry") {
+                    description = "human readable name for registry, defaults to name of Habitat"
+                    example = "waltid-registry"
+                }
+
+                body<AcdcRevoke> {
+                    description = "Required data for rejecting an event"
+                    example("application/json", AcdcRevoke(
+                        passcode = "0123456789abcdefghijk",
+                        said = "EBfdlu8R27Fbx-ehrqwImnK-8Cm79sqbAQ4MmvEAYqao",
+
+                    ))
+                }
+            }
+        }) {
+            val keystore = call.parameters["keystore"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
+            val alias = call.parameters["alias"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
+            val registry = call.parameters["registry"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
+            val dto = call.receive<AcdcRevoke>()
+            AcdcManagementService().revoke(keystore, alias, registry, dto.passcode, dto.said, null, null);
+            call.respond(HttpStatusCode.NoContent)
+        }
+
     }
 
     get("list/keystore/{keystore}/alias/{alias}", {

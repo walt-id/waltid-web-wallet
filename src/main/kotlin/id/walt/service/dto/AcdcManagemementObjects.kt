@@ -61,6 +61,11 @@ data class AcdcList (
     val schema: Boolean = false,
 )
 
+@Serializable
+data class AcdcRevoke (
+    val passcode: String,
+    val said: String
+)
 enum class IPEX_EVENT(val type: String) {
     APPLY("apply"),
     OFFER("offer"),

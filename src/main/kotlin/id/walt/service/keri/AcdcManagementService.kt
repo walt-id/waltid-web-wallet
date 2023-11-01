@@ -78,9 +78,36 @@ class AcdcManagementService: AcdcManagementInterface {
         registry: String,
         passcode: String,
         said: String,
-        send: String,
-        time: String
+        send: String?,
+        time: String?
     ) {
-        TODO("Not yet implemented")
+
+        val command: MutableList<String> = mutableListOf(
+            "kli", "vc",
+            "revoke",
+            "--name", keystore,
+            "--alias", alias,
+            "--registry", registry,
+            "--passcode", passcode,
+            "--said", said
+        )
+
+        try {
+            val processBuilder = ProcessBuilder(command)
+            val process = processBuilder.start()
+
+            val errorReader = BufferedReader(InputStreamReader(process.errorStream))
+            var errorLine: String?
+            while (errorReader.readLine().also { errorLine = it } != null) {
+                System.err.println(errorLine)
+            }
+            process.waitFor()
+
+        } catch(e: IOException) {
+            e.printStackTrace()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
+
     }
 }

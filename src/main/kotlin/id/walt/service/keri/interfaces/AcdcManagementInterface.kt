@@ -40,6 +40,6 @@ interface AcdcManagementInterface {
                registry: String,
                passcode: String,
                said: String,
-               send: String,
-               time: String)
+               send: String?,
+               time: String?)
 }
