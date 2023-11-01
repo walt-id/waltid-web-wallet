@@ -16,6 +16,15 @@ kli witness demo
 ```bash
 vLEI-server -s ./schema/acdc -c ./samples/acdc/ -o ./samples/oobis/
 ```
+### Caveat: Deleting Database Directories
+KERIpy core library manages database directories for key event log, transaction event log, credential and private key storage.
+The library will create the directories in local file system.
+
+Demo script was written expecting a clean database. Relaunch witnesses before running scripts through the following command
+```bash
+rm -rf $HOME/.keri/*;kli witness demo
+```
+
 ## Launch demo script
 1. Demo script provides a full workflow that
    1. Incept controllers
