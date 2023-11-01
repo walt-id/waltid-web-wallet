@@ -1,17 +1,4 @@
 services:
-  walletkit:
-    image: waltid/walletkit:latest  # backend docker image
-    command:
-      - run
-    environment:
-      WALTID_DATA_ROOT: /waltid-walletkit/data-root
-      WALTID_WALLET_BACKEND_BIND_ADDRESS: 0.0.0.0
-      WALTID_WALLET_BACKEND_PORT: "$WALLETKIT_PORT"
-      EXTERNAL_HOSTNAME: $HOSTNAME
-    volumes:
-      - ./walletkit:/waltid-walletkit/data-root # data store volume incl. config files.
-    extra_hosts:
-      - "$HOSTNAME:host-gateway"
   wallet-backend:
     image: waltid/wallet-backend:latest
     volumes:
@@ -20,11 +7,24 @@ services:
   wallet-frontend:
     image: waltid/wallet-frontend:latest
     environment:
-      NUXT_PUBLIC_ISSUER_URL: "http://localhost:$ISSUER_PORT"
-  issuer-portal:
-    image: waltid/ssikit-issuer-portal:latest
-  verifier-portal:
-    image: waltid/ssikit-verifier-portal:latest
+      NUXT_PUBLIC_ISSUER_CALLBACK_URL: "http://localhost:$WALLET_FRONTEND_PORT"
+  issuer:
+    image: waltid/issuer:latest
+    volumes:
+      - ./issuer/config:/waltid-issuer/config
+  verifier:
+    image: waltid/verifier:latest
+    volumes:
+      - ./verifier/config:/waltid-verifier/config
+  web-portal:
+    image: waltid/portal:latest
+    environment:
+      NEXT_PUBLIC_VC_REPO: "http://localhost:$VC_REPO_PORT"
+      NEXT_PUBLIC_ISSUER: "http://localhost:$ISSUER_PORT"
+      NEXT_PUBLIC_VERIFIER: "http://localhost:$VERIFIER_PORT"
+      NEXT_PUBLIC_WALLET: "http://localhost:$WALLET_FRONTEND_PORT"
+  vc-repo:
+    image: waltid/vc-repository:latest
   ingress:
     image: nginx:1.15.10-alpine
     ports:
@@ -32,12 +32,20 @@ services:
         published: $WALLET_FRONTEND_PORT # wallet-frontend
         protocol: tcp
         mode: host
+      - target: $WEB_PORTAL_PORT
+        published: $WEB_PORTAL_PORT # web-portal
+        protocol: tcp
+        mode: host
+      - target: $VC_REPO_PORT
+        published: $VC_REPO_PORT # vc-repo
+        protocol: tcp
+        mode: host
       - target: $ISSUER_PORT
-        published: $ISSUER_PORT # issuer-portal
+        published: $ISSUER_PORT # issuer-api
         protocol: tcp
         mode: host
       - target: $VERIFIER_PORT
-        published: $VERIFIER_PORT # verifier-portal
+        published: $VERIFIER_PORT # verifier-api
         protocol: tcp
         mode: host
     volumes:
