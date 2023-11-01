@@ -44,7 +44,15 @@ interface IpexInterface {
     /**
      * List notifications related to IPEX protocol messages
      */
-    fun list(keystore: String, alias: String, passcode: String, type: IPEX_EVENT, verbose: Boolean, poll: Boolean, sent: Boolean);
+    fun list(keystore: String,
+             alias: String,
+             passcode: String,
+             schema: String,
+             type: IPEX_EVENT?,
+             verbose: Boolean,
+             poll: Boolean,
+             sent: Boolean,
+             said: Boolean): IpexSaid;
 
     /**
      * Reply to IPEX apply message or initiate an IPEX exchange with an offer for a credential with certain characteristics

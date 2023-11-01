@@ -3,6 +3,7 @@ package id.walt.web.controllers
 import id.walt.service.dto.*
 import id.walt.service.keri.AcdcSaidifyService
 import id.walt.service.keri.IpexService
+import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
@@ -118,5 +119,36 @@ fun Application.acdc() = walletRoute {
             call.respond(HttpStatusCode.OK, response)
         }
 
+        get("ipex/list/keystore/{keystore}/alias/{alias}", {
+            summary = ""
+
+            response {
+                HttpStatusCode.OK to {
+                    body<IpexSaid> {
+                        example("application/json", IpexSaid(said = "AGjwWfC9LlDCCsSPdPomRmMZOIIeqPfHIA5V3hjyzf7D")) {
+                        }
+                    }
+                }
+            }
+
+        }) {
+            val keystore = call.parameters["keystore"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val alias = call.parameters["alias"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+            val dto = call.receive<IpexList>()
+            val response = IpexService().list(keystore,
+                alias,
+                dto.passcode,
+                dto.schema,
+                dto.type,
+                dto.verbose,
+                dto.poll,
+                dto.sent,
+                dto.said
+            )
+            call.respond(HttpStatusCode.OK, response)
+        }
+
     }
+
 }

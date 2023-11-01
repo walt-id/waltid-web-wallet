@@ -1,6 +1,5 @@
 package id.walt.service.keri
 
-import id.walt.service.dto.AcdcSaidifyResponse
 import id.walt.service.dto.IPEX_EVENT
 import id.walt.service.dto.IpexSaid
 import id.walt.service.keri.interfaces.IpexInterface
@@ -107,16 +106,48 @@ class IpexService: IpexInterface {
         return IpexSaid(said=result)
     }
 
+    // GRANT=$(kli ipex list --name holder --alias holder --poll --said)
     override fun list(
         keystore: String,
         alias: String,
         passcode: String,
-        type: IPEX_EVENT,
+        schema: String,
+        type: IPEX_EVENT?,
         verbose: Boolean,
         poll: Boolean,
-        sent: Boolean
-    ) {
-        TODO("Not yet implemented")
+        sent: Boolean,
+        said: Boolean
+    ): IpexSaid {
+        var result = ""
+
+        val command: MutableList<String> = mutableListOf(
+            "kli", "ipex",
+            "grant",
+            "--name", keystore,
+            "--alias", alias,
+            "--passcode", passcode,
+            "--schema", schema
+        )
+
+        command.takeIf { poll }?.add("--poll")
+        command.takeIf { sent }?.add("--sent")
+        command.takeIf { said }?.add("--said")
+
+        try {
+            val processBuilder = ProcessBuilder(command)
+            val process = processBuilder.start()
+
+            val reader = BufferedReader(InputStreamReader(process.inputStream))
+            result= reader.readLine()!!.trimEnd('\n')
+
+            process.waitFor()
+
+        } catch(e: IOException) {
+            e.printStackTrace()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
+        return IpexSaid(said=result)
     }
 
     override fun offer(): IpexSaid {
