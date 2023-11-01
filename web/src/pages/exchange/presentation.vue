@@ -119,11 +119,7 @@ async function acceptPresentation() {
         console.log("Policy verification failed: ", e)
 
         let sessionId = presentationUrl.searchParams.get('state');
-        let response = await fetch(`https://verifier.portal.walt.id/vp/session/${sessionId}`);
-        response = await response.json();
-        if (response.verificationResult) {
-            window.location.href = `https://portal.walt.id/success/${sessionId}`;
-        }
+        window.location.href = `https://portal.walt.id/success/${sessionId}`;
 
         // failed.value = true
         // window.alert(e)
