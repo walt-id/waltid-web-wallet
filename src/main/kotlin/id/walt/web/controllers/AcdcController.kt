@@ -119,8 +119,19 @@ fun Application.acdc() = walletRoute {
             call.respond(HttpStatusCode.OK, response)
         }
 
+        post("ipex/admit/keystore/{keystore}/alias/{alias}", {
+            summary = "Accept a credential being issued or presented in response to an IPEX grant"
+        }) {
+            val keystore = call.parameters["keystore"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+            val alias = call.parameters["alias"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+
+            val dto = call.receive<IpexAdmit>()
+            val response = IpexService().admit(keystore, alias, dto.passcode, dto.said, dto.message)
+            call.respond(HttpStatusCode.OK, response)
+        }
+
         get("ipex/list/keystore/{keystore}/alias/{alias}", {
-            summary = ""
+            summary = "List notifications related to IPEX protocol message"
 
             request {
                 pathParameter<String>("keystore") {
@@ -161,7 +172,8 @@ fun Application.acdc() = walletRoute {
             val alias = call.parameters["alias"] ?: return@get call.respond(HttpStatusCode.BadRequest)
 
             val dto = call.receive<IpexList>()
-            val response = IpexService().list(keystore,
+            val response = IpexService().list(
+                keystore,
                 alias,
                 dto.passcode,
                 dto.schema,

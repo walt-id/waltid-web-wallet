@@ -24,7 +24,7 @@ interface IpexInterface {
     /**
      * Accept a credential being issued or presented in response to an IPEX grant
      */
-    fun admit(keystore: String, alias: String, passcode: String, said: String, message: String?);
+    fun admit(keystore: String, alias: String, passcode: String, said: String, message: String?): String;
 
     /**
      * Reply to IPEX offer message acknowledged willingness to accept offered credential

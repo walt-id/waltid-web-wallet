@@ -27,6 +27,13 @@ data class IpexGrant (
 )
 
 @Serializable
+data class IpexAdmit (
+    val passcode: String,
+    val said: String,
+    val message: String? = null
+)
+
+@Serializable
 data class IpexList (
     val passcode: String,
     val schema: String,
@@ -36,6 +43,7 @@ data class IpexList (
     val sent: Boolean = false,
     val verbose: Boolean = false
 )
+
 enum class IPEX_EVENT(val type: String) {
     APPLY("apply"),
     OFFER("offer"),

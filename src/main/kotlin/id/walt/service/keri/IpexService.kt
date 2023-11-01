@@ -8,11 +8,40 @@ import java.io.IOException
 import java.io.InputStreamReader
 
 class IpexService: IpexInterface {
+    override fun admit(keystore: String, alias: String, passcode: String, said: String, message: String?): String {
+        var result: String = ""
+        val command: MutableList<String> = mutableListOf(
+            "kli", "ipex",
+            "admit",
+            "--name", keystore,
+            "--alias", alias,
+            "--passcode", passcode,
+            "--said", said
+        )
 
-    // GRANT=$(kli ipex list --name holder --alias holder --poll --said)
-    // kli ipex admit --name holder --alias holder --said "${GRANT}"
-    override fun admit(keystore: String, alias: String, passcode: String, said: String, message: String?) {
-        TODO("Not yet implemented")
+        if (message != null) {
+            command.add("--message"); command.add(message)
+        }
+
+        try {
+            val processBuilder = ProcessBuilder(command)
+            val process = processBuilder.start()
+
+            val reader = BufferedReader(InputStreamReader(process.inputStream))
+            var line: String?
+            while (reader.readLine().also { line = it } != null) {
+                result+=line
+            }
+
+            process.waitFor()
+
+        } catch(e: IOException) {
+            e.printStackTrace()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
+
+        return result
     }
 
     override fun agree(): IpexSaid {
@@ -63,7 +92,6 @@ class IpexService: IpexInterface {
         return IpexSaid(said=said)
     }
 
-    // kli ipex grant --name issuer --alias issuer --said "${SAID}" --recipient ELjSFdrTdCebJlmvbFNX9-TLhR2PO0_60al1kQp5_e6k
     override fun grant(
         keystore: String,
         alias: String,
@@ -106,7 +134,6 @@ class IpexService: IpexInterface {
         return IpexSaid(said=result)
     }
 
-    // GRANT=$(kli ipex list --name holder --alias holder --poll --said)
     override fun list(
         keystore: String,
         alias: String,
