@@ -247,6 +247,30 @@ fun Application.acdc() = walletRoute {
     get("list/keystore/{keystore}/alias/{alias}", {
         summary = "List credentials and check mailboxes for any newly issued credentials"
 
+        request {
+            pathParameter<String>("keystore") {
+                description = "keystore name and file location of KERI keystore"
+                example = "waltid"
+            }
+
+            pathParameter<String>("alias") {
+                description = "human readable alias for the identifier to whom the credential was issued"
+                example = "waltid-alias"
+            }
+
+            body<AcdcList> {
+                description = "Required data for listing an ACDC"
+                example("application/json", AcdcList(
+                    passcode = "0123456789abcdefghijk",
+                    verbose = false,
+                    poll = false,
+                    issued = false,
+                    said = false,
+                    schema = false
+                ))
+            }
+        }
+
     }) {
         val keystore = call.parameters["keystore"] ?: return@get call.respond(HttpStatusCode.BadRequest)
         val alias = call.parameters["alias"] ?: return@get call.respond(HttpStatusCode.BadRequest)
