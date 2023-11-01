@@ -100,7 +100,7 @@ fun Application.acdc() = walletRoute {
         }
 
         post("ipex/grant/keystore/{keystore}/alias/{alias}", {
-            summary = ""
+            summary = "Reply to IPEX agree message or initiate an IPEX exchange with a credential issuance or presentation"
 
             response {
                 HttpStatusCode.OK to {
@@ -209,7 +209,7 @@ fun Application.acdc() = walletRoute {
             call.respond(HttpStatusCode.OK, response)
         }
 
-        delete("ipex/admit/keystore/{keystore}/alias/{alias}", {
+        delete("ipex/spurn/keystore/{keystore}/alias/{alias}", {
             summary = "Reject an IPEX apply, offer, agree or grant message"
 
             request {
