@@ -14,10 +14,13 @@ object PushController {
     fun Application.push() {
         routing {
             route("r/push", {
-                tags = listOf("push")
+                tags = listOf("Notifications / Push controlling")
             }) {
                 post("subscription", {
-                    request { body<Subscription>() }
+                    summary = "Subscribe to push notifications [Experimental: Push notification system]"
+                    request {
+                        body<Subscription>()
+                    }
                 }) {
                     val subscription = call.receive<Subscription>()
                     PushManager.registerSubscription(subscription)
@@ -25,7 +28,8 @@ object PushController {
                 }
 
                 get("shownotif", {
-
+                    summary = "Experimental: Push notification system"
+                    // TODO
                 }) {
                     PushManager.sendIssuanceNotification("abc", "http://issuer.example", listOf("VerifiableId"), "")
                 }

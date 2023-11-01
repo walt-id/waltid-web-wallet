@@ -1,5 +1,5 @@
 <template>
-    <DidCreationView :didParams="{network: domain}" method="cheqd">
+    <DidCreationView :didParams="{network: network}" method="cheqd">
 
         <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-4">
             <label class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5" for="format">Network</label>

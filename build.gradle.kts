@@ -31,11 +31,9 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
 }
 
-
-
 dependencies {
     // nftkit
-    implementation("id.walt:waltid-nftkit:1.2310160815.0") {
+    implementation("id.walt:waltid-nftkit:1.2310191239.0") {
         exclude("com.sksamuel.hoplite", "hoplite-core")
         exclude("com.sksamuel.hoplite", "hoplite-yaml")
         exclude("com.sksamuel.hoplite", "hoplite-hikaricp")
@@ -96,7 +94,7 @@ dependencies {
 
 
     // waltid-did
-    implementation("id.walt.did:waltid-did:1.0.0")//id.walt.crypto provided by id.walt.did:waltid-did
+    implementation("id.walt.did:waltid-did:1.0.1")//id.walt.crypto provided by id.walt.did:waltid-did
 
     // OIDC
     implementation("id.walt:waltid-openid4vc:1.2310051536.0")

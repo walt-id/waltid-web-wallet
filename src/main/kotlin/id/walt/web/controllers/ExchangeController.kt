@@ -1,6 +1,6 @@
 package id.walt.web.controllers
 
-import id.walt.db.models.WalletOperationHistory
+import id.walt.service.dto.WalletOperationHistory
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
@@ -8,15 +8,25 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import kotlinx.serialization.json.JsonObject
 
 fun Application.exchange() = walletRoute {
     route("exchange", {
         tags = listOf("Credential exchange")
     }) {
         post("useOfferRequest", {
+            summary = "Claim credential(s) from an issuer"
+
             request {
-                queryParameter<String>("did")
-                body<String> { description = "offer" }
+                queryParameter<String>("did") { description = "The DID to issue the credential(s) to" }
+                body<String> {
+                    description = "The offer request to use"
+                }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    description = "Successfully claimed credentials"
+                }
             }
         }) {
             val wallet = getWalletService()
@@ -39,9 +49,19 @@ fun Application.exchange() = walletRoute {
         }
 
         post("usePresentationRequest", {
+            summary = "Present credential(s) to a Relying Party"
+
             request {
-                queryParameter<String>("did")
-                body<String> { description = "request" }
+                queryParameter<String>("did") { description = "The DID to present the credential(s) from" }
+                body<String> { description = "Presentation request" }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    description = "Successfully claimed credentials"
+                    body<JsonObject> {
+                        description = """{"redirectUri": String}"""
+                    }
+                }
             }
         }) {
             val wallet = getWalletService()
@@ -52,19 +72,39 @@ fun Application.exchange() = walletRoute {
 
             val request = call.receiveText()
 
-            val redirect = wallet.usePresentationRequest(request, did)
-            wallet.addOperationHistory(
-                WalletOperationHistory.new(
-                    wallet, "usePresentationRequest",
-                    mapOf("did" to did, "request" to request, "redirect" to redirect)
-                )
-            )
+            val result = wallet.usePresentationRequest(request, did)
 
-            context.respond(HttpStatusCode.OK, mapOf("redirectUri" to redirect))
+
+            if (result.isSuccess) {
+                wallet.addOperationHistory(
+                    WalletOperationHistory.new(
+                        wallet, "usePresentationRequest",
+                        mapOf("did" to did, "request" to request, "success" to "true", "redirect" to result.getOrThrow()) // change string true to bool
+                    )
+                )
+
+                context.respond(HttpStatusCode.OK, mapOf("redirectUri" to result.getOrThrow()))
+            } else {
+                wallet.addOperationHistory(
+                    WalletOperationHistory.new(
+                        wallet, "usePresentationRequest",
+                        mapOf("did" to did, "request" to request, "success" to "false", "redirect" to result.getOrThrow()) // change string true to bool
+                    )
+                )
+
+                context.respond(HttpStatusCode.BadRequest, mapOf("redirectUri" to result.exceptionOrNull()!!.message))
+            }
         }
         post("resolvePresentationRequest", {
+            summary = "Return resolved / parsed presentation request"
+
             request {
-                body<String> { description = "request" }
+                body<String> { description = "PresentationRequest to resolve/parse" }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    body<String>()
+                }
             }
         }) {
             val wallet = getWalletService()

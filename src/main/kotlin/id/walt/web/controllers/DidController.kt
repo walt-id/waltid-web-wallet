@@ -27,49 +27,62 @@ fun Application.dids() = walletRoute {
             context.respond(getWalletService().listDids())
         }
 
-        get("{did}", {
-            summary = "Show a specific DID"
+        route("{did}", {
             request {
                 pathParameter<String>("did") {
-                    description = "the did string"
+                    description = "The DID"
                     example = "did:web:walt.id"
                 }
             }
-            response {
-                HttpStatusCode.OK to {
-                    description = "The DID document"
-                    body<JsonObject>()
-                }
-            }
         }) {
-            context.respond(
-                getWalletService().loadDid(
+            get({
+                summary = "Show a specific DID"
+
+                response {
+                    HttpStatusCode.OK to {
+                        description = "The DID document"
+                        body<JsonObject>()
+                    }
+                }
+            }) {
+                context.respond(
+                    getWalletService().loadDid(
+                        context.parameters["did"] ?: throw IllegalArgumentException("No DID supplied")
+                    )
+                )
+            }
+
+            delete({
+                summary = "Delete a specific DID"
+                response {
+                    HttpStatusCode.Accepted to { description = "DID deleted" }
+                    HttpStatusCode.BadRequest to { description = "DID could not be deleted" }
+                }
+            }) {
+                val success = getWalletService().deleteDid(
                     context.parameters["did"] ?: throw IllegalArgumentException("No DID supplied")
                 )
-            )
+
+                context.respond(
+                    if (success) HttpStatusCode.Accepted
+                    else HttpStatusCode.BadRequest
+                )
+            }
         }
 
-        delete("{did}", {
-            summary = "Delete a specific DID"
+
+
+        post("default", {
+            summary = "Set the default DID"
+            description =
+                "Set the default DID (which is e.g. preselected in DID selection dropdown at presentation modal)"
             request {
-                pathParameter<String>("did") {
-                    description = "the did string"
+                queryParameter<String>("did") {
+                    description = "DID to set as default DID"
                     example = "did:web:walt.id"
                 }
             }
-        }) {
-            getWalletService().deleteDid(
-                context.parameters["did"] ?: throw IllegalArgumentException("No DID supplied")
-
-            )
-            context.respond(HttpStatusCode.Accepted)
-
-        }
-
-        post("default", {
-            request {
-                queryParameter<String>("did")
-            }
+            response { HttpStatusCode.Accepted to { description = "Default DID updated" } }
         }) {
             getWalletService().setDefault(
                 context.parameters["did"] ?: throw IllegalArgumentException("No DID supplied")
@@ -79,8 +92,19 @@ fun Application.dids() = walletRoute {
 
         route("create", {
             request {
-                queryParameter<String>("keyId")
-                queryParameter<String>("alias")
+                queryParameter<String>("keyId") {
+                    description =
+                        "Optionally override a key ID to use (otherwise will generate a new one if not present)"
+                }
+                queryParameter<String?>("alias") {
+                    description = "Optionally set key alias (otherwise will use hash of key if not present)"
+                    required = false
+                }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    description = "DID created"
+                }
             }
         }) {
             didCreate()

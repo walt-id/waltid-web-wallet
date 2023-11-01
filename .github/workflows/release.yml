@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-java@v2.1.0
         with:
           distribution: 'adopt-hotspot'
-          java-version: '16'          
+          java-version: '17'
       - name: Setup cache
         uses: actions/cache@v2
         with:
@@ -96,11 +96,11 @@ jobs:
           body: |
             ${{ steps.changelog.outputs.changelog }}
           prerelease: ${{ steps.changelog.outputs.prerelease }}
-      - name: Prepare CD
-        run: sed "s/_DEFAULT_DEPLOYMENT_/$GITHUB_SHA/g" k8s/deployment-dev.yaml > k8s/deployment_mod.yaml
-      - name: Continuous deployment
+      - name: Prepare CD - wallet.walt.id
+        run: sed "s/_DEFAULT_DEPLOYMENT_/$GITHUB_SHA/g" k8s/deployment-prod.yaml > k8s/deployment_mod.yaml
+      - name: Continuous deployment - wallet.walt.id
         uses: actions-hub/kubectl@master
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
-          args: apply -n dev -f k8s/deployment_mod.yaml
+          args: apply -n default -f k8s/deployment_mod.yaml

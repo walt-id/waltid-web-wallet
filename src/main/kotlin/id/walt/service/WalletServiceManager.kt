@@ -3,7 +3,7 @@ package id.walt.service
 import id.walt.service.nft.NftKitNftService
 import id.walt.service.nft.NftService
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.ConcurrentHashMap
 
 object WalletServiceManager {
 

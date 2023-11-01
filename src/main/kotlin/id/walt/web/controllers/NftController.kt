@@ -11,7 +11,7 @@ import io.ktor.server.response.*
 
 fun Application.nfts() = walletRoute {
     route("nft", {
-        tags = listOf("Nfts")
+        tags = listOf("NFTs")
     }) {
         get("chains/{ecosystem}", {
             summary = "Fetch the list of ecosystem networks for the provided ecosystem"

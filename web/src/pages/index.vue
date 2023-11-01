@@ -21,19 +21,19 @@
             Get started filling your wallet by receiving some credentials!
           </p>
           <div class="mt-4">
-            <a :href="config.issuerUrl" target="_blank"
+            <NuxtLink to="/settings/issuers"
               class="inline-flex items-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
               type="button">
-              <PlusIcon aria-hidden="true" class="-ml-0.5 mr-1.5 h-5 w-5" />
-              Request credentials
-            </a>
+                <PlusIcon aria-hidden="true" class="-ml-0.5 mr-1.5 h-5 w-5" />
+                Request credentials
+            </NuxtLink >
           </div>
         </div>
 
         <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-6" role="list">
           <li v-for="credential in credentials" :key="credential.id"
             class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow w-[96%] transform hover:scale-105 cursor-pointer duration-200">
-            <NuxtLink :to="'/credentials/' + credential.id">
+            <NuxtLink :to="'/credentials/' + encodeURIComponent(credential.id)">
               <div class="bg-white p-6 rounded-2xl shadow-2xl h-full">
                 <div class="flex justify-end">
                   <div
@@ -57,13 +57,13 @@
                     )
                   }}
                 </h2>
-                <div class="flex items-center">
+                <div v-if="credential.issuer" class="flex items-center">
                   <img class="w-12" :src="credential.issuer?.image?.id
                         ? credential.issuer?.image?.id
                         : credential.issuer?.image
                       " />
                   <div class="text-natural-600 ml-2 w-32">
-                    {{ credential.issuer.name }}
+                    {{ credential.issuer?.name }}
                   </div>
                 </div>
               </div>

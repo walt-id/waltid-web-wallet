@@ -28,10 +28,12 @@ fun Application.keys() = walletRoute {
             context.respond(getWalletService().listKeys())
         }
 
-        post("generate",{
-            summary = "Generate key"
+        post("generate", {
+            summary = "Generate new key"
             request {
-                queryParameter<String>("type")
+                queryParameter<String>("type") {
+                    description = "Key type to use. Choose from: ${KeyType.entries.joinToString()}"
+                }
             }
         }) {
             val type = call.request.queryParameters["type"]
@@ -58,13 +60,13 @@ fun Application.keys() = walletRoute {
             summary = "Show a specific key"
             request {
                 pathParameter<String>("alias") {
-                    description = "the key string"
+                    description = "Key to show"
 
                 }
             }
             response {
                 HttpStatusCode.OK to {
-                    description = "The key document"
+                    description = "The key document (JSON)"
                     body<JsonObject>()
                 }
             }
@@ -113,12 +115,16 @@ fun Application.keys() = walletRoute {
                     example = "bc6fa6b0593648238c4616800bed7746"
                 }
             }
+            response {
+                HttpStatusCode.Accepted to { description = "Key deleted" }
+                HttpStatusCode.BadRequest to { description = "Key could not be deleted" }
+            }
         }) {
             val keyId = context.parameters["keyId"] ?: throw IllegalArgumentException("No key id provided.")
 
-            getWalletService().deleteKey(keyId)
+            val success = getWalletService().deleteKey(keyId)
 
-            context.respond(HttpStatusCode.Accepted)
+            context.respond(if (success) HttpStatusCode.Accepted else HttpStatusCode.BadRequest)
         }
     }
 }

@@ -1,10 +1,9 @@
 package id.walt.service
 
-import id.walt.db.models.WalletDids
-import id.walt.db.models.WalletOperationHistory
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
-import id.walt.utils.JsonUtils.toJsonPrimitives
+import id.walt.service.dto.WalletOperationHistory
+import id.walt.service.issuers.IssuerDataTransferObject
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.util.*
@@ -18,7 +17,7 @@ abstract class WalletService(val accountId: UUID) {
     abstract suspend fun getCredential(credentialId: String): String
 
     // SIOP
-    abstract suspend fun usePresentationRequest(request: String, did: String): String?
+    abstract suspend fun usePresentationRequest(request: String, did: String): Result<String?>
     abstract suspend fun resolvePresentationRequest(request: String): String
     abstract suspend fun useOfferRequest(offer: String, did: String)
 
@@ -47,6 +46,10 @@ abstract class WalletService(val accountId: UUID) {
     abstract suspend fun getLinkedWallets(): List<LinkedWalletDataTransferObject>
     abstract suspend fun connectWallet(walletId: UUID): Boolean
     abstract suspend fun disconnectWallet(wallet: UUID): Boolean
+
+    // Issuers TODO: move each such component to use-case
+    abstract suspend fun listIssuers(): List<IssuerDataTransferObject>
+    abstract suspend fun getIssuer(name: String): IssuerDataTransferObject
 
 
     // TODO: Push

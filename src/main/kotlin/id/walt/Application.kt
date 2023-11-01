@@ -32,7 +32,6 @@ suspend fun main(args: Array<String>) {
     ConfigManager.loadConfigs(args)
 
     Db.start()
-    Db.init()
 
 //    val webConfig = ConfigManager.getConfig<WebConfig>()
 //    log.info { "Starting web server (binding to ${webConfig.webHost}, listening on port ${webConfig.webPort})..." }
@@ -72,4 +71,6 @@ fun Application.module() {
 
     keri()
     acdc()
+
+    issuers()
 }

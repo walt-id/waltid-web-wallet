@@ -32,15 +32,16 @@ fun Application.credentials() = walletRoute {
             TODO()
         }
 
-        route("{credentialId}") {
+        route("{credentialId}", {
+            request {
+                pathParameter<String>("credentialId") {
+                    description = "the credential id (or alias)"
+                    example = "urn:uuid:d36986f1-3cc0-4156-b5a4-6d3deab84270"
+                }
+            }
+        }) {
             get({
                 summary = "View a credential"
-                request {
-                    pathParameter<String>("credentialId") {
-                        description = "the credential id (or alias)"
-                        example = "urn:uuid:d36986f1-3cc0-4156-b5a4-6d3deab84270"
-                    }
-                }
                 response {
                     HttpStatusCode.OK to {
                         body<String> {
@@ -58,13 +59,18 @@ fun Application.credentials() = walletRoute {
 
             delete({
                 summary = "Delete a credential"
+
+                response {
+                    HttpStatusCode.Accepted to { description = "Credential deleted" }
+                    HttpStatusCode.BadRequest to { description = "Credential could not be deleted" }
+                }
             }) {
                 val credentialId =
                     call.parameters["credentialId"] ?: throw IllegalArgumentException("No credentialId provided")
 
                 val success = getWalletService().deleteCredential(credentialId)
 
-                context.respond(if (success) HttpStatusCode.OK else HttpStatusCode.BadRequest)
+                context.respond(if (success) HttpStatusCode.Accepted else HttpStatusCode.BadRequest)
             }
         }
     }

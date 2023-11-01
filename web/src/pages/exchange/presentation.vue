@@ -10,14 +10,14 @@
             </template>
 
             <template v-if="!immediateAccept" v-slot:menu>
-                <ActionButton icon="heroicons:x-mark" class="inline-flex focus:outline focus:outline-red-700 focus:outline-offset-2 items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 hover:scale-105 hover:animate-pulse focus:animate-none"
-                              display-text="Reject"
-                              type="button" @click="navigateTo('/')"/>
+                <ActionButton icon="heroicons:x-mark"
+                    class="inline-flex focus:outline focus:outline-red-700 focus:outline-offset-2 items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 hover:scale-105 hover:animate-pulse focus:animate-none"
+                    display-text="Reject" type="button" @click="navigateTo('/')" />
 
-                <ActionButton icon="heroicons:check" :failed="failed" class="inline-flex focus:outline focus:outline-offset-2 items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm"
-                              :class="[failed ? 'bg-red-600 animate-pulse focus:outline focus:outline-red-700 focus:outline-offset-2 hover:bg-red-700 hover:scale-105' : 'bg-green-600 focus:outline-green-700 hover:bg-green-700 hover:scale-105 hover:animate-pulse focus:animate-none']"
-                              display-text="Accept"
-                              type="button" @click="acceptPresentation"/>
+                <ActionButton icon="heroicons:check" :failed="failed"
+                    class="inline-flex focus:outline focus:outline-offset-2 items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm"
+                    :class="[failed ? 'bg-red-600 animate-pulse focus:outline focus:outline-red-700 focus:outline-offset-2 hover:bg-red-700 hover:scale-105' : 'bg-green-600 focus:outline-green-700 hover:bg-green-700 hover:scale-105 hover:animate-pulse focus:animate-none']"
+                    display-text="Accept" type="button" @click="acceptPresentation" />
             </template>
         </PageHeader>
         <CenterMain>
@@ -31,17 +31,20 @@
 
             <div aria-label="Credential list" class="h-full overflow-y-auto shadow-xl">
                 <div v-for="group in groupedCredentialTypes.keys()" :key="group.id" class="relative">
-                    <div class="sticky top-0 z-10 border-y border-b-gray-200 border-t-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-900">
+                    <div
+                        class="sticky top-0 z-10 border-y border-b-gray-200 border-t-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-900">
                         <h3>{{ group }}s:</h3>
                     </div>
                     <ul class="divide-y divide-gray-100" role="list">
-                        <li v-for="credential in groupedCredentialTypes.get(group)" :key="credential" class="flex gap-x-4 px-3 py-5">
+                        <li v-for="credential in groupedCredentialTypes.get(group)" :key="credential"
+                            class="flex gap-x-4 px-3 py-5">
 
-                            <CredentialIcon :credentialType="credential.name" class="h-6 w-6 flex-none rounded-full bg-gray-50"></CredentialIcon>
+                            <CredentialIcon :credentialType="credential.name"
+                                class="h-6 w-6 flex-none rounded-full bg-gray-50"></CredentialIcon>
 
                             <div class="min-w-0 flex flex-row items-center">
-                                <span class="text-lg font-semibold leading-6 text-gray-900">{{ credential.id }}.</span> <span
-                                class="ml-1 truncate text-sm leading-5 text-gray-800">{{ credential.name }}</span>
+                                <span class="text-lg font-semibold leading-6 text-gray-900">{{ credential.id }}.</span>
+                                <span class="ml-1 truncate text-sm leading-5 text-gray-800">{{ credential.name }}</span>
                             </div>
                         </li>
                     </ul>
@@ -53,17 +56,17 @@
 
 <script lang="ts" setup>
 import CenterMain from "~/components/CenterMain.vue";
-import {CheckIcon, XMarkIcon} from '@heroicons/vue/24/outline'
+import { CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import PageHeader from "~/components/PageHeader.vue";
 import CredentialIcon from "~/components/CredentialIcon.vue";
 import ActionButton from "~/components/buttons/ActionButton.vue";
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
-import {groupBy} from "~/composables/groupings";
-import {useTitle} from "@vueuse/core";
+import { groupBy } from "~/composables/groupings";
+import { useTitle } from "@vueuse/core";
 
 async function resolvePresentationRequest(request) {
     try {
-    console.log("RESOLVING request", request)
+        console.log("RESOLVING request", request)
         const response = await $fetch("/r/wallet/exchange/resolvePresentationRequest", { method: 'POST', body: request })
         console.log(response)
         return response
@@ -92,7 +95,7 @@ console.log("inputDescriptors: ", inputDescriptors)
 
 let i = 0
 let groupedCredentialTypes = groupBy(inputDescriptors.map(item => {
-    return {id: ++i, name: item.id}
+    return { id: ++i, name: item.id }
 }), c => c.name)
 console.log("groupedCredentialTypes: ", groupedCredentialTypes)
 
@@ -107,17 +110,20 @@ async function acceptPresentation() {
             body: request
         })
 
-        setInterval(async () => {
-            let sessionId = presentationUrl.searchParams.get('state');
-            let response = await fetch(`https://verifier.portal.walt.id/vp/session/${sessionId}`);
-            response = await response.json();
-            if (response.verification_result) {
-                window.location.href = `https://portal.walt.id/success/${sessionId}`;
-            }
-        }, 1000);
+        console.log(response)
+
+        if (response.redirectUri) {
+            window.location.href = response.redirectUri
+        }
     } catch (e) {
-        failed.value = true
-        throw e
+        console.log("Policy verification failed: ", e)
+
+        let sessionId = presentationUrl.searchParams.get('state');
+        window.location.href = `https://portal.walt.id/success/${sessionId}`;
+
+        // failed.value = true
+        // window.alert(e)
+        // throw e
     }
 }
 
@@ -130,6 +136,4 @@ if (query.accept) { // TODO make accept a JWT or something wallet-backend secure
 useTitle(`Present credentials - walt.id`)
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
