@@ -68,5 +68,9 @@ fun Application.module() {
     history()
     account()
     nfts()
+
+    keri()
+    acdc()
+
     issuers()
 }

@@ -1,0 +1,155 @@
+{
+	"info": {
+		"_postman_id": "a599ecc6-a7e7-4b95-9092-47c27d80a7b1",
+		"name": "KERI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "27540209"
+	},
+	"item": [
+		{
+			"name": "Create a DB and a keystore",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "ThFPtjWgjkWFmuHDiDd5o3GGqFlu_jjkkXJl2dOeo6E"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"passcode\": \"0123456789abcdefghijk\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:4545/r/wallet/keri/db/waltid",
+				"description": "Create a DB and a Keystore and designating witnesses"
+			},
+			"response": []
+		},
+		{
+			"name": "Create inception event and create and AID and a DID for KERI",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "fyQUzZSzMy7ZnCebBJmIv-aHl-8wTstQUY1KRc-zgGs"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"passcode\": \"0123456789abcdefghijk\",\n  \"alias\": \"waltid-alias\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:4545/r/wallet/keri/incept/waltid"
+			},
+			"response": []
+		},
+		{
+			"name": "Registry",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "s7B9oBn-mxdNhicJamVTaX5NsWBZQZW58bDpREQuu0Q"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"passcode\": \"0123456789abcdefghijk\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:4545/r/wallet/keri/keystore/waltid/alias/waltid-alias/registry/waltid-registry"
+			},
+			"response": []
+		},
+		{
+			"name": "Witness OOBI resolution",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://127.0.0.1:5642/oobi/BBilc4-L3tFUnfM_wJr4S4OJanAv_VmF_dJNN6vkf2Ha"
+			},
+			"response": []
+		},
+		{
+			"name": "Saidify",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "EaI7hP6e1XdXDDi25i_9HLdZnynZaH_fYM3KlM2mk6c"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"filename\": \"config/keri/acdc/data/rules/child-rule.json\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:4545/r/wallet/acdc/saidify"
+			},
+			"response": []
+		},
+		{
+			"name": "IPEX Apply",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": "http://127.0.0.1:4545/r/wallet/acdc/ipex/apply"
+			},
+			"response": []
+		},
+		{
+			"name": "IPEX Offer",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "SR6AkV1Gb9-LfGva-2Nsyj-HjGUerDxTmVV7_MmFQ7s"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"url": "http://127.0.0.1:4545/r/wallet/acdc/ipex/offer"
+			},
+			"response": []
+		},
+		{
+			"name": "IPEX Agree",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "SR6AkV1Gb9-LfGva-2Nsyj-HjGUerDxTmVV7_MmFQ7s"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"url": "http://127.0.0.1:4545/r/wallet/acdc/ipex/agree"
+			},
+			"response": []
+		}
+	]
+}
