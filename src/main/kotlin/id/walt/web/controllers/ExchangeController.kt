@@ -1,5 +1,6 @@
 package id.walt.web.controllers
 
+import id.walt.service.SSIKit2WalletService
 import id.walt.service.dto.WalletOperationHistory
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.post
@@ -62,6 +63,12 @@ fun Application.exchange() = walletRoute {
                         description = """{"redirectUri": String}"""
                     }
                 }
+                HttpStatusCode.BadRequest to {
+                    description = "Presentation was not accepted"
+                    body<JsonObject> {
+                        description = """{"redirectUri": String?, "errorMessage": String}"""
+                    }
+                }
             }
         }) {
             val wallet = getWalletService()
@@ -79,20 +86,43 @@ fun Application.exchange() = walletRoute {
                 wallet.addOperationHistory(
                     WalletOperationHistory.new(
                         wallet, "usePresentationRequest",
-                        mapOf("did" to did, "request" to request, "success" to "true", "redirect" to result.getOrThrow()) // change string true to bool
+                        mapOf(
+                            "did" to did,
+                            "request" to request,
+                            "success" to "true",
+                            "redirect" to result.getOrThrow()
+                        ) // change string true to bool
                     )
                 )
 
                 context.respond(HttpStatusCode.OK, mapOf("redirectUri" to result.getOrThrow()))
             } else {
+                val err = result.exceptionOrNull()
+                println("Presentation failed: $err")
+
                 wallet.addOperationHistory(
                     WalletOperationHistory.new(
                         wallet, "usePresentationRequest",
-                        mapOf("did" to did, "request" to request, "success" to "false", "redirect" to result.getOrThrow()) // change string true to bool
+                        mapOf(
+                            "did" to did,
+                            "request" to request,
+                            "success" to "false",
+                            //"redirect" to ""
+                        ) // change string false to bool
                     )
                 )
+                when (err) {
+                    is SSIKit2WalletService.PresentationError -> {
+                        context.respond(
+                            HttpStatusCode.BadRequest, mapOf(
+                                "redirectUri" to err.redirectUri,
+                                "errorMessage" to err.message
+                            )
+                        )
+                    }
 
-                context.respond(HttpStatusCode.BadRequest, mapOf("redirectUri" to result.exceptionOrNull()!!.message))
+                    else -> context.respond(HttpStatusCode.BadRequest, mapOf("errorMessage" to err?.message))
+                }
             }
         }
         post("resolvePresentationRequest", {

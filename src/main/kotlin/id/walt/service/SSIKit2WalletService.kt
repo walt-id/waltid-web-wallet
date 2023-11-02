@@ -161,6 +161,12 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         followRedirects = false
     }
 
+
+    data class PresentationError(
+        override val message: String,
+        val redirectUri: String?
+    ) : IllegalArgumentException(message)
+
     /**
      * @return redirect uri
      */
@@ -178,15 +184,33 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
                     entry.value.forEach { append(entry.key, it) }
                 }
             })
-        println("HTTP Response: $resp, body: ${resp.bodyAsText()}")
+        val httpResponseBody = runCatching { resp.bodyAsText() }.getOrNull()
+        val isResponseRedirectUrl =
+            httpResponseBody != null && httpResponseBody.take(8).lowercase().let {
+                @Suppress("HttpUrlsUsage")
+                it.startsWith("http://") || it.startsWith("https://")
+            }
+        println("HTTP Response: $resp, body: $httpResponseBody")
 
         return if (resp.status.isSuccess()) {
-            val redirectUri = resp.bodyAsText()
-            if (redirectUri.startsWith("http"))
-                Result.success(redirectUri)
-            else Result.success(null)
+            Result.success(if (isResponseRedirectUrl) httpResponseBody else null)
         } else {
-            Result.failure(IllegalStateException("https://error.org/"))
+            if (isResponseRedirectUrl) {
+                Result.failure(
+                    PresentationError(
+                        message = "Presentation failed - redirecting to error page",
+                        redirectUri = httpResponseBody
+                    )
+                )
+            } else {
+                println("Response body: $httpResponseBody")
+                Result.failure(
+                    PresentationError(
+                        message = if (httpResponseBody != null) "Presentation failed:\n $httpResponseBody" else "Presentation failed",
+                        redirectUri = ""
+                    )
+                )
+            }
         }
     }
 

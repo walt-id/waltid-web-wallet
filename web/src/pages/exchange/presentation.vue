@@ -10,14 +10,19 @@
             </template>
 
             <template v-if="!immediateAccept" v-slot:menu>
-                <ActionButton icon="heroicons:x-mark"
-                    class="inline-flex focus:outline focus:outline-red-700 focus:outline-offset-2 items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 hover:scale-105 hover:animate-pulse focus:animate-none"
-                    display-text="Reject" type="button" @click="navigateTo('/')" />
+                <ActionButton
+                        class="inline-flex focus:outline focus:outline-red-700 focus:outline-offset-2 items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 hover:scale-105 hover:animate-pulse focus:animate-none"
+                        display-text="Reject"
+                        icon="heroicons:x-mark" type="button" @click="navigateTo('/')"
+                />
 
-                <ActionButton icon="heroicons:check" :failed="failed"
-                    class="inline-flex focus:outline focus:outline-offset-2 items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm"
-                    :class="[failed ? 'bg-red-600 animate-pulse focus:outline focus:outline-red-700 focus:outline-offset-2 hover:bg-red-700 hover:scale-105' : 'bg-green-600 focus:outline-green-700 hover:bg-green-700 hover:scale-105 hover:animate-pulse focus:animate-none']"
-                    display-text="Accept" type="button" @click="acceptPresentation" />
+                <ActionButton
+                        :class="[failed ? 'bg-red-600 animate-pulse focus:outline focus:outline-red-700 focus:outline-offset-2 hover:bg-red-700 hover:scale-105' : 'bg-green-600 focus:outline-green-700 hover:bg-green-700 hover:scale-105 hover:animate-pulse focus:animate-none']"
+                        :failed="failed"
+                        class="inline-flex focus:outline focus:outline-offset-2 items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm"
+                        display-text="Accept"
+                        icon="heroicons:check" type="button" @click="acceptPresentation"
+                />
             </template>
         </PageHeader>
         <CenterMain>
@@ -32,15 +37,18 @@
             <div aria-label="Credential list" class="h-full overflow-y-auto shadow-xl">
                 <div v-for="group in groupedCredentialTypes.keys()" :key="group.id" class="relative">
                     <div
-                        class="sticky top-0 z-10 border-y border-b-gray-200 border-t-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-900">
+                            class="sticky top-0 z-10 border-y border-b-gray-200 border-t-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-900"
+                    >
                         <h3>{{ group }}s:</h3>
                     </div>
                     <ul class="divide-y divide-gray-100" role="list">
                         <li v-for="credential in groupedCredentialTypes.get(group)" :key="credential"
-                            class="flex gap-x-4 px-3 py-5">
+                            class="flex gap-x-4 px-3 py-5"
+                        >
 
                             <CredentialIcon :credentialType="credential.name"
-                                class="h-6 w-6 flex-none rounded-full bg-gray-50"></CredentialIcon>
+                                            class="h-6 w-6 flex-none rounded-full bg-gray-50"
+                            ></CredentialIcon>
 
                             <div class="min-w-0 flex flex-row items-center">
                                 <span class="text-lg font-semibold leading-6 text-gray-900">{{ credential.id }}.</span>
@@ -56,18 +64,18 @@
 
 <script lang="ts" setup>
 import CenterMain from "~/components/CenterMain.vue";
-import { CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import PageHeader from "~/components/PageHeader.vue";
 import CredentialIcon from "~/components/CredentialIcon.vue";
 import ActionButton from "~/components/buttons/ActionButton.vue";
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
-import { groupBy } from "~/composables/groupings";
-import { useTitle } from "@vueuse/core";
+import {groupBy} from "~/composables/groupings";
+import {useTitle} from "@vueuse/core";
+import {parseDate} from "@taquito/michel-codec/dist/types/utils";
 
 async function resolvePresentationRequest(request) {
     try {
         console.log("RESOLVING request", request)
-        const response = await $fetch("/r/wallet/exchange/resolvePresentationRequest", { method: 'POST', body: request })
+        const response = await $fetch("/r/wallet/exchange/resolvePresentationRequest", {method: 'POST', body: request})
         console.log(response)
         return response
     } catch (e) {
@@ -95,7 +103,7 @@ console.log("inputDescriptors: ", inputDescriptors)
 
 let i = 0
 let groupedCredentialTypes = groupBy(inputDescriptors.map(item => {
-    return { id: ++i, name: item.id }
+    return {id: ++i, name: item.id}
 }), c => c.name)
 console.log("groupedCredentialTypes: ", groupedCredentialTypes)
 
@@ -104,26 +112,44 @@ const immediateAccept = ref(false)
 const failed = ref(false)
 
 async function acceptPresentation() {
-    try {
-        const response = await $fetch<{ redirectUri: string | null }>("/r/wallet/exchange/usePresentationRequest", {
-            method: 'POST',
-            body: request
-        })
+    const response = await fetch("/r/wallet/exchange/usePresentationRequest", {
+        method: 'POST',
+        body: request,
+        redirect: "manual"
+    })
 
-        console.log(response)
+    if (response.ok) {
+        console.log("Response: " + response)
+        const parsedResponse: {redirectUri: string} = await response.json()
 
-        if (response.redirectUri) {
-            window.location.href = response.redirectUri
+        if (parsedResponse.redirectUri) {
+            navigateTo(parsedResponse.redirectUri, {
+                external: true
+            })
+        } else {
+            navigateTo("", {
+                external: true
+            })
         }
-    } catch (e) {
-        console.log("Policy verification failed: ", e)
+    } else {
+        failed.value = true
+        const error: {message: string, redirectUri: string | null | undefined} = await response.json()
 
-        let sessionId = presentationUrl.searchParams.get('state');
-        window.location.href = `https://portal.walt.id/success/${sessionId}`;
+        console.log("Error response: " + JSON.stringify(error))
+        window.alert(error.message)
 
-        // failed.value = true
-        // window.alert(e)
-        // throw e
+        if (error.redirectUri != null) {
+            navigateTo(error.redirectUri as string, {
+                external: true
+            })
+        }
+        //console.log("Policy verification failed: ", err)
+
+        //let sessionId = presentationUrl.searchParams.get('state');
+        //window.location.href = `https://portal.walt.id/success/${sessionId}`;
+
+        //window.alert(err)
+        //throw err
     }
 }
 
