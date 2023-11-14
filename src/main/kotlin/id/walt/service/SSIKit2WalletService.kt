@@ -81,16 +81,17 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     /* Credentials */
 
-    @OptIn(ExperimentalEncodingApi::class)
     override suspend fun listCredentials(): List<Credential> = CredentialsService.list(accountId).mapNotNull {
         val credentialId = it.credentialId
         runCatching {
             val cred = it.document
-            val parsedCred = if (cred.startsWith("{")) Json.parseToJsonElement(cred).jsonObject
-            else if (cred.startsWith("ey")) Json.parseToJsonElement(
-                Base64.UrlSafe.decode(cred.split(".")[1]).decodeToString()
-            ).jsonObject["vc"]!!.jsonObject
-            else throw IllegalArgumentException("Unknown credential format")
+            val parsedCred = when {
+                cred.startsWith("{") -> Json.parseToJsonElement(cred).jsonObject
+                cred.startsWith("ey") -> cred.decodeJws().payload
+                    .run { jsonObject["vc"]?.jsonObject ?: jsonObject }
+
+                else -> throw IllegalArgumentException("Unknown credential format")
+            }
             Credential(parsedCred, cred)
         }.onFailure { it.printStackTrace() }.getOrNull()?.let { cred ->
             Credential(JsonObject(cred.parsedCredential.toMutableMap().also {
@@ -342,13 +343,34 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
             val credential = credentialResp.credential!!.jsonPrimitive.content
             println(">>> $index. CREDENTIAL IS: $credential")
 
-            val credentialId = Json.parseToJsonElement(
-                Base64.UrlSafe.decode(credential.split(".")[1]).decodeToString()
-            ).jsonObject["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
-                ?: randomUUID()
+            val credentialJwt = credential.decodeJws()
 
-            CredentialsService.add(accountId, DbCredential(credentialId = credentialId, document = credential))
-            println(">>> $index. CREDENTIAL stored with Id: $credentialId")
+            when (val typ = credentialJwt.header["typ"]?.jsonPrimitive?.content?.lowercase()) {
+                "jwt" -> {
+                    val credentialId = credentialJwt.payload["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
+                        ?: randomUUID()
+
+                    CredentialsService.add(accountId, DbCredential(credentialId = credentialId, document = credential, disclosures = null))
+                    println(">>> $index. CREDENTIAL stored with Id: $credentialId")
+                }
+
+                "vc+sd-jwt" -> {
+                    val credentialId = credentialJwt.payload["id"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
+                        ?: randomUUID()
+
+                    val disclosures = credentialJwt.signature.split("~").drop(1)
+                    val disclosuresString = disclosures.joinToString("~")
+
+                    CredentialsService.add(
+                        account = accountId,
+                        credential = DbCredential(credentialId = credentialId, document = credential, disclosures = disclosuresString)
+                    )
+                    println(">>> $index. CREDENTIAL stored with Id: $credentialId")
+                }
+
+                null -> throw IllegalArgumentException("Credential JWT does not have \"typ\"")
+                else -> throw IllegalArgumentException("Invalid credential \"typ\": $typ")
+            }
         }
     }
 

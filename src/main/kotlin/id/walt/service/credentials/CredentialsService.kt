@@ -20,12 +20,8 @@ object CredentialsService {
         list(account).singleOrNull { it.credentialId == credentialId }
 
     fun list(account: UUID): List<DbCredential> = join(account).let {
-        AccountCredentialsRepository.query(it) {
-            DbCredential(
-                id = it[Credentials.id].value,
-                credentialId = it[Credentials.credentialId],
-                document = it[Credentials.document]
-            )
+        AccountCredentialsRepository.query(it) { resultRow ->
+            resultRow.fromRow()
         }
     }
 
@@ -39,6 +35,7 @@ object CredentialsService {
                 AccountCredentialsRepository.insert(DbAccountCredentials(
                     account = account,
                     credential = cid,
+                    disclosures = credential.disclosures
                 ))
             }
         }
