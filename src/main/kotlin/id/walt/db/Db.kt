@@ -1,11 +1,11 @@
 package id.walt.db
 
 import id.walt.config.ConfigManager
-import id.walt.config.DatabaseConfiguration
 import id.walt.config.DatasourceConfiguration
+import id.walt.db.models.*
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.TransactionManager
@@ -19,14 +19,15 @@ object Db {
 
     private fun connect() {
         val datasourceConfig = ConfigManager.getConfig<DatasourceConfiguration>()
-        val databaseConfig = ConfigManager.getConfig<DatabaseConfiguration>()
+
+        /*val databaseConfig = ConfigManager.getConfig<DatabaseConfiguration>()
 
         //migrate
         Flyway.configure()
             .locations(databaseConfig.database.replace(".", "/"))
             .dataSource(datasourceConfig.hikariDataSource)
             .load()
-            .migrate()
+            .migrate()*/
 
         // connect
         log.info { "Connecting to database at \"${datasourceConfig.hikariDataSource.jdbcUrl}\"..." }
@@ -43,7 +44,31 @@ object Db {
 
         transaction {
             addLogger(StdOutSqlLogger)
+
+            SchemaUtils.drop(
+                WalletOperationHistories,
+                WalletDids,
+                WalletKeys,
+                WalletCredentials,
+                AccountWalletMappings,
+                Wallets,
+                //AccountWeb3WalletMappings,
+                Accounts,
+                Web3Wallets
+            )
+            SchemaUtils.create(
+                Web3Wallets,
+                Accounts,
+                //AccountWeb3WalletMappings,
+                Wallets,
+                AccountWalletMappings,
+                WalletCredentials,
+                WalletKeys,
+                WalletDids,
+                WalletOperationHistories
+            )
         }
+
     }
 
     private fun toTransactionIsolationLevel(value: String): Int = when (value) {

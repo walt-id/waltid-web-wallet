@@ -11,9 +11,9 @@ import id.walt.service.nft.fetchers.parameters.TokenListParameter
 
 class AlgorandDataFetcher(
     private val converter: NftDetailConverterBase<AlgorandToken>
-):DataFetcher {
+) : DataFetcher {
     override fun all(parameter: TokenListParameter): List<NftDetailDataTransferObject> =
-        AlgorandNftService.getAccountAssets(parameter.accountId, Common.getAlgorandChain(parameter.chain.uppercase())).map{
+        AlgorandNftService.getAccountAssets(parameter.accountId, Common.getAlgorandChain(parameter.chain.uppercase())).map {
             converter.convert(it).toDataTransferObject(parameter.chain)
         }
 

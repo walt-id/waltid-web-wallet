@@ -1,1 +1,0 @@
-ALTER TABLE "account_wallets" ADD "owner" INT NOT NULL DEFAULT 0;

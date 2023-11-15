@@ -1,5 +1,6 @@
-package id.walt.db.models
+package id.walt.db.models.todo
 
+import id.walt.db.models.Accounts
 import org.jetbrains.exposed.dao.id.UUIDTable
 
 object AccountIssuers : UUIDTable("account_issuers") {

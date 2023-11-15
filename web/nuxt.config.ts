@@ -1,22 +1,22 @@
-import presetIcons from '@unocss/preset-icons'
+import presetIcons from "@unocss/preset-icons";
 
 export default defineNuxtConfig({
-    srcDir: 'src',
+    srcDir: "src",
     modules: [
-        '@vueuse/nuxt',
-        '@nuxtjs/tailwindcss',
-        '@unocss/nuxt',
-        '@nuxtjs/i18n',
-        '@nuxtjs/color-mode',
+        "@vueuse/nuxt",
+        "@nuxtjs/tailwindcss",
+        "@unocss/nuxt",
+        "@nuxtjs/i18n",
+        "@nuxtjs/color-mode",
         //'@huntersofbook/naive-ui-nuxt',
-        '@vite-pwa/nuxt',
-        '@sidebase/nuxt-auth',
-        '@nuxt/content',
-        '@pinia/nuxt',
-        'nuxt-icon'
+        "@vite-pwa/nuxt",
+        "@sidebase/nuxt-auth",
+        "@nuxt/content",
+        "@pinia/nuxt",
+        "nuxt-icon",
     ],
     build: {
-        transpile: ['@headlessui/vue'],
+        transpile: ["@headlessui/vue"],
     },
 
     content: {
@@ -27,81 +27,80 @@ export default defineNuxtConfig({
         baseURL: "/r/auth",
 
         provider: {
-            type: 'local',
+            type: "local",
 
             pages: {
-                login: '/login'
+                login: "/login",
             },
         },
 
         globalAppMiddleware: {
-            isEnabled: true
-        }
+            isEnabled: true,
+        },
     },
 
     pwa: {
         registerWebManifestInRouteRules: true,
 
-        srcDir: 'public/sw',
-        filename: 'worker.js',
+        srcDir: "public/sw",
+        filename: "worker.js",
 
-        strategies: 'injectManifest',
-        injectRegister: 'script',
-        injectManifest: {injectionPoint: undefined},
-        registerType: 'autoUpdate',
+        strategies: "injectManifest",
+        injectRegister: "script",
+        injectManifest: { injectionPoint: undefined },
+        registerType: "autoUpdate",
         // notification-worker.js
         manifest: {
-            name: 'walt.id wallet',
-            short_name: 'walt.id',
-            display: 'standalone',
-            theme_color: '#0573f0',
+            name: "walt.id wallet",
+            short_name: "walt.id",
+            display: "standalone",
+            theme_color: "#0573f0",
             icons: [
-
                 {
                     src: "/icons/android-icon-36x36.png",
                     sizes: "36x36",
                     type: "image/png",
-                    density: "0.75"
+                    density: "0.75",
                 },
                 {
                     src: "/icons/android-icon-48x48.png",
                     sizes: "48x48",
                     type: "image/png",
-                    density: "1.0"
+                    density: "1.0",
                 },
                 {
                     src: "/icons/android-icon-72x72.png",
                     sizes: "72x72",
                     type: "image/png",
-                    density: "1.5"
+                    density: "1.5",
                 },
                 {
                     src: "/icons/android-icon-96x96.png",
                     sizes: "96x96",
                     type: "image/png",
-                    density: "2.0"
+                    density: "2.0",
                 },
                 {
                     src: "/icons/android-icon-144x144.png",
                     sizes: "144x144",
                     type: "image/png",
-                    density: "3.0"
+                    density: "3.0",
                 },
                 {
-                    src: '/icons/waltid-icon-192x192.png',
-                    sizes: '192x192',
-                    type: 'image/png',
+                    src: "/icons/waltid-icon-192x192.png",
+                    sizes: "192x192",
+                    type: "image/png",
                 },
                 {
-                    src: '/icons/waltid-icon-512x512.png',
-                    sizes: '512x512',
-                    type: 'image/png',
+                    src: "/icons/waltid-icon-512x512.png",
+                    sizes: "512x512",
+                    type: "image/png",
                 },
                 {
-                    src: '/icons/waltid-icon-512x512.png',
-                    sizes: '512x512',
-                    type: 'image/png',
-                    purpose: 'any maskable',
+                    src: "/icons/waltid-icon-512x512.png",
+                    sizes: "512x512",
+                    type: "image/png",
+                    purpose: "any maskable",
                 },
             ],
             shortcuts: [
@@ -110,13 +109,13 @@ export default defineNuxtConfig({
                     name: "Scan QR code",
                     short_name: "Scan QR",
                     url: "/wallet/scan-qr",
-                    description: "Scan a QR code to receive/present credentials from/to a service."
-                }
-            ]
+                    description: "Scan a QR code to receive/present credentials from/to a service.",
+                },
+            ],
         },
         workbox: {
             navigateFallback: null,
-            globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}']
+            globPatterns: ["client/**/*.{js,css,ico,png,svg,webp,woff,woff2}"],
         },
         client: {
             installPrompt: true,
@@ -126,7 +125,7 @@ export default defineNuxtConfig({
         },
         devOptions: {
             enabled: true,
-            type: 'module',
+            type: "module",
         },
     },
 
@@ -138,33 +137,33 @@ export default defineNuxtConfig({
             presetIcons({
                 scale: 1.2,
                 extraProperties: {
-                    display: 'inline-block',
+                    display: "inline-block",
                 },
             }),
         ],
-        safelist: ['i-twemoji-flag-us-outlying-islands', 'i-twemoji-flag-turkey'],
+        safelist: ["i-twemoji-flag-us-outlying-islands", "i-twemoji-flag-turkey"],
     },
 
     typescript: {
         tsConfig: {
             compilerOptions: {
                 strict: true,
-                types: ['./type.d.ts'],
+                types: ["./type.d.ts"],
             },
         },
     },
     colorMode: {
-        classSuffix: '',
-        fallback: 'light',
-        storageKey: 'color-mode',
+        classSuffix: "",
+        fallback: "light",
+        storageKey: "color-mode",
     },
 
     tailwindcss: {
-        configPath: './tailwind.config.js',
+        configPath: "./tailwind.config.js",
     },
 
     vite: {
-        logLevel: 'info',
+        logLevel: "info",
         /*server: {
             proxy: {
                 '/api': {
@@ -177,20 +176,18 @@ export default defineNuxtConfig({
     runtimeConfig: {
         public: {
             projectId: process.env.ProjectId,
-            issuerCallbackUrl: process.env.IssuerCallbackUrl ?? "http://localhost:3000"
-        }
+            issuerCallbackUrl: process.env.IssuerCallbackUrl ?? "http://localhost:3000",
+        },
     },
 
     nitro: {
         compressPublicAssets: true,
         devProxy: {
-            '/r/': 'http://localhost:4545/r',
-        }
+            "/r/": "http://localhost:4545/r",
+        },
     },
     ssr: false,
-    css: [
-        "@near-wallet-selector/modal-ui/styles.css",
-    ],
+    css: ["@near-wallet-selector/modal-ui/styles.css"],
 
     // i18n: {
     //     lazy: true,
@@ -210,4 +207,4 @@ export default defineNuxtConfig({
     // }
 
     //proxy: [ 'http://localhost:4545/api' ]
-})
+});

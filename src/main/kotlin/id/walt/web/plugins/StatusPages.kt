@@ -21,6 +21,7 @@ fun Application.configureStatusPages() {
     install(StatusPages) {
         exception<UnauthorizedException> { call, cause ->
             call.respond(HttpStatusCode.Unauthorized, cause.message ?: "")
+            cause.printStackTrace()
             //call.respond(HttpStatusCode.Forbidden, cause.message ?: "")
         }
         exception<Throwable> { call, cause ->

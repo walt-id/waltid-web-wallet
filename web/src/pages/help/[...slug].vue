@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-
 import CenterMain from "~/components/CenterMain.vue";
 </script>
 
 <template>
     <CenterMain>
-        <ContentDoc/>
+        <ContentDoc />
     </CenterMain>
 </template>
 
@@ -13,5 +12,4 @@ import CenterMain from "~/components/CenterMain.vue";
 h1 {
     font-size: 40px;
 }
-
 </style>

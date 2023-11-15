@@ -1,41 +1,25 @@
 <template>
     <CenterMain>
-        <BackButton/>
+        <BackButton />
         <LoadingIndicator v-if="pending">Loading credential...</LoadingIndicator>
         <div v-else>
             <div class="flex justify-center items-center my-10">
                 <div class="bg-white p-6 rounded-2xl shadow-2xl h-full w-[350px]">
                     <div class="flex justify-end">
                         <div
-                                :class="jwtJson?.expirationDate ? new Date(jwtJson?.expirationDate).getTime() > new Date().getTime() ? 'bg-cyan-50' : 'bg-red-50' : 'bg-cyan-50'"
-                                class="rounded-lg px-3 mb-2"
+                            :class="jwtJson?.expirationDate ? (new Date(jwtJson?.expirationDate).getTime() > new Date().getTime() ? 'bg-cyan-50' : 'bg-red-50') : 'bg-cyan-50'"
+                            class="rounded-lg px-3 mb-2"
                         >
-                            <div
-                                    :class="jwtJson?.expirationDate ? new Date(jwtJson?.expirationDate).getTime() > new Date().getTime() ? 'text-cyan-900' : 'text-orange-900' : 'text-cyan-900'"
-                            >
-                                {{
-                                    jwtJson?.expirationDate
-                                            ? new Date(jwtJson?.expirationDate).getTime() >
-                                            new Date().getTime()
-                                                    ? "Valid"
-                                                    : "Expired"
-                                            : "Valid"
-                                }}
+                            <div :class="jwtJson?.expirationDate ? (new Date(jwtJson?.expirationDate).getTime() > new Date().getTime() ? 'text-cyan-900' : 'text-orange-900') : 'text-cyan-900'">
+                                {{ jwtJson?.expirationDate ? (new Date(jwtJson?.expirationDate).getTime() > new Date().getTime() ? "Valid" : "Expired") : "Valid" }}
                             </div>
                         </div>
                     </div>
                     <h2 class="text-2xl font-bold mb-2 text-gray-900 bold mb-8">
-                        {{
-                            jwtJson?.type[jwtJson?.type.length - 1].replace(
-                                    /([a-z0-9])([A-Z])/g,
-                                    "$1 $2"
-                            )
-                        }}
+                        {{ jwtJson?.type[jwtJson?.type.length - 1].replace(/([a-z0-9])([A-Z])/g, "$1 $2") }}
                     </h2>
                     <div v-if="jwtJson?.issuer" class="flex items-center">
-                        <img :src="jwtJson?.issuer?.image?.id ? jwtJson?.issuer?.image?.id : jwtJson?.issuer?.image"
-                             class="w-12"
-                        />
+                        <img :src="jwtJson?.issuer?.image?.id ? jwtJson?.issuer?.image?.id : jwtJson?.issuer?.image" class="w-12" />
                         <div class="text-natural-600 ml-2 w-32">
                             {{ jwtJson?.issuer?.name }}
                         </div>
@@ -44,15 +28,10 @@
             </div>
             <div class="px-7 py-1">
                 <div class="text-gray-600 font-bold">
-                    {{
-                        jwtJson?.type[jwtJson?.type.length - 1].replace(
-                                /([a-z0-9])([A-Z])/g,
-                                "$1 $2"
-                        )
-                    }}
+                    {{ jwtJson?.type[jwtJson?.type.length - 1].replace(/([a-z0-9])([A-Z])/g, "$1 $2") }}
                     Details
                 </div>
-                <hr class="my-5"/>
+                <hr class="my-5" />
 
                 <!-- VerifiableDiploma -->
                 <div v-if="jwtJson?.type[jwtJson?.type.length - 1] == 'VerifiableDiploma'">
@@ -75,7 +54,7 @@
                             {{ jwtJson?.credentialSubject?.dateOfBirth }}
                         </div>
                     </div>
-                    <hr class="my-5"/>
+                    <hr class="my-5" />
                     <div class="text-gray-500 mb-4 font-bold">Achievement</div>
                     <div class="md:flex text-gray-500 mb-3 md:mb-1">
                         <div class="min-w-[19vw]">Identifier</div>
@@ -98,10 +77,7 @@
                     <div class="md:flex text-gray-500 mb-3 md:mb-1">
                         <div class="min-w-[19vw]">Additional Notes</div>
                         <div class="font-bold">
-                            {{
-                                jwtJson?.credentialSubject?.learningAchievement
-                                        .additionalNote[0]
-                            }}
+                            {{ jwtJson?.credentialSubject?.learningAchievement.additionalNote[0] }}
                         </div>
                     </div>
                     <div class="md:flex text-gray-500 mb-3 md:mb-1">
@@ -120,33 +96,24 @@
                         <div class="min-w-[19vw]">Study Timeframe</div>
                         <div class="font-bold"></div>
                     </div>
-                    <hr class="my-5"/>
+                    <hr class="my-5" />
                     <div class="text-gray-500 mb-4 font-bold">University</div>
                     <div class="md:flex text-gray-500 mb-3 md:mb-1">
                         <div class="min-w-[19vw]">Legal Identifier</div>
                         <div class="font-bold">
-                            {{
-                                jwtJson?.credentialSubject?.awardingOpportunity.awardingBody
-                                        .eidasLegalIdentifier
-                            }}
+                            {{ jwtJson?.credentialSubject?.awardingOpportunity.awardingBody.eidasLegalIdentifier }}
                         </div>
                     </div>
                     <div class="md:flex text-gray-500 mb-3 md:mb-1">
                         <div class="min-w-[19vw]">Name</div>
                         <div class="font-bold">
-                            {{
-                                jwtJson?.credentialSubject?.awardingOpportunity.awardingBody
-                                        .preferredName
-                            }}
+                            {{ jwtJson?.credentialSubject?.awardingOpportunity.awardingBody.preferredName }}
                         </div>
                     </div>
                     <div class="md:flex text-gray-500 mb-3 md:mb-1">
                         <div class="min-w-[19vw]">Registration</div>
                         <div class="font-bold">
-                            {{
-                                jwtJson?.credentialSubject?.awardingOpportunity.awardingBody
-                                        .registration
-                            }}
+                            {{ jwtJson?.credentialSubject?.awardingOpportunity.awardingBody.registration }}
                         </div>
                     </div>
                 </div>
@@ -171,13 +138,11 @@
                             <div class="md:flex text-gray-500 mb-3 md:mb-1">
                                 <div class="min-w-[19vw]">Criteria</div>
                                 <div class="font-bold grow-0">
-                                    {{
-                                        jwtJson?.credentialSubject?.achievement.criteria?.narrative
-                                    }}
+                                    {{ jwtJson?.credentialSubject?.achievement.criteria?.narrative }}
                                 </div>
                             </div>
                         </div>
-                        <img :src="jwtJson?.credentialSubject?.achievement.image?.id" class="w-32 h-20 hidden md:block"/>
+                        <img :src="jwtJson?.credentialSubject?.achievement.image?.id" class="w-32 h-20 hidden md:block" />
                     </div>
                 </div>
 
@@ -200,55 +165,43 @@
                         <div class="md:flex text-gray-500 mb-3 md:mb-1">
                             <div class="min-w-[19vw]">Date Of Birth</div>
                             <div class="font-bold grow-0">
-                                {{
-                                    jwtJson?.credentialSubject?.birthDate
-                                }}
+                                {{ jwtJson?.credentialSubject?.birthDate }}
                             </div>
                         </div>
                         <div class="md:flex text-gray-500 mb-3 md:mb-1">
                             <div class="min-w-[19vw]">Sex</div>
                             <div class="font-bold grow-0">
-                                {{
-                                    jwtJson?.credentialSubject?.gender
-                                }}
+                                {{ jwtJson?.credentialSubject?.gender }}
                             </div>
                         </div>
                         <div class="md:flex text-gray-500 mb-3 md:mb-1">
                             <div class="min-w-[19vw]">Country Of Birth</div>
                             <div class="font-bold grow-0">
-                                {{
-                                    jwtJson?.credentialSubject?.birthCountry
-                                }}
+                                {{ jwtJson?.credentialSubject?.birthCountry }}
                             </div>
                         </div>
                         <div class="md:flex text-gray-500 mb-3 md:mb-1">
                             <div class="min-w-[19vw]">Category</div>
                             <div class="font-bold grow-0">
-                                {{
-                                    jwtJson?.credentialSubject?.lprCategory
-                                }}
+                                {{ jwtJson?.credentialSubject?.lprCategory }}
                             </div>
                         </div>
                         <div class="md:flex text-gray-500 mb-3 md:mb-1">
                             <div class="min-w-[19vw]">USCIS</div>
                             <div class="font-bold grow-0">
-                                {{
-                                    jwtJson?.credentialSubject?.lprNumber
-                                }}
+                                {{ jwtJson?.credentialSubject?.lprNumber }}
                             </div>
                         </div>
                         <div class="md:flex text-gray-500 mb-3 md:mb-1">
                             <div class="min-w-[19vw]">Resident Since</div>
                             <div class="font-bold grow-0">
-                                {{
-                                    jwtJson?.credentialSubject?.residentSince
-                                }}
+                                {{ jwtJson?.credentialSubject?.residentSince }}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <hr class="my-5"/>
+                <hr class="my-5" />
                 <div v-if="jwtJson?.issuer">
                     <div class="text-gray-500 mb-4 font-bold">Issuer</div>
                     <div class="md:flex text-gray-500 mb-3 md:mb-1">
@@ -261,35 +214,34 @@
                             {{ jwtJson?.issuer?.id ?? jwtJson?.issuer }}
                         </div>
                     </div>
-                    <hr class="mt-5 mb-3"/>
+                    <hr class="mt-5 mb-3" />
                     <div class="text-gray-600 flex justify-between">
                         <div>
                             {{
                                 jwtJson?.expirationDate && jwtJson?.issuanceDate
-                                        ? "Valid from " + new Date(jwtJson?.issuanceDate).toISOString().slice(0, 10) + " to " + new
-                                Date(jwtJson?.expirationDate).toISOString().slice(0, 10)
-                                        : ""
+                                    ? "Valid from " + new Date(jwtJson?.issuanceDate).toISOString().slice(0, 10) + " to " + new Date(jwtJson?.expirationDate).toISOString().slice(0, 10)
+                                    : ""
                             }}
                         </div>
                         <div class="text-gray-900">
                             Issued
-                            {{
-                                jwtJson?.issuanceDate ? new Date(jwtJson?.issuanceDate).toISOString().slice(0, 10) : "No issuancedate"
-                            }}
+                            {{ jwtJson?.issuanceDate ? new Date(jwtJson?.issuanceDate).toISOString().slice(0, 10) : "No issuancedate" }}
                         </div>
                     </div>
                 </div>
             </div>
             <div class="flex justify-between mt-12">
-                <button class="rounded bg-primary-400 px-2 py-1 text-white shadow-sm hover:bg-primary-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-400"
-                        type="button"
-                        @click="showCredentialJson = !showCredentialJson"
+                <button
+                    class="rounded bg-primary-400 px-2 py-1 text-white shadow-sm hover:bg-primary-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-400"
+                    type="button"
+                    @click="showCredentialJson = !showCredentialJson"
                 >
                     View Credential In JSON
                 </button>
-                <button class="rounded bg-red-500 px-2 py-1 text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
-                        type="button"
-                        @click="deleteCredential"
+                <button
+                    class="rounded bg-red-500 px-2 py-1 text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+                    type="button"
+                    @click="deleteCredential"
                 >
                     Delete Credential
                 </button>
@@ -300,9 +252,7 @@
                         <p class="text-sm font-semibold text-gray-900 whitespace-pre-wrap">
                             {{ credentialId }}
                         </p>
-                        <p class="text-sm text-gray-500">
-                            Verifiable Credential data below:
-                        </p>
+                        <p class="text-sm text-gray-500">Verifiable Credential data below:</p>
                     </div>
                 </div>
                 <!-- <div class="p-3 shadow mt-3">
@@ -316,12 +266,10 @@
                     </div>-->
                 <div class="shadow p-3 mt-2 font-mono overflow-scroll">
                     <h3 class="font-semibold mb-2">JWT</h3>
-                    <pre
-                            v-if="credential && credential.length"
-                    >{{
-                            /*JSON.stringify(JSON.parse(*/
-                            credential /*), null, 2)*/ ?? ""
-                        }}</pre>
+                    <pre v-if="credential && credential.length">{{
+                        /*JSON.stringify(JSON.parse(*/
+                        credential /*), null, 2)*/ ?? ""
+                    }}</pre>
                 </div>
                 <div class="shadow p-3 mt-2 font-mono overflow-scroll">
                     <h3 class="font-semibold mb-2">JSON</h3>
@@ -336,8 +284,8 @@
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import CenterMain from "~/components/CenterMain.vue";
 import BackButton from "~/components/buttons/BackButton.vue";
-import {ref} from "vue";
-import {decodeBase64ToUtf8} from "~/composables/base64";
+import { ref } from "vue";
+import { decodeBase64ToUtf8 } from "~/composables/base64";
 
 const route = useRoute();
 const credentialId = route.params.credentialId;
@@ -346,36 +294,31 @@ let showCredentialJson = ref(false);
 
 const jwtJson = computed(() => {
     if (credential.value) {
-        const vcData = credential.value.split(".")[1]
-        console.log("Credential is: ", vcData)
+        const vcData = credential.value.split(".")[1];
+        console.log("Credential is: ", vcData);
 
-        const vcBase64 = vcData.replaceAll("-", "+").replaceAll("_", "/")
-        console.log("Base64 from base64url: ", vcBase64)
+        const vcBase64 = vcData.replaceAll("-", "+").replaceAll("_", "/");
+        console.log("Base64 from base64url: ", vcBase64);
 
-        const decodedBase64 = decodeBase64ToUtf8(vcBase64).toString()
-        console.log("Decoded: ", decodedBase64)
+        const decodedBase64 = decodeBase64ToUtf8(vcBase64).toString();
+        console.log("Decoded: ", decodedBase64);
 
         const parsed = JSON.parse(decodedBase64);
 
-        if (parsed.vc) return parsed.vc
-        else return parsed
+        if (parsed.vc) return parsed.vc;
+        else return parsed;
     } else return "";
 });
 
-const {
-    data: credential,
-    pending,
-    refresh,
-    error,
-} = await useLazyFetch(`/r/wallet/credentials/${encodeURIComponent(credentialId)}`);
+const { data: credential, pending, refresh, error } = await useLazyFetch(`/r/wallet/credentials/${encodeURIComponent(credentialId)}`);
 refreshNuxtData();
 
-useHead({title: "View credential - walt.id"});
+useHead({ title: "View credential - walt.id" });
 
 async function deleteCredential() {
     await $fetch(`/r/wallet/credentials/${encodeURIComponent(credentialId)}`, {
         method: "DELETE",
     });
-    await navigateTo({path: "/"});
+    await navigateTo({ path: "/" });
 }
 </script>

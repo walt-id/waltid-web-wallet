@@ -11,7 +11,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import kotlinx.serialization.json.Json
-import java.util.*
+import kotlinx.uuid.UUID
 
 fun Application.account() = walletRoute {
     route("accounts", {
@@ -62,7 +62,7 @@ fun Application.account() = walletRoute {
             }
         }) {
             val wallet = getWalletService()
-            val walletId = UUID.fromString(call.receiveText())
+            val walletId = UUID(call.receiveText())
             context.respond(wallet.unlinkWallet(walletId))
         }
 
@@ -81,7 +81,7 @@ fun Application.account() = walletRoute {
             }
         }) {
             val wallet = getWalletService()
-            val walletId = UUID.fromString(call.receiveText())
+            val walletId = UUID(call.receiveText())
             context.respond(wallet.connectWallet(walletId))
         }
 
@@ -95,7 +95,7 @@ fun Application.account() = walletRoute {
             }
         }) {
             val wallet = getWalletService()
-            val walletId = UUID.fromString(call.receiveText())
+            val walletId = UUID(call.receiveText())
             context.respond(wallet.disconnectWallet(walletId))
         }
     }

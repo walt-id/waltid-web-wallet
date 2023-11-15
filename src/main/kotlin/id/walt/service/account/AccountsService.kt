@@ -1,56 +1,63 @@
 package id.walt.service.account
 
-import id.walt.db.models.Issuers
-import id.walt.db.repositories.AccountIssuersRepository
-import id.walt.db.repositories.DbAccountIssuers
+import id.walt.db.models.Account
+import id.walt.db.models.Accounts
+import id.walt.db.models.Web3Wallets
+import id.walt.db.models.todo.AccountIssuers
+import id.walt.db.models.todo.Issuers
 import id.walt.service.WalletServiceManager
 import id.walt.web.generateToken
-import id.walt.web.model.AddressLoginRequest
-import id.walt.web.model.EmailLoginRequest
-import id.walt.web.model.LoginRequest
-import kotlinx.coroutines.runBlocking
+import id.walt.web.model.AccountRequest
+import id.walt.web.model.AddressAccountRequest
+import id.walt.web.model.EmailAccountRequest
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.uuid.UUID
+import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.*
 
 object AccountsService {
-    private val emailStrategy = EmailStrategy()
-    private val walletStrategy = WalletStrategy()
-    fun register(request: LoginRequest): Result<RegistrationResult> = when (request) {
-        is EmailLoginRequest -> emailStrategy.register(request)
-        is AddressLoginRequest -> walletStrategy.register(request)
-    }.also {
-        it.getOrNull()?.let {
-            runBlocking {
-                // create a default did
-                WalletServiceManager.getWalletService(it.id)
-                    .createDid(method = "key", mapOf("alias" to JsonPrimitive("Onboarding")))
-                // associate the default issuer
-                //TODO: use issuers-service
-                queryDefaultIssuer("walt.id")?.let { iss ->
-                    AccountIssuersRepository.insert(
-                        DbAccountIssuers(
-                            account = it.id,
-                            issuer =  iss
-                        )
-                    )
+
+    suspend fun register(request: AccountRequest): Result<RegistrationResult> = when (request) {
+        is EmailAccountRequest -> EmailAccountStrategy.register(request)
+        is AddressAccountRequest -> WalletAccountStrategy.register(request)
+    }.onSuccess { registrationResult ->
+        val registeredUserId = registrationResult.id
+
+        val createdInitialWalletId = transaction {
+            WalletServiceManager.createWallet(registeredUserId)
+        }
+
+        val walletService = WalletServiceManager.getWalletService(registeredUserId, createdInitialWalletId)
+
+        // Add default data:
+        walletService.createDid("key", mapOf("alias" to JsonPrimitive("Onboarding")))
+
+        transaction {
+            queryDefaultIssuer("walt.id")?.let { defaultIssuer ->
+                AccountIssuers.insert {
+                    it[account] = registeredUserId.toJavaUUID()
+                    it[issuer] = defaultIssuer
                 }
             }
         }
+
+    }.onFailure {
+        throw IllegalStateException("Could not register user", it)
     }
 
-    private fun queryDefaultIssuer(name: String) = transaction {
+    private fun queryDefaultIssuer(name: String) =
         Issuers.select(Issuers.name eq name).singleOrNull()?.let {
             it[Issuers.id]
         }?.value
-    }
 
-    fun authenticate(request: LoginRequest): Result<AuthenticationResult> = runCatching {
+    suspend fun authenticate(request: AccountRequest): Result<AuthenticationResult> = runCatching {
         when (request) {
-            is EmailLoginRequest -> emailStrategy.authenticate(request)
-            is AddressLoginRequest -> walletStrategy.authenticate(request)
+            is EmailAccountRequest -> EmailAccountStrategy.authenticate(request)
+            is AddressAccountRequest -> WalletAccountStrategy.authenticate(request)
         }
     }.fold(onSuccess = {
         Result.success(
@@ -62,14 +69,33 @@ object AccountsService {
         )
     },
         onFailure = { Result.failure(it) })
+
+    fun hasAccountEmail(email: String) = transaction { Accounts.select { Accounts.email eq email }.count() > 0 }
+    fun hasAccountWeb3WalletAddress(address: String) =
+        transaction {
+            Accounts.innerJoin(Web3Wallets)
+                .select { Web3Wallets.address eq address }
+                .count() > 0
+        }
+
+    fun getAccountByWeb3WalletAddress(address: String) =
+        transaction {
+            Accounts.innerJoin(Web3Wallets)
+                .select { Web3Wallets.address eq address }
+                .map { Account(it) }
+        }
+
+    fun getNameFor(account: UUID) = Accounts.select { Accounts.id eq account.toJavaUUID() }.single()[Accounts.email]
 }
 
+@Serializable
 data class AuthenticationResult(
     val id: UUID,
     val username: String,
     val token: String,
 )
 
+@Serializable
 data class RegistrationResult(
     val id: UUID,
 )
@@ -79,7 +105,7 @@ data class AuthenticatedUser(
     val username: String
 )
 
-interface AccountStrategy<in T : LoginRequest> {
+interface AccountStrategy<in T : AccountRequest> {
     fun register(request: T): Result<RegistrationResult>
-    fun authenticate(request: T): AuthenticatedUser
+    suspend fun authenticate(request: T): AuthenticatedUser
 }

@@ -18,10 +18,8 @@
                     </div>
                 </div>
                 <div class="mt-6 flex space-x-3 md:ml-4 md:mt-0">
-
                     <!-- Menu -->
                     <slot name="menu"></slot>
-
                 </div>
             </div>
         </div>
@@ -30,10 +28,8 @@
 
 <script>
 export default {
-    name: "PageHeader"
-}
+    name: "PageHeader",
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -4,10 +4,8 @@ import id.walt.crypto.keys.Key
 import id.walt.crypto.keys.KeySerialization
 import id.walt.crypto.keys.KeyType
 import id.walt.crypto.keys.LocalKey
-import id.walt.db.models.Accounts
-import id.walt.db.models.Emails
-import id.walt.db.models.WalletOperationHistories
-import id.walt.db.repositories.*
+import id.walt.crypto.utils.JwsUtils.decodeJws
+import id.walt.db.models.*
 import id.walt.did.dids.DidService
 import id.walt.did.dids.registrar.dids.DidCheqdCreateOptions
 import id.walt.did.dids.registrar.dids.DidJwkCreateOptions
@@ -25,12 +23,9 @@ import id.walt.oid4vc.responses.CredentialResponse
 import id.walt.oid4vc.responses.TokenResponse
 import id.walt.oid4vc.util.randomUUID
 import id.walt.service.credentials.CredentialsService
-import id.walt.service.dids.DidDefaultUpdateDataObject
-import id.walt.service.dids.DidInsertDataObject
 import id.walt.service.dids.DidsService
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
-import id.walt.service.dto.WalletOperationHistory
 import id.walt.service.issuers.IssuerDataTransferObject
 import id.walt.service.issuers.IssuersService
 import id.walt.service.keys.KeysService
@@ -46,22 +41,22 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaInstant
-import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import kotlinx.uuid.UUID
+import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.URLDecoder
-import java.util.*
-import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Duration.Companion.seconds
 
 
-class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
+class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(accountId, walletId) {
 
     companion object {
         init {
@@ -73,16 +68,15 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     private val userEmail: String by lazy {
         transaction {
-            Accounts.select { Accounts.id eq accountId }.single().let { acc ->
-                Emails.select { Emails.id eq acc[Accounts.email]?.value }.single()[Emails.email]
-            }
-        }
+            Accounts.select { Accounts.id eq accountId.toJavaUUID() }
+                .single()[Accounts.email]
+        } ?: throw IllegalArgumentException("No such account: $accountId")
     }
 
-    /* Credentials */
+    /* WalletCredentials */
 
-    override suspend fun listCredentials(): List<Credential> = CredentialsService.list(accountId).mapNotNull {
-        val credentialId = it.credentialId
+    override suspend fun listCredentials(): List<Credential> = CredentialsService.list(walletId).mapNotNull {
+        val credentialId = it.id
         runCatching {
             val cred = it.document
             val parsedCred = when {
@@ -100,15 +94,15 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         }
     }
 
-    override suspend fun listRawCredentials(): List<String> = CredentialsService.list(accountId).map {
+    override suspend fun listRawCredentials(): List<String> = CredentialsService.list(walletId).map {
         it.document
     }
 
-    override suspend fun deleteCredential(id: String) = CredentialsService.delete(accountId, id)
+    override suspend fun deleteCredential(id: String) = CredentialsService.delete(walletId, id)
 
     override suspend fun getCredential(credentialId: String): String =
-        CredentialsService.get(accountId, credentialId)?.document
-            ?: throw IllegalArgumentException("Credential not found for credentialId: $credentialId")
+        CredentialsService.get(walletId, credentialId)?.document
+            ?: throw IllegalArgumentException("WalletCredential not found for credentialId: $credentialId")
 
     private fun getQueryParams(url: String): Map<String, MutableList<String>> {
         val params: MutableMap<String, MutableList<String>> = HashMap()
@@ -350,7 +344,16 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
                     val credentialId = credentialJwt.payload["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
                         ?: randomUUID()
 
-                    CredentialsService.add(accountId, DbCredential(credentialId = credentialId, document = credential, disclosures = null))
+                    CredentialsService.add(
+                        wallet = walletId,
+                        WalletCredential(
+                            wallet = walletId,
+                            id = credentialId,
+                            document = credential,
+                            disclosures = null,
+                            addedOn = Clock.System.now()
+                        )
+                    )
                     println(">>> $index. CREDENTIAL stored with Id: $credentialId")
                 }
 
@@ -362,13 +365,19 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
                     val disclosuresString = disclosures.joinToString("~")
 
                     CredentialsService.add(
-                        account = accountId,
-                        credential = DbCredential(credentialId = credentialId, document = credential, disclosures = disclosuresString)
+                        wallet = walletId,
+                        WalletCredential(
+                            wallet = walletId,
+                            id = credentialId,
+                            document = credential,
+                            disclosures = disclosuresString,
+                            addedOn = Clock.System.now()
+                        )
                     )
                     println(">>> $index. CREDENTIAL stored with Id: $credentialId")
                 }
 
-                null -> throw IllegalArgumentException("Credential JWT does not have \"typ\"")
+                null -> throw IllegalArgumentException("WalletCredential JWT does not have \"typ\"")
                 else -> throw IllegalArgumentException("Invalid credential \"typ\": $typ")
             }
         }
@@ -380,39 +389,41 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         val key = args["keyId"]?.content?.takeIf { it.isNotEmpty() }?.let { getKey(it) } ?: LocalKey.generate(KeyType.Ed25519)
         val options = getDidOptions(method, args)
         val result = DidService.registerByKey(method, key, options)
-        val keyRef = KeysService.add(
-            accountId,
-            DbKey(
-                keyId = key.getKeyId(),
+
+        val keyId = key.getKeyId()
+
+        transaction {
+            val keyRef = KeysService.add(
+                wallet = walletId,
+                keyId = keyId,
                 document = KeySerialization.serializeKey(key)
             )
-        )
-        DidsService.add(
-            accountId, DidInsertDataObject(
-                key = keyRef, did = Did(
-                    did = result.did,
-                    document = Json.encodeToString(result.didDocument),
-                    alias = args["alias"]?.content ?: "n/a"
-                )
+            DidsService.add(
+                wallet = walletId,
+                did = result.did,
+                document = Json.encodeToString(result.didDocument),
+                alias = args["alias"]?.content,
+                keyId = keyRef
             )
-        )
+        }
+
         return result.did
     }
 
-    override suspend fun listDids(): List<Did> = DidsService.list(accountId)
+    override suspend fun listDids() = DidsService.list(walletId)
 
-    override suspend fun loadDid(did: String): JsonObject = DidsService.get(accountId, did)?.let {
+    override suspend fun loadDid(did: String): JsonObject = DidsService.get(walletId, did)?.let {
         Json.parseToJsonElement(it.document).jsonObject
-    } ?: throw IllegalArgumentException("Did not found: $did for account: $accountId")
+    } ?: throw IllegalArgumentException("Did not found: $did for account: $walletId")
 
 
-    override suspend fun deleteDid(did: String): Boolean = DidsService.delete(accountId, did)
+    override suspend fun deleteDid(did: String): Boolean = DidsService.delete(walletId, did)
 
-    override suspend fun setDefault(did: String) = DidsService.update(accountId, DidDefaultUpdateDataObject(did, true))
+    override suspend fun setDefault(did: String) = DidsService.makeDidDefault(walletId, did)
 
     /* Keys */
 
-    private fun getKey(keyId: String) = KeysService.get(accountId, keyId)?.let {
+    private fun getKey(keyId: String) = KeysService.get(walletId, keyId)?.let {
         KeySerialization.deserializeKey(it.document)
             .getOrElse { throw IllegalArgumentException("Could not deserialize resolved key: ${it.message}", it) }
     } ?: throw IllegalArgumentException("Key not found: $keyId")
@@ -436,7 +447,7 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     override suspend fun loadKey(alias: String): JsonObject = getKey(alias).exportJWKObject()
 
-    override suspend fun listKeys(): List<SingleKeyResponse> = KeysService.list(accountId).map {
+    override suspend fun listKeys(): List<SingleKeyResponse> = KeysService.list(walletId).map {
         val key = KeySerialization.deserializeKey(it.document).getOrThrow()
 
         SingleKeyResponse(
@@ -448,10 +459,22 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
         )
     }
 
-    override suspend fun generateKey(type: String): String = LocalKey.generate(KeyType.valueOf(type)).let {
-        val kid = KeysRepository.insert(DbKey(keyId = it.getKeyId(), document = KeySerialization.serializeKey(it)))
-        AccountKeysRepository.insert(DbAccountKeys(account = accountId, key = kid))
-        it.getKeyId()
+    override suspend fun generateKey(type: String): String =
+        LocalKey.generate(KeyType.valueOf(type)).let { createdKey ->
+            insertKey(createdKey)
+            createdKey.getKeyId()
+        }
+
+    private suspend fun insertKey(key: Key) {
+        val keyId = key.getKeyId()
+        transaction {
+            WalletKeys.insert {
+                it[WalletKeys.keyId] = keyId
+                it[wallet] = walletId.toJavaUUID()
+                it[document] = KeySerialization.serializeKey(key)
+                it[createdOn] = Clock.System.now().toJavaInstant()
+            }
+        }
     }
 
     override suspend fun importKey(jwkOrPem: String): String {
@@ -472,15 +495,13 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
         val key = keyResult.getOrThrow()
         val keyId = key.getKeyId()
-        val keyJson = KeySerialization.serializeKey(key)
 
-        val kid = KeysRepository.insert(DbKey(keyId = keyId, document = keyJson))
-        AccountKeysRepository.insert(DbAccountKeys(account = accountId, key = kid))
+        insertKey(key)
 
         return keyId
     }
 
-    override suspend fun deleteKey(alias: String): Boolean = KeysService.delete(accountId, alias)
+    override suspend fun deleteKey(alias: String): Boolean = KeysService.delete(walletId, alias)
 
     fun addToHistory() {
         // data from
@@ -492,23 +513,18 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
 
     override suspend fun getHistory(limit: Int, offset: Int): List<WalletOperationHistory> = transaction {
         WalletOperationHistories
-            .select { WalletOperationHistories.account eq accountId }
+            .select { WalletOperationHistories.wallet eq walletId.toJavaUUID() }
             .orderBy(WalletOperationHistories.timestamp)
             .limit(10)
             .map { row ->
-                WalletOperationHistory(
-                    accountId = row[WalletOperationHistories.account].value.toString(),
-                    timestamp = row[WalletOperationHistories.timestamp].toKotlinInstant(),
-                    operation = row[WalletOperationHistories.operation],
-                    data = Json.parseToJsonElement(row[WalletOperationHistories.data]).jsonObject.toMap()
-                )
+                WalletOperationHistory(row)
             }
     }
 
     override suspend fun addOperationHistory(operationHistory: WalletOperationHistory) {
         transaction {
             WalletOperationHistories.insert {
-                it[account] = UUID.fromString(operationHistory.accountId)
+                it[account] = operationHistory.account.toJavaUUID()
                 it[timestamp] = operationHistory.timestamp.toJavaInstant()
                 it[operation] = operationHistory.operation
                 it[data] = Json.encodeToString(operationHistory.data)
@@ -517,21 +533,21 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
     }
 
     override suspend fun linkWallet(wallet: WalletDataTransferObject): LinkedWalletDataTransferObject =
-        Web3WalletService.link(accountId, wallet)
+        Web3WalletService.link(walletId, wallet)
 
-    override suspend fun unlinkWallet(wallet: UUID) = Web3WalletService.unlink(accountId, wallet)
+    override suspend fun unlinkWallet(wallet: UUID) = Web3WalletService.unlink(walletId, wallet)
 
     override suspend fun getLinkedWallets(): List<LinkedWalletDataTransferObject> =
-        Web3WalletService.getLinked(accountId)
+        Web3WalletService.getLinked(walletId)
 
-    override suspend fun connectWallet(walletId: UUID) = Web3WalletService.connect(accountId, walletId)
+    override suspend fun connectWallet(walletId: UUID) = Web3WalletService.connect(this.walletId, walletId)
 
-    override suspend fun disconnectWallet(wallet: UUID) = Web3WalletService.disconnect(accountId, wallet)
+    override suspend fun disconnectWallet(wallet: UUID) = Web3WalletService.disconnect(walletId, wallet)
 
-    override suspend fun listIssuers(): List<IssuerDataTransferObject> = IssuersService.list(accountId)
+    override suspend fun listIssuers(): List<IssuerDataTransferObject> = IssuersService.list(walletId)
 
     override suspend fun getIssuer(name: String): IssuerDataTransferObject =
-        IssuersService.get(accountId, name) ?: throw IllegalArgumentException("Issuer: $name not found for: $accountId")
+        IssuersService.get(walletId, name) ?: throw IllegalArgumentException("Issuer: $name not found for: $walletId")
 
     private fun getDidOptions(method: String, args: Map<String, JsonPrimitive>) = when (method.lowercase()) {
         "key" -> DidKeyCreateOptions(

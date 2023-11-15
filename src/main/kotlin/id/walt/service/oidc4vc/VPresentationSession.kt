@@ -5,8 +5,8 @@ import id.walt.oid4vc.requests.AuthorizationRequest
 import kotlinx.datetime.Instant
 
 class VPresentationSession(
-  id: String,
-  authorizationRequest: AuthorizationRequest?,
-  expirationTimestamp: Instant,
-  val selectedCredentialIds: Set<String>
-): SIOPSession(id, authorizationRequest, expirationTimestamp)
+    id: String,
+    authorizationRequest: AuthorizationRequest?,
+    expirationTimestamp: Instant,
+    val selectedCredentialIds: Set<String>
+) : SIOPSession(id, authorizationRequest, expirationTimestamp)

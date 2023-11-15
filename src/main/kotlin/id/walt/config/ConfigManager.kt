@@ -3,7 +3,7 @@ package id.walt.config
 import com.sksamuel.hoplite.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.plugins.*
-import java.util.concurrent.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.reflect.KClass
 import kotlin.reflect.jvm.jvmName
 

@@ -1,1 +1,0 @@
-ALTER TABLE "account_wallets" ADD COLUMN "owner" BOOLEAN NOT NULL DEFAULT FALSE;

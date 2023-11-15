@@ -1,13 +1,13 @@
 <template>
     <CenterMain>
-        <BackButton/>
-        <LoadingIndicator v-if="pending">{{ $t('loading') }}</LoadingIndicator>
+        <BackButton />
+        <LoadingIndicator v-if="pending">{{ $t("loading") }}</LoadingIndicator>
         <div v-else>
             <!-- title -->
-            <h2 class="q-sans-md" style="color: #008CC8;">{{ nft.name }}</h2>
+            <h2 class="q-sans-md" style="color: #008cc8">{{ nft.name }}</h2>
             <!-- token-art -->
             <div class="flex flex-wrap mt-4 p-8 m-auto items-center justify-center">
-                <nftArt :art="nft.art" :thumbnail="false"/>
+                <nftArt :art="nft.art" :thumbnail="false" />
                 <!-- <qrcode-vue v-if="isQrCodeActive" :value="nft" level="L" size="300"></qrcode-vue> -->
             </div>
             <!-- redeem button -->
@@ -25,17 +25,20 @@
                 </div> -->
                 <!-- show qr -->
                 <div v-if="isRedeemable">
-                  <button class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-                    @click="toggleShowQR" :disabled="isRedeemed">
-                    <!-- <img aria-hidden="true" class="h-5 w-5" fill="currentColor" src="/svg/tezos.svg" /> -->
-                    <i class="bi bi-upc-scan me-2"></i><span v-if="showQR">Close QR</span><span v-if="!showQR">Show QR</span>
-                  </button>
+                    <button
+                        :disabled="isRedeemed"
+                        class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+                        @click="toggleShowQR"
+                    >
+                        <!-- <img aria-hidden="true" class="h-5 w-5" fill="currentColor" src="/svg/tezos.svg" /> -->
+                        <i class="bi bi-upc-scan me-2"></i><span v-if="showQR">Close QR</span><span v-if="!showQR">Show QR</span>
+                    </button>
                 </div>
             </div>
             <!-- token properties -->
             <div class="text-left pt-2">
                 <div v-if="isRedeemable && isRedeemed" class="alert alert-info mt-3 mx-3">
-                <em>Already redeemed</em>
+                    <em>Already redeemed</em>
                 </div>
                 <span class="col-12 px-3 font-semiblold">
                     <h5>Description</h5>
@@ -60,15 +63,23 @@
             </div>
             <!-- token chain explorer url -->
             <div v-if="isNotNullOrEmpty(explorer?.url)">
-                <a class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-                :href="explorer?.url" target="_blank">
-                <span class="ml-1 text-gray-800 font-semibold h-5">View on blockchain explorer</span> </a>
+                <a
+                    :href="explorer?.url"
+                    class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+                    target="_blank"
+                >
+                    <span class="ml-1 text-gray-800 font-semibold h-5">View on blockchain explorer</span>
+                </a>
             </div>
             <!-- token marketplace url -->
             <div v-if="isNotNullOrEmpty(marketplace?.url)">
-                <a class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
-                :href="marketplace?.url" target="_blank">
-                <span class="ml-1 text-gray-800 font-semibold h-5">View on {{ marketplace?.name }}</span></a>
+                <a
+                    :href="marketplace?.url"
+                    class="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0"
+                    target="_blank"
+                >
+                    <span class="ml-1 text-gray-800 font-semibold h-5">View on {{ marketplace?.name }}</span></a
+                >
             </div>
         </div>
     </CenterMain>
@@ -79,43 +90,47 @@ import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import CenterMain from "~/components/CenterMain.vue";
 import BackButton from "~/components/buttons/BackButton.vue";
 import nftArt from "~/components/nfts/nft-art.vue";
-import {isNotNullOrEmpty} from "~/composables/useNftMedia";
-import QrcodeVue from 'qrcode.vue'
+import { isNotNullOrEmpty } from "~/composables/useNftMedia";
 
-const route = useRoute()
+const route = useRoute();
 
-const accountId = route.params.accountId
-const chain = route.params.chain
-const contract = route.params.contract
-const tokenId = route.params.tokenId
-const collectionId = route.query.collectionId
+const accountId = route.params.accountId;
+const chain = route.params.chain;
+const contract = route.params.contract;
+const tokenId = route.params.tokenId;
+const collectionId = route.query.collectionId;
 
-const isQrCodeActive = ref(false)
+const isQrCodeActive = ref(false);
 
-const { data: nft, pending, refresh, error } =
-  await useLazyFetch(`/r/wallet/nft/detail/${accountId}/${chain.toUpperCase()}/${contract}/${tokenId}${(collectionId ? "?collectionId=" + collectionId : "")}`)
-const { data: marketplace } = useLazyFetch(`/r/wallet/nft/marketplace/${chain}/${contract}/${tokenId}`)
-const { data: explorer } = useLazyFetch(`/r/wallet/nft/explorer/${chain}/${contract}`)
-refreshNuxtData()
+const {
+    data: nft,
+    pending,
+    refresh,
+    error,
+} = await useLazyFetch(`/r/wallet/nft/detail/${accountId}/${chain.toUpperCase()}/${contract}/${tokenId}${collectionId ? "?collectionId=" + collectionId : ""}`);
+const { data: marketplace } = useLazyFetch(`/r/wallet/nft/marketplace/${chain}/${contract}/${tokenId}`);
+const { data: explorer } = useLazyFetch(`/r/wallet/nft/explorer/${chain}/${contract}`);
+refreshNuxtData();
 
 useHead({
-    title: "NFT details - walt.id"
-})
+    title: "NFT details - walt.id",
+});
 
 function showRedeem() {
-  return route.query.redeem == "true"
+    return route.query.redeem == "true";
 }
+
 function isRedeemable() {
-  return !showRedeem && nft.attributes && nft.attributes.find(a => a.traitType == "redeemed") != null
+    return !showRedeem && nft.attributes && nft.attributes.find((a) => a.traitType == "redeemed") != null;
 }
+
 function isRedeemed() {
-  return nft.attributes.find(a => a.traitType == "redeemed" && a.value == "true") != null
+    return nft.attributes.find((a) => a.traitType == "redeemed" && a.value == "true") != null;
 }
-function toggleShowQR(){
-  isQrCodeActive.value = !isQrCodeActive.value
+
+function toggleShowQR() {
+    isQrCodeActive.value = !isQrCodeActive.value;
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -1,7 +1,7 @@
 package id.walt.web.controllers
 
+import id.walt.db.models.WalletOperationHistory
 import id.walt.service.SSIKit2WalletService
-import id.walt.service.dto.WalletOperationHistory
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
@@ -13,7 +13,7 @@ import kotlinx.serialization.json.JsonObject
 
 fun Application.exchange() = walletRoute {
     route("exchange", {
-        tags = listOf("Credential exchange")
+        tags = listOf("WalletCredential exchange")
     }) {
         post("useOfferRequest", {
             summary = "Claim credential(s) from an issuer"

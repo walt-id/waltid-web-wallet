@@ -7,20 +7,22 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
 @Serializable
-sealed class LoginRequest
+sealed class AccountRequest {
+    abstract val name: String?
+}
 
 @Serializable
 @SerialName("email")
-data class EmailLoginRequest(val username: String, val password: String) : LoginRequest()
+data class EmailAccountRequest(override val name: String? = null, val email: String, val password: String) : AccountRequest()
 
 @Serializable
 @SerialName("address")
-data class AddressLoginRequest(val address: String, val ecosystem: String) : LoginRequest()
+data class AddressAccountRequest(override val name: String? = null, val address: String, val ecosystem: String) : AccountRequest()
 
 val module = SerializersModule {
-    this.polymorphic(LoginRequest::class) {
-        EmailLoginRequest::class
-        AddressLoginRequest::class
+    polymorphic(AccountRequest::class) {
+        EmailAccountRequest::class
+        AddressAccountRequest::class
     }
 }
 

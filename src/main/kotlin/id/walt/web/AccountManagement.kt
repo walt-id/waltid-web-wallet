@@ -1,10 +1,11 @@
 package id.walt.web
 
+//import id.walt.web.model.LoginRequestJson
 import id.walt.service.WalletServiceManager
 import id.walt.service.account.AccountsService
 import id.walt.utils.RandomUtils
-import id.walt.web.model.EmailLoginRequest
-import id.walt.web.model.LoginRequest
+import id.walt.web.model.AccountRequest
+import id.walt.web.model.EmailAccountRequest
 import id.walt.web.model.LoginRequestJson
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -20,7 +21,7 @@ import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import java.util.*
+import kotlinx.uuid.UUID
 import kotlin.collections.set
 import kotlin.time.Duration.Companion.days
 
@@ -28,7 +29,7 @@ private val log = KotlinLogging.logger { }
 
 @Suppress("ArrayInDataClass")
 data class ByteLoginRequest(val username: String, val password: ByteArray) {
-    constructor(loginRequest: EmailLoginRequest) : this(loginRequest.username, loginRequest.password.toByteArray())
+    constructor(loginRequest: EmailAccountRequest) : this(loginRequest.email, loginRequest.password.toByteArray())
 
     override fun toString() = "[LOGIN REQUEST FOR: $username]"
 }
@@ -99,7 +100,7 @@ fun Application.auth() {
             post("login", {
                 summary = "Login with [email + password] or [wallet address + ecosystem]"
                 request {
-                    body<EmailLoginRequest> {
+                    body<EmailAccountRequest> {
                         example("E-mail + password", buildJsonObject {
                             put("username", JsonPrimitive("user@email.com"))
                             put("password", JsonPrimitive("password"))
@@ -119,7 +120,7 @@ fun Application.auth() {
                 }
             }) {
                 println("Login request")
-                val reqBody = LoginRequestJson.decodeFromString<LoginRequest>(call.receive())
+                val reqBody = LoginRequestJson.decodeFromString<AccountRequest>(call.receive())
                 AccountsService.authenticate(reqBody).onSuccess {
                     securityUserTokenMapping[it.token] = it.id
                     call.sessions.set(LoginTokenSession(it.token))
@@ -132,15 +133,14 @@ fun Application.auth() {
                         )
                     )
                 }.onFailure {
-                    call.response.status(HttpStatusCode.BadRequest)
-                    call.respond(it.localizedMessage)
+                    call.respond(HttpStatusCode.BadRequest, it.localizedMessage)
                 }
             }
 
             post("create", {
                 summary = "Register with [email + password] or [wallet address + ecosystem]"
                 request {
-                    body<EmailLoginRequest> {
+                    body<EmailAccountRequest> {
                         example("E-mail + password", buildJsonObject {
                             put("username", JsonPrimitive("user@email.com"))
                             put("password", JsonPrimitive("password"))
@@ -158,14 +158,13 @@ fun Application.auth() {
                     HttpStatusCode.BadRequest to { description = "Register failed" }
                 }
             }) {
-                val req = LoginRequestJson.decodeFromString<LoginRequest>(call.receive())
+                val req = LoginRequestJson.decodeFromString<AccountRequest>(call.receive())
                 AccountsService.register(req).onSuccess {
                     println("Registration succeed.")
                     call.response.status(HttpStatusCode.Created)
                     call.respond("Registration succeed.")
                 }.onFailure {
-                    call.response.status(HttpStatusCode.BadRequest)
-                    call.respond(it.localizedMessage)
+                    call.respond(HttpStatusCode.BadRequest, it.localizedMessage)
                 }
             }
 
@@ -208,11 +207,19 @@ fun PipelineContext<Unit, ApplicationCall>.getUserId() = call.principal<UserIdPr
     ?: throw UnauthorizedException("Could not retrieve authorized user.")
 
 fun PipelineContext<Unit, ApplicationCall>.getUserUUID() =
-    runCatching { UUID.fromString(getUserId().name) }
+    runCatching { UUID(getUserId().name) }
         .getOrNull() ?: throw IllegalArgumentException("Invalid user id")
 
+fun PipelineContext<Unit, ApplicationCall>.getWalletId() =
+    runCatching {
+        UUID(call.parameters["wallet"] ?: throw IllegalArgumentException("No wallet ID provided"))
+    }.getOrElse { throw IllegalArgumentException("Invalid wallet ID provided") }
+
+fun PipelineContext<Unit, ApplicationCall>.getWalletService(walletId: UUID) =
+    WalletServiceManager.getWalletService(getUserUUID(), walletId)
+
 fun PipelineContext<Unit, ApplicationCall>.getWalletService() =
-    WalletServiceManager.getWalletService(getUserUUID())
+    WalletServiceManager.getWalletService(getUserUUID(), getWalletId())
 
 fun PipelineContext<Unit, ApplicationCall>.getUsersSessionToken(): String? =
     call.sessions.get(LoginTokenSession::class)?.token ?: call.request.authorization()

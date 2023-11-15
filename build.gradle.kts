@@ -19,7 +19,7 @@ application {
 
 
 repositories {
-    //mavenLocal()
+    mavenLocal()
     mavenCentral()
     maven("https://jitpack.io")
     maven("https://maven.walt.id/repository/waltid/")
@@ -41,7 +41,7 @@ dependencies {
 
     /* -- KTOR -- */
 
-    val ktorVersion = "2.3.5"
+    val ktorVersion = "2.3.6"
     // Ktor server
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jvm:$ktorVersion")
@@ -82,6 +82,9 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+    // UUID
+    implementation("app.softwork:kotlinx-uuid-core:0.0.22")
 
     /* -- Security -- */
     // Bouncy Castle

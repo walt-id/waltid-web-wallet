@@ -1,84 +1,36 @@
 package id.walt.service.keys
 
-import id.walt.db.models.AccountKeys
-import id.walt.db.models.Accounts
-import id.walt.db.models.Keys
-import id.walt.db.repositories.AccountKeysRepository
-import id.walt.db.repositories.DbAccountKeys
-import id.walt.db.repositories.DbKey
-import id.walt.db.repositories.KeysRepository
-import org.jetbrains.exposed.sql.innerJoin
+import id.walt.db.models.WalletKey
+import id.walt.db.models.WalletKeys
+import kotlinx.datetime.Clock
+import kotlinx.datetime.toJavaInstant
+import kotlinx.uuid.UUID
+import kotlinx.uuid.toJavaUUID
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
-import java.util.*
 
 object KeysService {
-    fun get(account: UUID, keyId: String): DbKey? = list(account).singleOrNull { it.keyId == keyId }
+    fun get(wallet: UUID, keyId: String): WalletKey? =
+        WalletKeys.select { (WalletKeys.wallet eq wallet.toJavaUUID()) and (WalletKeys.keyId eq keyId) }
+            .singleOrNull()?.let { WalletKey(it) }
 
-    fun list(account: UUID): List<DbKey> = join(account).let {
-        AccountKeysRepository.query(it) {
-            DbKey(it[Keys.id].value, it[Keys.keyId], it[Keys.document])
-        }
-    }
+    fun list(wallet: UUID): List<WalletKey> = WalletKeys.select { WalletKeys.wallet eq wallet.toJavaUUID() }.map { WalletKey(it) }
 
-    //TODO: remove db entity reference
-    fun add(account: UUID, key: DbKey): UUID = getOrInsert(key.keyId, key.document).let { kid ->
-        join(account, key.keyId).let {
-            AccountKeysRepository.query(it) {
-                it[Keys.id]
-            }.takeIf {
-                it.isNotEmpty()
-                // account has the key already associated
-            }?.single()?.value
-            // otherwise, associate the key to account
-                ?: let {
-                    AccountKeysRepository.insert(DbAccountKeys(account = account, key = kid))
-                    kid
-                }
-        }
-    }
+    fun add(wallet: UUID, keyId: String, document: String) =
+        WalletKeys.insert {
+            it[WalletKeys.wallet] = wallet.toJavaUUID()
+            it[WalletKeys.keyId] = keyId
+            it[WalletKeys.document] = document
+            it[createdOn] = Clock.System.now().toJavaInstant()
+        }[WalletKeys.keyId]
 
-    fun delete(account: UUID, keyId: String): Boolean = join(account, keyId).let {
-        AccountKeysRepository.query(it) {
-            it[AccountKeys.id]
-        }.single().value
-    }.let {
-        AccountKeysRepository.delete(it)
-    }.let { it > 0 }
+    fun delete(wallet: UUID, keyId: String): Boolean =
+        WalletKeys.deleteWhere { (WalletKeys.wallet eq wallet.toJavaUUID()) and (WalletKeys.keyId eq keyId) } > 0
 
-    fun update(account: UUID, key: DbKey): Boolean {
-        TODO()
-    }
-
-    private fun join(account: UUID, keyId: String? = null) =
-        Accounts.innerJoin(
-            AccountKeys,
-            onColumn = { Accounts.id },
-            otherColumn = { AccountKeys.account },
-            additionalConstraint = {
-                Accounts.id eq account
-            }
-        ).innerJoin(
-            Keys,
-            onColumn = { Keys.id },
-            otherColumn = { AccountKeys.key },
-            additionalConstraint = keyId?.let {
-                {
-                    Keys.keyId eq keyId
-                }
-            }).selectAll()
-
-    private fun find(keyId: String) = Keys.select { Keys.keyId eq keyId }
-    private fun getOrInsert(keyId: String, document: String) = find(keyId).let {
-        KeysRepository.query(it) {
-            it[Keys.id]
-        }.singleOrNull()?.value
-    } ?: let {
-        KeysRepository.insert(
-            DbKey(
-                keyId = keyId,
-                document = document,
-            )
-        )
-    }
+    /*fun update(wallet: UUID, key: DbKey): Boolean {
+        TO-DO
+    }*/
 }

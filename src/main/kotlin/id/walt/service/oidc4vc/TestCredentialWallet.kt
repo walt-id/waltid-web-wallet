@@ -30,8 +30,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
-import java.util.*
-import kotlin.collections.set
+import kotlinx.uuid.UUID
+import kotlinx.uuid.generateUUID
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Duration.Companion.minutes
@@ -108,7 +108,7 @@ class TestCredentialWallet(
         // for this test wallet implementation, present all credentials in the wallet
 
         val credentialList = runBlocking { walletService.listCredentials() }
-        println("Credential list is: ${credentialList.map { it.parsedCredential["type"]!!.jsonArray }}")
+        println("WalletCredential list is: ${credentialList.map { it.parsedCredential["type"]!!.jsonArray }}")
 
         val presentationDefinition = session.presentationDefinition ?: throw PresentationError(
             TokenErrorCode.invalid_request,
@@ -130,15 +130,19 @@ class TestCredentialWallet(
         }
         println("Using filters: $filters")
 
-        val matchedCredentials = credentialList.filter { credential -> filters.any { fields -> fields.all { typeFilter ->
-            val credField = credential.parsedCredential[typeFilter.path] ?: return@all false
+        val matchedCredentials = credentialList.filter { credential ->
+            filters.any { fields ->
+                fields.all { typeFilter ->
+                    val credField = credential.parsedCredential[typeFilter.path] ?: return@all false
 
-            when (credField) {
-                is JsonPrimitive -> credField.jsonPrimitive.content == typeFilter.pattern
-                is JsonArray -> credField.jsonArray.last().jsonPrimitive.content == typeFilter.pattern
-                else -> false
+                    when (credField) {
+                        is JsonPrimitive -> credField.jsonPrimitive.content == typeFilter.pattern
+                        is JsonArray -> credField.jsonArray.last().jsonPrimitive.content == typeFilter.pattern
+                        else -> false
+                    }
+                }
             }
-        } } }
+        }
         println("Matched credentials: $matchedCredentials")
 
         /*val filterString = presentationDefinition.inputDescriptors.flatMap { it.constraints?.fields ?: listOf() }
@@ -154,13 +158,13 @@ class TestCredentialWallet(
                 "sub" to this.did,
                 "nbf" to Clock.System.now().minus(1.minutes).epochSeconds,
                 "iat" to Clock.System.now().epochSeconds,
-                "jti" to "urn:uuid:" + UUID.randomUUID().toString(),
+                "jti" to "urn:uuid:" + UUID.generateUUID().toString(),
                 "iss" to this.did,
                 "nonce" to (session.nonce ?: ""),
                 "vp" to mapOf(
                     "@context" to listOf("https://www.w3.org/2018/credentials/v1"),
                     "type" to listOf("VerifiablePresentation"),
-                    "id" to "urn:uuid:${UUID.randomUUID().toString().lowercase()}",
+                    "id" to "urn:uuid:${UUID.generateUUID().toString().lowercase()}",
                     "holder" to this.did,
                     "verifiableCredential" to matchedCredentials.map { it.rawCredential }
                 )

@@ -7,19 +7,17 @@
 <script lang="ts" setup>
 import CenterMain from "~/components/CenterMain.vue";
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
-import {encodeRequest, fixRequest} from "~/composables/siop-requests";
+import { encodeRequest, fixRequest } from "~/composables/siop-requests";
 
 if (process.client) {
-    let request = encodeURI(decodeURI(fixRequest("openid://" + window.location.search)))
-    console.log("Fixed request: ", request)
+    let request = encodeURI(decodeURI(fixRequest("openid://" + window.location.search)));
+    console.log("Fixed request: ", request);
 
-    const encoded = encodeRequest(request)
-    console.log("Encoded request: ", encoded)
+    const encoded = encodeRequest(request);
+    console.log("Encoded request: ", encoded);
 
-    navigateTo({path: "/exchange/presentation", query: { request: encoded }})
+    navigateTo({ path: "/exchange/presentation", query: { request: encoded } });
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -1,3 +1,1 @@
-export function InitApp() {
-
-}
+export function InitApp() {}

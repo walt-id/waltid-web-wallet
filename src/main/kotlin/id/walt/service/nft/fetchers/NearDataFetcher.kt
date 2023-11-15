@@ -5,7 +5,6 @@ import id.walt.nftkit.services.NearNftService
 import id.walt.nftkit.utilis.Common
 import id.walt.service.dto.NftConvertResult.Companion.toDataTransferObject
 import id.walt.service.dto.NftDetailDataTransferObject
-import id.walt.service.nft.converters.NearDetailConverter
 import id.walt.service.nft.converters.NearNftCompoundMetadata
 import id.walt.service.nft.converters.NftDetailConverterBase
 import id.walt.service.nft.fetchers.parameters.TokenDetailParameter
@@ -44,10 +43,12 @@ class NearDataFetcher(
         parameter.tokenId,
         Common.getNearChain(parameter.chain.lowercase())
     ).let {
-        converter.convert(NearNftCompoundMetadata(
-            metadata = it,
-            contract = parameter.contract
-        )).toDataTransferObject(parameter.chain)
+        converter.convert(
+            NearNftCompoundMetadata(
+                metadata = it,
+                contract = parameter.contract
+            )
+        ).toDataTransferObject(parameter.chain)
     }
 
     private fun getLikelyNftsUrl(chain: String) = when (chain.lowercase()) {

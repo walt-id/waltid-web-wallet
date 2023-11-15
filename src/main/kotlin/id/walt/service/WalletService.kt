@@ -1,16 +1,17 @@
 package id.walt.service
 
+import id.walt.db.models.WalletDid
+import id.walt.db.models.WalletOperationHistory
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
-import id.walt.service.dto.WalletOperationHistory
 import id.walt.service.issuers.IssuerDataTransferObject
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import java.util.*
+import kotlinx.uuid.UUID
 
-abstract class WalletService(val accountId: UUID) {
+abstract class WalletService(val accountId: UUID, val walletId: UUID) {
 
-    // Credentials
+    // WalletCredentials
     abstract suspend fun listCredentials(): List<Credential>
     abstract suspend fun listRawCredentials(): List<String>
     abstract suspend fun deleteCredential(id: String): Boolean
@@ -22,15 +23,15 @@ abstract class WalletService(val accountId: UUID) {
     abstract suspend fun useOfferRequest(offer: String, did: String)
 
     // DIDs
-    abstract suspend fun listDids(): List<Did>
+    abstract suspend fun listDids(): List<WalletDid>
     abstract suspend fun loadDid(did: String): JsonObject
     abstract suspend fun createDid(method: String, args: Map<String, JsonPrimitive> = emptyMap()): String
     abstract suspend fun deleteDid(did: String): Boolean
-    abstract suspend fun setDefault(did: String) :Boolean
+    abstract suspend fun setDefault(did: String)
 
     // Keys
     abstract suspend fun listKeys(): List<SingleKeyResponse>
-    abstract suspend fun generateKey(type: String):String
+    abstract suspend fun generateKey(type: String): String
     abstract suspend fun exportKey(alias: String, format: String, private: Boolean): String
     abstract suspend fun loadKey(alias: String): JsonObject
     abstract suspend fun importKey(jwkOrPem: String): String

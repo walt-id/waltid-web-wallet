@@ -1,120 +1,50 @@
 package id.walt.service.dids
 
-import id.walt.db.models.AccountDids
-import id.walt.db.models.Accounts
-import id.walt.db.models.Dids
-import id.walt.db.repositories.AccountDidsRepository
-import id.walt.db.repositories.DbAccountDids
-import id.walt.db.repositories.DbDid
-import id.walt.db.repositories.DidsRepository
-import id.walt.service.Did
+import id.walt.db.models.WalletDid
+import id.walt.db.models.WalletDids
+import kotlinx.datetime.Clock
+import kotlinx.datetime.toJavaInstant
+import kotlinx.uuid.UUID
+import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 object DidsService {
-    fun get(account: UUID, did: String): Did? = list(account).singleOrNull { it.did == did }
+    fun get(wallet: UUID, did: String): WalletDid? =
+        WalletDids.select { (WalletDids.wallet eq wallet.toJavaUUID()) and (WalletDids.did eq did) }
+            .singleOrNull()?.let { WalletDid(it) }
 
-    fun list(account: UUID): List<Did> = join(account).let {
-        AccountDidsRepository.query(it) {
-            Did(
-                did = it[Dids.did],
-                alias = it[AccountDids.alias],
-                default = it[AccountDids.default],
-                document = it[Dids.document],
-            )
+    fun list(wallet: UUID): List<WalletDid> = WalletDids.select { WalletDids.wallet eq wallet.toJavaUUID() }.map { WalletDid(it) }
+
+    fun add(wallet: UUID, did: String, document: String, keyId: String, alias: String? = null) {
+        val now = Clock.System.now()
+
+        WalletDids.insert {
+            it[WalletDids.wallet] = wallet.toJavaUUID()
+            it[WalletDids.did] = did
+            it[WalletDids.document] = document
+            it[WalletDids.keyId] = keyId
+            it[WalletDids.alias] = alias ?: "Unnamed from $now"
+            it[createdOn] = now.toJavaInstant()
         }
     }
 
-    fun add(account: UUID, data: DidInsertDataObject): UUID =
-        getOrInsert(data.key, data.did.did, data.did.document).let { did ->
-            join(account, data.did.did).let {
-                AccountDidsRepository.query(it) {
-                    it[Dids.id]
-                }
-            }.takeIf { it.isNotEmpty() }?.single()?.value ?: let {
-                AccountDidsRepository.insert(
-                    DbAccountDids(
-                        account = account, did = did, alias = data.did.alias, default = data.did.default
-                    )
-                )
-                did
-            }
+    fun delete(wallet: UUID, did: String): Boolean =
+        WalletDids.deleteWhere { (WalletDids.wallet eq wallet.toJavaUUID()) and (WalletDids.did eq did) } > 0
+
+
+    fun makeDidDefault(wallet: UUID, newDefaultDid: String) {
+        WalletDids.update({ (WalletDids.wallet eq wallet.toJavaUUID()) and (WalletDids.default eq true) }) {
+            it[default] = false
         }
 
-    fun delete(account: UUID, did: String): Boolean = join(account, did).let {
-        AccountDidsRepository.query(it) {
-            it[AccountDids.id]
-        }.single().value
-    }.let {
-        AccountDidsRepository.delete(it)
-    }.let { it > 0 }
-
-    fun update(account: UUID, did: DidUpdateDataObject): Boolean = join(account, did.did).let {
-        AccountDidsRepository.query(it) {
-            it[AccountDids.id]
-        }.singleOrNull()?.value
-    }?.let {
-        when (did) {
-            is DidAliasUpdateDataObject -> updateQuery(it, alias = did.alias)
-            is DidDefaultUpdateDataObject -> {
-                // reset default, if any
-                join(account, joinOnDefault = true).let {
-                    AccountDidsRepository.query(it) {
-                        it[AccountDids.id]
-                    }.singleOrNull()?.value
-                }?.let {
-                    updateQuery(it, isDefault = false)
-                }
-                // set default for the requested one
-                updateQuery(it, isDefault = did.isDefault)
-            }
-            else -> throw IllegalArgumentException("Unsupported update field: ${did.javaClass.name}")
-        }
-    }?.let { it > 0 } ?: false
-
-    private fun join(account: UUID, did: String? = null, joinOnDefault: Boolean = false) =
-        joinOnDefault.takeIf { it }?.let {
-            Accounts.innerJoin(AccountDids,
-                onColumn = { Accounts.id },
-                otherColumn = { AccountDids.account },
-                additionalConstraint = {
-                    AccountDids.default eq true and (Accounts.id eq account)
-                }).innerJoin(Dids, onColumn = { Dids.id }, otherColumn = { AccountDids.did }).selectAll()
-        } ?: Accounts.innerJoin(AccountDids,
-            onColumn = { Accounts.id },
-            otherColumn = { AccountDids.account },
-            additionalConstraint = {
-                Accounts.id eq account
-            }).innerJoin(Dids,
-            onColumn = { Dids.id },
-            otherColumn = { AccountDids.did },
-            additionalConstraint = did?.let {
-                {
-                    Dids.did eq did
-                }
-            }).selectAll()
-
-    private fun find(did: String) = Dids.select { Dids.did eq did }
-    private fun getOrInsert(key: UUID, did: String, document: String) = find(did).let {
-        DidsRepository.query(it) {
-            it[Dids.id]
-        }.singleOrNull()?.value
-    } ?: let {
-        DidsRepository.insert(
-            DbDid(
-                key = key,
-                did = did,
-                document = document,
-            )
-        )
-    }
-
-    // TODO: implement in repository
-    private fun updateQuery(id: UUID, alias: String? = null, isDefault: Boolean? = null) = transaction {
-        AccountDids.update({ AccountDids.id eq id }) { statement ->
-            alias?.let { statement[AccountDids.alias] = it }
-            isDefault?.let { statement[AccountDids.default] = it }
+        WalletDids.update({ (WalletDids.wallet eq wallet.toJavaUUID()) and (WalletDids.did eq newDefaultDid) }) {
+            it[default] = true
         }
     }
+
+    fun renameDid(wallet: UUID, did: String, newName: String) =
+        WalletDids.update({ (WalletDids.wallet eq wallet.toJavaUUID()) and (WalletDids.did eq did) }) {
+            it[alias] = newName
+        } > 0
 }

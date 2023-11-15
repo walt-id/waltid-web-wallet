@@ -8,7 +8,7 @@ import io.ktor.server.routing.*
 fun Application.walletRoute(build: Route.() -> Unit) {
     routing {
         authenticate("authenticated-session", "authenticated-bearer") {
-            route("r/wallet", {
+            route("r/wallet/{wallet}", {
                 // tags = listOf("wallet")
             }) {
                 build.invoke(this)

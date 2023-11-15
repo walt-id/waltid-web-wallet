@@ -12,7 +12,7 @@ import kotlinx.serialization.json.JsonObject
 
 fun Application.credentials() = walletRoute {
     route("credentials", {
-        tags = listOf("Credentials")
+        tags = listOf("WalletCredentials")
     }) {
         get({
             summary = "List credentials"
@@ -46,7 +46,7 @@ fun Application.credentials() = walletRoute {
                     HttpStatusCode.OK to {
                         body<String> {
                             description =
-                                "Credential in JWT (String starting with 'ey' or JSON_LD (JSON with proof) format"
+                                "WalletCredential in JWT (String starting with 'ey' or JSON_LD (JSON with proof) format"
                         }
                     }
                 }
@@ -61,8 +61,8 @@ fun Application.credentials() = walletRoute {
                 summary = "Delete a credential"
 
                 response {
-                    HttpStatusCode.Accepted to { description = "Credential deleted" }
-                    HttpStatusCode.BadRequest to { description = "Credential could not be deleted" }
+                    HttpStatusCode.Accepted to { description = "WalletCredential deleted" }
+                    HttpStatusCode.BadRequest to { description = "WalletCredential could not be deleted" }
                 }
             }) {
                 val credentialId =

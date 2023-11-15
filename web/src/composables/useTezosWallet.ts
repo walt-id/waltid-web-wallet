@@ -1,5 +1,4 @@
 //import { BeaconWallet } from "@taquito/beacon-wallet";
-import { ref } from 'vue'
 
 /*
 const useTezosWallet = () => {

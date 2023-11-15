@@ -3,13 +3,12 @@ package id.walt.service
 import id.walt.config.ConfigManager
 import id.walt.config.RemoteWalletConfig
 import id.walt.db.models.Accounts
-import id.walt.db.models.Emails
+import id.walt.db.models.WalletDid
 import id.walt.db.models.WalletOperationHistories
-import id.walt.service.dids.DidDefaultUpdateDataObject
+import id.walt.db.models.WalletOperationHistory
 import id.walt.service.dids.DidsService
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
-import id.walt.service.dto.WalletOperationHistory
 import id.walt.service.issuers.IssuerDataTransferObject
 import id.walt.utils.JsonUtils.toJsonPrimitive
 import io.ktor.client.*
@@ -25,19 +24,18 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.toJavaInstant
-import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import kotlinx.uuid.UUID
+import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.URLDecoder
 import java.nio.charset.Charset
-import java.util.*
 
-
-class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
+class WalletKitWalletService(accountId: UUID, walletId: UUID) : WalletService(accountId, walletId) {
 
     private var token: Lazy<String> = lazy { runBlocking { auth() } }
 
@@ -61,12 +59,11 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         }
     }
 
-    private val userEmail by lazy {
+    private val userEmail: String by lazy {
         transaction {
-            Accounts.select { Accounts.id eq accountId }.single().let { acc ->
-                Emails.select { Emails.id eq acc[Accounts.email]?.value }.single()[Emails.email]
-            }
-        }
+            Accounts.select { Accounts.id eq this@WalletKitWalletService.walletId.toJavaUUID() }
+                .single()[Accounts.email]
+        } ?: throw IllegalArgumentException("No such account: ${this.walletId}")
     }
 
     private fun HttpResponse.checkValid(resend: () -> HttpResponse): HttpResponse =
@@ -125,7 +122,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
         }.body<JsonObject>()["token"] ?: throw IllegalStateException("Could not login: $userEmail")
                 ).jsonPrimitive.content
 
-    /* Credentials */
+    /* WalletCredentials */
 
     override suspend fun listCredentials() = authenticatedJsonGet("/api/wallet/credentials/list")
         .body<JsonObject>()["list"]!!.jsonArray.toList().map { Credential(it.jsonObject, it.toString()) }
@@ -280,7 +277,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     }
 
     override suspend fun listDids() = authenticatedJsonGet("/api/wallet/did/list")
-        .body<List<Did>>()
+        .body<List<WalletDid>>()
 
     override suspend fun loadDid(did: String) = authenticatedJsonGet("/api/wallet/did/$did")
         .body<JsonObject>()
@@ -288,7 +285,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     override suspend fun deleteDid(did: String) =
         authenticatedJsonDelete("/api/wallet/did/delete/$did").status.isSuccess()
 
-    override suspend fun setDefault(did: String) = DidsService.update(accountId, DidDefaultUpdateDataObject(did, true))
+    override suspend fun setDefault(did: String) = DidsService.makeDidDefault(walletId, did)
 
 
     /* Keys */
@@ -331,23 +328,17 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
 
     override suspend fun getHistory(limit: Int, offset: Int): List<WalletOperationHistory> = transaction {
         WalletOperationHistories
-            .select { WalletOperationHistories.account eq accountId }
+            .select { WalletOperationHistories.account eq walletId.toJavaUUID() }
             .orderBy(WalletOperationHistories.timestamp)
             .limit(10)
-            .map { row ->
-                WalletOperationHistory(
-                    accountId = row[WalletOperationHistories.account].value.toString(),
-                    timestamp = row[WalletOperationHistories.timestamp].toKotlinInstant(),
-                    operation = row[WalletOperationHistories.operation],
-                    data = Json.parseToJsonElement(row[WalletOperationHistories.data]).jsonObject.toMap()
-                )
-            }
+            .map { WalletOperationHistory(it) }
     }
 
     override suspend fun addOperationHistory(operationHistory: WalletOperationHistory) {
         transaction {
             WalletOperationHistories.insert {
-                it[account] = UUID.fromString(operationHistory.accountId)
+                it[wallet] = walletId.toJavaUUID()
+                it[account] = accountId.toJavaUUID()
                 it[timestamp] = operationHistory.timestamp.toJavaInstant()
                 it[operation] = operationHistory.operation
                 it[data] = Json.encodeToString(operationHistory.data)
@@ -356,16 +347,16 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     }
 
     override suspend fun linkWallet(wallet: WalletDataTransferObject): LinkedWalletDataTransferObject =
-        Web3WalletService.link(accountId, wallet)
+        Web3WalletService.link(walletId, wallet)
 
-    override suspend fun unlinkWallet(wallet: UUID) = Web3WalletService.unlink(accountId, wallet)
+    override suspend fun unlinkWallet(wallet: UUID) = Web3WalletService.unlink(walletId, wallet)
 
     override suspend fun getLinkedWallets(): List<LinkedWalletDataTransferObject> =
-        Web3WalletService.getLinked(accountId)
+        Web3WalletService.getLinked(walletId)
 
-    override suspend fun connectWallet(walletId: UUID) = Web3WalletService.connect(accountId, walletId)
+    override suspend fun connectWallet(walletId: UUID) = Web3WalletService.connect(this.walletId, walletId)
 
-    override suspend fun disconnectWallet(wallet: UUID) = Web3WalletService.disconnect(accountId, wallet)
+    override suspend fun disconnectWallet(wallet: UUID) = Web3WalletService.disconnect(walletId, wallet)
 
     override suspend fun listIssuers(): List<IssuerDataTransferObject> {
         TODO("Not yet implemented")

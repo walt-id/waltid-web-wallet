@@ -1,12 +1,12 @@
 package id.walt.push
 
+import id.walt.crypto.utils.Base64Utils.base64Decode
 import kotlinx.serialization.Serializable
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECPublicKeySpec
 import java.security.KeyFactory
 import java.security.PublicKey
-import java.util.*
 
 @Serializable
 data class Subscription(
@@ -17,12 +17,12 @@ data class Subscription(
     /**
      * Returns the base64 encoded auth string as a byte[]
      */
-    fun authAsBytes(): ByteArray = Base64.getDecoder().decode(auth)
+    fun authAsBytes(): ByteArray = auth.base64Decode()
 
     /**
      * Returns the base64 encoded public key string as a byte[]
      */
-    fun keyAsBytes(): ByteArray = Base64.getDecoder().decode(key)
+    fun keyAsBytes(): ByteArray = key.base64Decode()
 
     /**
      * Returns the base64 encoded public key as a PublicKey object

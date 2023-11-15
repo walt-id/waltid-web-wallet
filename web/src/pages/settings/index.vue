@@ -7,10 +7,7 @@
 </template>
 
 <script setup>
-
 import CenterMain from "~/components/CenterMain.vue";
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

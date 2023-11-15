@@ -1,13 +1,15 @@
 package id.walt.service
 
-import id.walt.db.models.AccountWallets
-import id.walt.db.models.Wallets
+import id.walt.db.models.Web3Wallets
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
+import kotlinx.uuid.UUID
+import kotlinx.uuid.generateUUID
+import kotlinx.uuid.toJavaUUID
+import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.*
 
 object Web3WalletService {
     /**
@@ -17,10 +19,13 @@ object Web3WalletService {
      * @return the [LinkedWalletDataTransferObject] representing the web3 wallet
      */
     fun link(accountId: UUID, wallet: WalletDataTransferObject): LinkedWalletDataTransferObject =
-        getOrCreateWallet(wallet).let { walletId ->
-            assignWallet(accountId, walletId)
-            LinkedWalletDataTransferObject(walletId.toString(), wallet.address, wallet.ecosystem, false)
-        }
+        Web3Wallets.insert {
+            it[account] = accountId.toJavaUUID()
+            it[id] = UUID.generateUUID().toJavaUUID()
+            it[address] = wallet.address
+            it[ecosystem] = wallet.ecosystem
+            it[owner] = false
+        }.let { LinkedWalletDataTransferObject(accountId, wallet.address, wallet.ecosystem, false) }
 
     /**
      * Removes the wallet from the given account
@@ -29,7 +34,7 @@ object Web3WalletService {
      * @return true - if operation succeeded, false - otherwise
      */
     fun unlink(accountId: UUID, walletId: UUID): Boolean = transaction {
-        AccountWallets.deleteWhere { account eq accountId and (wallet eq walletId) }
+        Web3Wallets.deleteWhere { (account eq accountId.toJavaUUID()) and (id eq walletId.toJavaUUID()) }
     } == 1
 
     /**
@@ -66,43 +71,21 @@ object Web3WalletService {
          * === 2 different accounts exist, which the user should have access to (merged) when logging in with web3-address
          */
         transaction {
-            AccountWallets.select { AccountWallets.account eq accountId }.mapNotNull { aw ->
-                Wallets.select { Wallets.id eq aw[AccountWallets.wallet] }.firstOrNull()?.let { w ->
-                    LinkedWalletDataTransferObject(
-                        w[Wallets.id].toString(),
-                        w[Wallets.address],
-                        w[Wallets.ecosystem],
-                        aw[AccountWallets.owner]
-                    )
-                }
+            Web3Wallets.select { Web3Wallets.account eq accountId.toJavaUUID() }.map {
+                LinkedWalletDataTransferObject(
+                    it[Web3Wallets.id].toKotlinUUID(),
+                    it[Web3Wallets.address],
+                    it[Web3Wallets.ecosystem],
+                    it[Web3Wallets.owner]
+                )
             }
         }
 
     private fun setIsOwner(accountId: UUID, walletId: UUID, isOwner: Boolean) = transaction {
-        AccountWallets.update(
-            { AccountWallets.account eq accountId and (AccountWallets.wallet eq walletId) }
+        Web3Wallets.update(
+            { (Web3Wallets.account eq accountId.toJavaUUID()) and (Web3Wallets.id eq walletId.toJavaUUID()) }
         ) {
-            it[AccountWallets.owner] = isOwner
-        }
-    }
-
-    private fun getOrCreateWallet(wallet: WalletDataTransferObject) = transaction {
-        Wallets.select { Wallets.address eq wallet.address }.firstOrNull()?.let { it[Wallets.id].value }
-    } ?: transaction {
-        Wallets.insertAndGetId {
-            it[address] = wallet.address
-            it[ecosystem] = wallet.ecosystem
-        }.value
-    }
-
-    private fun assignWallet(accountId: UUID, walletId: UUID) = transaction {
-        AccountWallets.select {
-            AccountWallets.account eq accountId and (AccountWallets.wallet eq walletId)
-        }.takeIf { it.any() }?.let { it.first()[AccountWallets.id].value } ?: let {
-            AccountWallets.insertAndGetId {
-                it[account] = accountId
-                it[wallet] = walletId
-            }.value
+            it[owner] = isOwner
         }
     }
 }

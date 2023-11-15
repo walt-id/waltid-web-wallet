@@ -3,24 +3,25 @@ package id.walt.service.nft
 import id.walt.config.ChainExplorerConfiguration
 import id.walt.config.ConfigManager
 import id.walt.config.MarketPlaceConfiguration
-import id.walt.db.models.Wallets
+import id.walt.db.models.Web3Wallets
 import id.walt.nftkit.services.*
 import id.walt.service.dto.*
 import id.walt.service.nft.fetchers.DataFetcher
 import id.walt.service.nft.fetchers.parameters.*
+import kotlinx.uuid.UUID
+import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.*
 
 class NftKitNftService : NftService {
 
     override suspend fun getChains(ecosystem: String): List<ChainDataTransferObject> = when (ecosystem.lowercase()) {
-        "ethereum" -> EVMChain.values()
-        "tezos" -> TezosChain.values()
-        "flow" -> FlowChain.values()
-        "near" -> NearChain.values()
-        "polkadot" -> PolkadotParachain.values()
-        "algorand" -> AlgorandChain.values()
+        "ethereum" -> EVMChain.entries.toTypedArray()
+        "tezos" -> TezosChain.entries.toTypedArray()
+        "flow" -> FlowChain.entries.toTypedArray()
+        "near" -> NearChain.entries.toTypedArray()
+        "polkadot" -> PolkadotParachain.entries.toTypedArray()
+        "algorand" -> AlgorandChain.entries.toTypedArray()
 
         else -> null
     }?.let {
@@ -79,10 +80,10 @@ class NftKitNftService : NftService {
             )
         } ?: throw IllegalArgumentException("Token details not available: $parameter")
 
-    private fun getWalletById(accountId: String) = getWalletById(UUID.fromString(accountId))
+    private fun getWalletById(accountId: String) = getWalletById(UUID(accountId))
 
     private fun getWalletById(accountId: UUID) =
-        transaction { Wallets.select { Wallets.id eq accountId }.firstOrNull() }?.let {
-            WalletDataTransferObject(address = it[Wallets.address], ecosystem = it[Wallets.ecosystem])
+        transaction { Web3Wallets.select { Web3Wallets.account eq accountId.toJavaUUID() }.firstOrNull() }?.let {
+            WalletDataTransferObject(address = it[Web3Wallets.address], ecosystem = it[Web3Wallets.ecosystem])
         }
 }
