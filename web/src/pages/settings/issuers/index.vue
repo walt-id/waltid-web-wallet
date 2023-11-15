@@ -3,14 +3,15 @@
         <div class="flex justify-between items-center">
             <h1 class="text-lg font-semibold">Your issuers:</h1>
 
-            <div class="flex justify-between gap-2">
+            <!-- show when feature is available -->
+            <!-- <div class="flex justify-between gap-2">
                 <button class="inline-flex items-center bg-blue-500 hover:bg-blue-600 focus-visible:outline-blue-600 rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
                         @click="importIssuer"
                 >
                     <InboxArrowDownIcon aria-hidden="true" class="h-5 w-5 text-white mr-1"/>
                     <span>Import issuer</span>
                 </button>
-            </div>
+            </div> -->
 
         </div>
 
