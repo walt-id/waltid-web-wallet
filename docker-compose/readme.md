@@ -9,18 +9,20 @@ run a complete credential flow:
 ## Services
 
 The complete list of services and their port mapping is following:
-- walletkit: `7000`
-- web-wallet-backend: `4545`
-- web-wallet-frontend: `3000` (published)
-- issuer-portal: `8000` (published)
-- verifier-portal: `9000` (published)
+- web-wallet-frontend: `3000`
+- web-wallet-backend: `4545` (not published)
+- web-portal: `4000`
+- vc-repo: `5000`
+- issuer: `8000`
+- verifier: `9000`
 
 ## Configurations
 
 Config locations:
 
 - web-wallet: `wallet-backend/config`
-- walletkit: `walletkit/config`
+- issuer: `issuer/config`
+- verifier: `verifier/config`
 - ingress: `ingress.conf`
 - environment: `.env`
 
