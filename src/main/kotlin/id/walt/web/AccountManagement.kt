@@ -102,7 +102,7 @@ fun Application.auth() {
                 request {
                     body<EmailAccountRequest> {
                         example("E-mail + password", buildJsonObject {
-                            put("username", JsonPrimitive("user@email.com"))
+                            put("email", JsonPrimitive("user@email.com"))
                             put("password", JsonPrimitive("password"))
                             put("type", JsonPrimitive("email"))
                         }.toString())
@@ -142,7 +142,8 @@ fun Application.auth() {
                 request {
                     body<EmailAccountRequest> {
                         example("E-mail + password", buildJsonObject {
-                            put("username", JsonPrimitive("user@email.com"))
+                            put("name", JsonPrimitive("Max Mustermann"))
+                            put("email", JsonPrimitive("user@email.com"))
                             put("password", JsonPrimitive("password"))
                             put("type", JsonPrimitive("email"))
                         }.toString())

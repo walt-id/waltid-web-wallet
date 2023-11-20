@@ -84,7 +84,7 @@ const ecosystems = ["ethereum", "tezos", "flow", "near", "algorand"];
 
 async function addWallet() {
     console.log(`addWallet: ${addressInput} - ${selectedEcosystem.value}`);
-    await $fetch(`/r/wallet/accounts/link`, {
+    await $fetch(`/r/wallet/web3accounts/link`, {
         method: "POST",
         body: {
             address: addressInput,

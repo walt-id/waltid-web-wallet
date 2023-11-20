@@ -37,6 +37,7 @@ object WalletServiceManager {
             it[account] = forAccount.toJavaUUID()
             it[wallet] = walletId.toJavaUUID()
             it[permissions] = AccountWalletPermissions.ADMINISTRATE
+            it[addedOn] = Clock.System.now().toJavaInstant()
         }
 
         return walletId

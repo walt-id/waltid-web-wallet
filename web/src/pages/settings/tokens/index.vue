@@ -127,7 +127,7 @@ const store = useModalStore();
 const selectedAccount = ref({});
 const selectedNetwork = ref({});
 // const pending = ref(false)
-const { data: accounts, pending: pendingAccounts } = await useLazyAsyncData(() => $fetch("/r/wallet/accounts"));
+const { data: accounts, pending: pendingAccounts } = await useLazyAsyncData(() => $fetch("/r/wallet/web3accounts"));
 const { data: nftList, pending: pendingTokens } = await useLazyAsyncData(
     () =>
         $fetch(`/r/wallet/nft/filter`, {

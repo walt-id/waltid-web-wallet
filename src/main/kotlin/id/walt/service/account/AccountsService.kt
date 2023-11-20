@@ -1,8 +1,6 @@
 package id.walt.service.account
 
-import id.walt.db.models.Account
-import id.walt.db.models.Accounts
-import id.walt.db.models.Web3Wallets
+import id.walt.db.models.*
 import id.walt.db.models.todo.AccountIssuers
 import id.walt.db.models.todo.Issuers
 import id.walt.service.WalletServiceManager
@@ -10,10 +8,12 @@ import id.walt.web.generateToken
 import id.walt.web.model.AccountRequest
 import id.walt.web.model.AddressAccountRequest
 import id.walt.web.model.EmailAccountRequest
+import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.uuid.UUID
 import kotlinx.uuid.toJavaUUID
+import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
@@ -23,7 +23,7 @@ object AccountsService {
 
     suspend fun register(request: AccountRequest): Result<RegistrationResult> = when (request) {
         is EmailAccountRequest -> EmailAccountStrategy.register(request)
-        is AddressAccountRequest -> WalletAccountStrategy.register(request)
+        is AddressAccountRequest -> Web3WalletAccountStrategy.register(request)
     }.onSuccess { registrationResult ->
         val registeredUserId = registrationResult.id
 
@@ -57,7 +57,7 @@ object AccountsService {
     suspend fun authenticate(request: AccountRequest): Result<AuthenticationResult> = runCatching {
         when (request) {
             is EmailAccountRequest -> EmailAccountStrategy.authenticate(request)
-            is AddressAccountRequest -> WalletAccountStrategy.authenticate(request)
+            is AddressAccountRequest -> Web3WalletAccountStrategy.authenticate(request)
         }
     }.fold(onSuccess = {
         Result.success(
@@ -69,6 +69,24 @@ object AccountsService {
         )
     },
         onFailure = { Result.failure(it) })
+
+    fun getAccountWalletMappings(account: UUID) =
+        AccountWalletListing(account, wallets =
+        transaction {
+            AccountWalletMappings.innerJoin(Wallets)
+                .select { AccountWalletMappings.account eq account.toJavaUUID() }
+                .map {
+                    AccountWalletListing.WalletListing(
+                        id = it[AccountWalletMappings.wallet].value.toKotlinUUID(),
+                        name = it[Wallets.name],
+                        createdOn = it[Wallets.createdOn].toKotlinInstant(),
+                        addedOn = it[AccountWalletMappings.addedOn].toKotlinInstant(),
+                        permission = it[AccountWalletMappings.permissions]
+                    )
+                }
+        }
+        )
+
 
     fun hasAccountEmail(email: String) = transaction { Accounts.select { Accounts.email eq email }.count() > 0 }
     fun hasAccountWeb3WalletAddress(address: String) =

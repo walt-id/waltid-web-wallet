@@ -10,7 +10,7 @@ import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 
-object WalletAccountStrategy : AccountStrategy<AddressAccountRequest> {
+object Web3WalletAccountStrategy : AccountStrategy<AddressAccountRequest> {
     override fun register(request: AddressAccountRequest): Result<RegistrationResult> = runCatching {
         val name = request.name
 

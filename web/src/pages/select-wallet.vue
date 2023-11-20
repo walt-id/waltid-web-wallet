@@ -17,10 +17,10 @@
         <ol class="divide-y divide-gray-100 list-decimal border rounded-2xl mt-2 px-2" role="list">
             <li v-for="wallet in wallets" :key="wallet.id" class="flex items-center justify-between gap-x-6 py-4">
 
-                <div class="min-w-0 flex items-center">
+                <div class="min-w-0 flex items-center px-1">
 
                     <div>
-                        <div class="pl-1">
+                        <div class="">
                             <Icon class="h-7 w-7" name="heroicons:wallet" />
                         </div>
                     </div>
@@ -33,14 +33,14 @@
                         </div>
                         <div class="flex items-start gap-x-3">
                             <p class="mx-2 overflow-x-auto text-base font-normal leading-6 text-gray-500">
-                                {{ wallet.createdOn }}
+                                {{ wallet.permission }}, added on {{ wallet.addedOn }}
                             </p>
                         </div>
                     </div>
                 </div>
                 <div class="flex flex-none items-center gap-x-4">
                     <NuxtLink
-                        :to="'/' + wallet.id"
+                        :to="'/wallet/' + wallet.id"
                         class="hidden rounded-md bg-white px-3 py-2 text-base font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block"
                     >
                         Select wallet
@@ -57,12 +57,16 @@
 
 import { InboxArrowDownIcon } from "@heroicons/vue/24/outline";
 import CenterMain from "~/components/CenterMain.vue";
+import type { WalletListings } from "~/composables/accountWallet";
+import { listWallets } from "~/composables/accountWallet";
 
-const wallets = [{
-    name: "Wallet of X",
-    id: "xabc",
-    createdOn: "2023-11-15"
-}];
+const wallets = (await listWallets()).value.wallets
+
+// const wallets = [{
+//     name: "Wallet of X",
+//     id: "xabc",
+//     createdOn: "2023-11-15"
+// }];
 </script>
 
 <style scoped>

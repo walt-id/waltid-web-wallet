@@ -13,8 +13,8 @@ import io.ktor.server.response.*
 import kotlinx.serialization.json.Json
 import kotlinx.uuid.UUID
 
-fun Application.account() = walletRoute {
-    route("accounts", {
+fun Application.web3accounts() = walletRoute {
+    route("web3accounts", {
         tags = listOf("Web3 wallet accounts")
     }) {
         get({
