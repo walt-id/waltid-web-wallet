@@ -241,6 +241,7 @@ import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import { useUserStore } from "~/stores/user";
 import { storeToRefs } from "pinia";
 import * as nearAPI from "near-api-js";
+import { useCurrentWallet } from "~/composables/accountWallet";
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
@@ -281,14 +282,16 @@ async function reloadData() {
     });
 }
 
+const currentWallet = useCurrentWallet()
+
 const navigation = [
     {
         name: "",
         items: [
-            { name: "Credentials", href: "/", icon: HomeIcon },
-            { name: "Tokens", href: "/settings/tokens", icon: GlobeAltIcon },
-            { name: "DIDs", href: "/settings/dids", icon: FingerPrintIcon },
-            { name: "Keys", href: "/settings/keys", icon: KeyIcon },
+            { name: "Credentials", href: `/wallet/${currentWallet.value}`, icon: HomeIcon },
+            { name: "Tokens", href: `/wallet/${currentWallet.value}/settings/tokens`, icon: GlobeAltIcon },
+            { name: "DIDs", href: `/wallet/${currentWallet.value}/settings/dids`, icon: FingerPrintIcon },
+            { name: "Keys", href: `/wallet/${currentWallet.value}/settings/keys`, icon: KeyIcon },
 
             // {name: 'History', href: '/history', icon: ClockIcon}
         ],
