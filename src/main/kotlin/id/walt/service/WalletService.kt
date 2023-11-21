@@ -12,7 +12,7 @@ import kotlinx.uuid.UUID
 abstract class WalletService(val accountId: UUID, val walletId: UUID) {
 
     // WalletCredentials
-    abstract suspend fun listCredentials(): List<Credential>
+    abstract fun listCredentials(): List<Credential>
     abstract suspend fun listRawCredentials(): List<String>
     abstract suspend fun deleteCredential(id: String): Boolean
     abstract suspend fun getCredential(credentialId: String): String
@@ -38,7 +38,7 @@ abstract class WalletService(val accountId: UUID, val walletId: UUID) {
     abstract suspend fun deleteKey(alias: String): Boolean
 
     // History
-    abstract suspend fun getHistory(limit: Int = 10, offset: Int = 0): List<WalletOperationHistory>
+    abstract fun getHistory(limit: Int = 10, offset: Int = 0): List<WalletOperationHistory>
     abstract suspend fun addOperationHistory(operationHistory: WalletOperationHistory)
 
     // Web3 wallets
