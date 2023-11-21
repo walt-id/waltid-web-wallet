@@ -10,7 +10,9 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonObject
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Application.keys() = walletRoute {
     route("keys", {
@@ -25,7 +27,7 @@ fun Application.keys() = walletRoute {
                 }
             }
         }) {
-            context.respond(getWalletService().listKeys())
+            context.respond(getWalletService().run { transaction { runBlocking { listKeys() } } })
         }
 
         post("generate", {
