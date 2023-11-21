@@ -66,6 +66,7 @@ fun Application.module() {
     keys()
     exchange()
     history()
+    wallets()
     web3accounts()
     accounts()
     nfts()
