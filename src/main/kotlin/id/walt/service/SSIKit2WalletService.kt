@@ -5,7 +5,10 @@ import id.walt.crypto.keys.KeySerialization
 import id.walt.crypto.keys.KeyType
 import id.walt.crypto.keys.LocalKey
 import id.walt.crypto.utils.JwsUtils.decodeJws
-import id.walt.db.models.*
+import id.walt.db.models.WalletCredential
+import id.walt.db.models.WalletKeys
+import id.walt.db.models.WalletOperationHistories
+import id.walt.db.models.WalletOperationHistory
 import id.walt.did.dids.DidService
 import id.walt.did.dids.registrar.dids.DidCheqdCreateOptions
 import id.walt.did.dids.registrar.dids.DidJwkCreateOptions
@@ -66,16 +69,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
         }
     }
 
-    private val userEmail: String by lazy {
-        transaction {
-            Accounts.select { Accounts.id eq accountId.toJavaUUID() }
-                .single()[Accounts.email]
-        } ?: throw IllegalArgumentException("No such account: $accountId")
-    }
-
-    /* WalletCredentials */
-
-    override suspend fun listCredentials(): List<Credential> = CredentialsService.list(walletId).mapNotNull {
+    override fun listCredentials(): List<Credential> = CredentialsService.list(walletId).mapNotNull {
         val credentialId = it.id
         runCatching {
             val cred = it.document
@@ -511,7 +505,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
 // TODO
 //fun infoAboutOfferRequest
 
-    override suspend fun getHistory(limit: Int, offset: Int): List<WalletOperationHistory> = transaction {
+    override fun getHistory(limit: Int, offset: Int): List<WalletOperationHistory> =
         WalletOperationHistories
             .select { WalletOperationHistories.wallet eq walletId.toJavaUUID() }
             .orderBy(WalletOperationHistories.timestamp)
@@ -519,7 +513,6 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
             .map { row ->
                 WalletOperationHistory(row)
             }
-    }
 
     override suspend fun addOperationHistory(operationHistory: WalletOperationHistory) {
         transaction {
