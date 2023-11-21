@@ -12,6 +12,7 @@ import kotlinx.uuid.UUID
 import kotlinx.uuid.toJavaUUID
 import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import java.util.concurrent.ConcurrentHashMap
 
 object WalletServiceManager {
@@ -42,6 +43,12 @@ object WalletServiceManager {
 
         return walletId
     }
+
+    @Deprecated(replaceWith = ReplaceWith("AccountsService.getAccountWalletMappings(account)", "id.walt.service.account.AccountsService"), message = "depreacted")
+    fun listWallets(account: UUID): List<UUID> =
+        AccountWalletMappings.innerJoin(Wallets).select { AccountWalletMappings.account eq account.toJavaUUID() }.map {
+            it[Wallets.id].value.toKotlinUUID()
+        }
 
     fun getNftService(): NftService = NftKitNftService()
 }
