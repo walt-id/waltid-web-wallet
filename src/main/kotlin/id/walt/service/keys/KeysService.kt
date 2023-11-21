@@ -11,11 +11,13 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
 
 object KeysService {
-    fun get(wallet: UUID, keyId: String): WalletKey? =
+    fun get(wallet: UUID, keyId: String): WalletKey? = transaction {
         WalletKeys.select { (WalletKeys.wallet eq wallet.toJavaUUID()) and (WalletKeys.keyId eq keyId) }
             .singleOrNull()?.let { WalletKey(it) }
+    }
 
     fun list(wallet: UUID): List<WalletKey> = WalletKeys.select { WalletKeys.wallet eq wallet.toJavaUUID() }.map { WalletKey(it) }
 
