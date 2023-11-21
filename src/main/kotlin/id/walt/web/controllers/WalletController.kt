@@ -16,3 +16,15 @@ fun Application.walletRoute(build: Route.() -> Unit) {
         }
     }
 }
+
+fun Application.wallets() {
+    routing {
+        authenticate("authenticated-session", "authenticated-bearer") {
+            route("r/wallet", {
+                tags = listOf("wallet")
+            }) {
+
+            }
+        }
+    }
+}
