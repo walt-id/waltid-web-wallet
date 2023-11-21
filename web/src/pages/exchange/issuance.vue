@@ -98,7 +98,8 @@
                                     Will issue to DID: {{ selectedDid.alias }} ({{ selectedDid.did }})
                                 </span>
                                 <button class="text-sm md:ml-6">
-                                    <NuxtLink class="whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" to="/settings/dids">
+                                    <NuxtLink class="whitespace-nowrap font-medium text-blue-700 hover:text-blue-600"
+                                              :to="`/wallet/${currentWallet}/settings/dids`">
                                         DID management
                                         <span aria-hidden="true"> &rarr;</span>
                                     </NuxtLink>
@@ -151,7 +152,8 @@ import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { useTitle } from "@vueuse/core";
 import { Ref } from "vue";
 
-const { data: dids, pending: pendingDids } = await useLazyAsyncData(() => $fetch("/r/wallet/dids"));
+const currentWallet = useCurrentWallet()
+const { data: dids, pending: pendingDids } = await useLazyAsyncData(() => $fetch(`/r/wallet/${currentWallet}/dids`));
 
 const selectedDid: Ref<Object | null> = ref(null);
 
@@ -240,7 +242,7 @@ async function acceptCredential() {
     }
     console.log("Issue to: " + did);
     try {
-        await $fetch(`/r/wallet/exchange/useOfferRequest?did=${did}`, {
+        await $fetch(`/r/wallet/${currentWallet.value}/exchange/useOfferRequest?did=${did}`, {
             method: "POST",
             body: request,
         });

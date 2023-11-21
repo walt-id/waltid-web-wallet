@@ -68,7 +68,7 @@
                     </p>
 
                     <div class="pt-3 flex justify-end">
-                        <NuxtLink to="/settings/dids">
+                        <NuxtLink :to="`/wallet/${currentWallet}/settings/dids`">
                             <button class="mb-2 border rounded-xl p-2 bg-blue-500 text-white flex flex-row justify-center items-center">
                                 <ArrowUturnLeftIcon class="h-5 pr-1" />
                                 Return back
@@ -106,6 +106,8 @@ const response = ref("");
 const keyId = ref("");
 const alias = ref("");
 
+const currentWallet = useCurrentWallet()
+
 async function createDid() {
     loading.value = true;
 
@@ -117,7 +119,7 @@ async function createDid() {
 
     const query = new URLSearchParams(merged).toString();
 
-    response.value = await $fetch(`/r/wallet/dids/create/${props.method}?${query}`, {
+    response.value = await $fetch(`/r/wallet/${currentWallet.value}/dids/create/${props.method}?${query}`, {
         method: "POST",
     });
     loading.value = false;

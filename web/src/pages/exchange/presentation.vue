@@ -77,10 +77,12 @@ import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import { groupBy } from "~/composables/groupings";
 import { useTitle } from "@vueuse/core";
 
+const currentWallet = useCurrentWallet()
+
 async function resolvePresentationRequest(request) {
     try {
         console.log("RESOLVING request", request);
-        const response = await $fetch("/r/wallet/exchange/resolvePresentationRequest", { method: "POST", body: request });
+        const response = await $fetch(`/r/wallet/${currentWallet.value}/exchange/resolvePresentationRequest`, { method: "POST", body: request });
         console.log(response);
         return response;
     } catch (e) {
@@ -121,7 +123,7 @@ const failed = ref(false);
 const failMessage = ref("Unknown error occurred.");
 
 async function acceptPresentation() {
-    const response = await fetch("/r/wallet/exchange/usePresentationRequest", {
+    const response = await fetch(`/r/wallet/${currentWallet.value}/exchange/usePresentationRequest`, {
         method: "POST",
         body: request,
         redirect: "manual",

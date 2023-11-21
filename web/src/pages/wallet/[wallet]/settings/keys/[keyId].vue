@@ -129,7 +129,9 @@ const keyId = route.params.keyId;
 const format = ref("JWK");
 const enableLoadPrivateKey = ref(false);
 
-const key = await $fetch(`/r/wallet/keys/load/${keyId}`);
+const currentWallet = useCurrentWallet()
+
+const key = await $fetch(`/r/wallet/${currentWallet.value}/keys/load/${keyId}`);
 refreshNuxtData();
 
 function exportKey() {
@@ -137,10 +139,10 @@ function exportKey() {
 }
 
 async function deleteKey() {
-    await $fetch(`/r/wallet/keys/${keyId}`, {
+    await $fetch(`/r/wallet/${currentWallet.value}/keys/${keyId}`, {
         method: "DELETE",
     }).finally(() => {
-        navigateTo("/settings/keys");
+        navigateTo(`/wallet/${currentWallet.value}/settings/keys`);
     });
 }
 

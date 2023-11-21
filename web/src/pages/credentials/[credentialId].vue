@@ -289,6 +289,7 @@ import { decodeBase64ToUtf8 } from "~/composables/base64";
 
 const route = useRoute();
 const credentialId = route.params.credentialId;
+const currentWallet = useCurrentWallet()
 
 let showCredentialJson = ref(false);
 
@@ -310,13 +311,13 @@ const jwtJson = computed(() => {
     } else return "";
 });
 
-const { data: credential, pending, refresh, error } = await useLazyFetch(`/r/wallet/credentials/${encodeURIComponent(credentialId)}`);
+const { data: credential, pending, refresh, error } = await useLazyFetch(`/r/wallet/${currentWallet.value}/credentials/${encodeURIComponent(credentialId)}`);
 refreshNuxtData();
 
 useHead({ title: "View credential - walt.id" });
 
 async function deleteCredential() {
-    await $fetch(`/r/wallet/credentials/${encodeURIComponent(credentialId)}`, {
+    await $fetch(`/r/wallet/${currentWallet.value}/credentials/${encodeURIComponent(credentialId)}`, {
         method: "DELETE",
     });
     await navigateTo({ path: "/" });

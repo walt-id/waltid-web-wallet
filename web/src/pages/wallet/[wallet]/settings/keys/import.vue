@@ -33,13 +33,14 @@ import CenterMain from "~/components/CenterMain.vue";
 import { DocumentPlusIcon } from "@heroicons/vue/24/outline";
 
 const keyText = ref("");
+const currentWallet = useCurrentWallet()
 
 async function importKey() {
-    await $fetch("/r/wallet/keys/import", {
+    await $fetch(`/r/wallet/${currentWallet.value}/keys/import`, {
         method: "POST",
         body: keyText.value,
     });
-    navigateTo("/settings/keys");
+    navigateTo(`/wallet/${currentWallet.value}/settings/keys`);
 }
 </script>
 

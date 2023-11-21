@@ -102,14 +102,16 @@ const collectionId = route.query.collectionId;
 
 const isQrCodeActive = ref(false);
 
+const currentWallet = useCurrentWallet()
+
 const {
     data: nft,
     pending,
     refresh,
     error,
-} = await useLazyFetch(`/r/wallet/nft/detail/${accountId}/${chain.toUpperCase()}/${contract}/${tokenId}${collectionId ? "?collectionId=" + collectionId : ""}`);
-const { data: marketplace } = useLazyFetch(`/r/wallet/nft/marketplace/${chain}/${contract}/${tokenId}`);
-const { data: explorer } = useLazyFetch(`/r/wallet/nft/explorer/${chain}/${contract}`);
+} = await useLazyFetch(`/r/wallet/${currentWallet.value}/nft/detail/${accountId}/${chain.toUpperCase()}/${contract}/${tokenId}${collectionId ? "?collectionId=" + collectionId : ""}`);
+const { data: marketplace } = useLazyFetch(`/r/wallet/${currentWallet.value}/nft/marketplace/${chain}/${contract}/${tokenId}`);
+const { data: explorer } = useLazyFetch(`/r/wallet/${currentWallet.value}/nft/explorer/${chain}/${contract}`);
 refreshNuxtData();
 
 useHead({

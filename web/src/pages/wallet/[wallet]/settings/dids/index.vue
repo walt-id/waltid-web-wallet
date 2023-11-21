@@ -51,8 +51,10 @@ import CenterMain from "~/components/CenterMain.vue";
 
 const dids = ref("");
 
+const currentWallet = useCurrentWallet()
+
 async function loadDids() {
-    dids.value = await useLazyFetch("/r/wallet/dids").data;
+    dids.value = await useLazyFetch(`/r/wallet/${currentWallet.value}/dids`).data;
     refreshNuxtData();
 }
 

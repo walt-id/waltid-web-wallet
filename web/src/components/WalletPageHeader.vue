@@ -24,8 +24,9 @@
         <template v-slot:menu>
             <NuxtLink
                 class="inline-flex focus:outline focus:outline-blue-600 focus:outline-offset-2 items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                to="/settings/issuers"
+                :to="`/wallet/${currentWallet.value}/settings/issuers`"
                 type="button"
+                v-if="currentWallet"
             >
                 <ArrowDownOnSquareStackIcon class="h-5 w-5 mr-1" />
                 Request credentials
@@ -52,6 +53,8 @@ import { storeToRefs } from "pinia";
 const config = useRuntimeConfig();
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
+
+const currentWallet = useCurrentWallet()
 
 const now = useNow();
 </script>

@@ -30,7 +30,7 @@
                     >
                 </p>
                 <div class="pt-3 flex justify-end">
-                    <NuxtLink to="/settings/keys">
+                    <NuxtLink :to="`/wallet/${currentWallet}/settings/keys`">
                         <button class="mb-2 border rounded-xl p-2 bg-blue-500 text-white flex flex-row justify-center items-center">
                             <ArrowUturnLeftIcon class="h-5 pr-1" />
                             Return back
@@ -44,9 +44,12 @@
 
 <script lang="ts" setup>
 import CenterMain from "~/components/CenterMain.vue";
+import {CheckIcon, ArrowUturnLeftIcon} from "@heroicons/vue/24/outline"
 
 const loading = ref(false);
 const response = ref("");
+
+const currentWallet = useCurrentWallet()
 
 const methods = new Map([
     ["EdDSA_Ed25519", ["Ed25519"]],
@@ -59,7 +62,7 @@ async function generateKey(type: String) {
     loading.value = true;
 
     console.log(type);
-    response.value = await $fetch(`/r/wallet/keys/generate`, {
+    response.value = await $fetch(`/r/wallet/${currentWallet.value}/keys/generate`, {
         method: "POST",
         params: {
             type: type,

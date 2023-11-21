@@ -66,8 +66,11 @@ import { storeToRefs } from "pinia";
 
 const modalStore = useModalStore();
 const userStore = useUserStore();
+
+const currentWallet = useCurrentWallet()
+
 const { user } = storeToRefs(userStore);
-const { data: wallets, pending, refresh, error } = await useLazyFetch("/r/wallet/web3accounts");
+const { data: wallets, pending, refresh, error } = await useLazyFetch(`/r/wallet/${currentWallet.value}/web3accounts`);
 
 function addWallet() {
     modalStore.openModal({
@@ -96,7 +99,7 @@ function connectWallet(walletId) {
 
 async function disconnectWallet(walletId) {
     console.log(`Disconnecting wallet: ${walletId}`);
-    await $fetch(`/r/wallet/web3accounts/disconnect`, {
+    await $fetch(`/r/wallet/${currentWallet.value}/web3accounts/disconnect`, {
         method: "POST",
         body: walletId,
     })
@@ -111,7 +114,7 @@ async function disconnectWallet(walletId) {
 
 async function unlinkWallet(walletId) {
     console.log(`Unlinking wallet: ${walletId}`);
-    await $fetch(`/r/wallet/web3accounts/unlink`, {
+    await $fetch(`/r/wallet/${currentWallet.value}/web3accounts/unlink`, {
         method: "POST",
         body: walletId,
     })

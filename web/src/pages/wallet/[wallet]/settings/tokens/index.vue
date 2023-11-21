@@ -127,10 +127,10 @@ const store = useModalStore();
 const selectedAccount = ref({});
 const selectedNetwork = ref({});
 // const pending = ref(false)
-const { data: accounts, pending: pendingAccounts } = await useLazyAsyncData(() => $fetch("/r/wallet/web3accounts"));
+const { data: accounts, pending: pendingAccounts } = await useLazyAsyncData(() => $fetch(`/r/wallet/${currentWallet.value}/web3accounts`));
 const { data: nftList, pending: pendingTokens } = await useLazyAsyncData(
     () =>
-        $fetch(`/r/wallet/nft/filter`, {
+        $fetch(`/r/wallet/${currentWallet.value}/nft/filter`, {
             params: {
                 accountId: selectedAccount.value.id,
                 network: selectedNetwork.value.network,
@@ -140,11 +140,14 @@ const { data: nftList, pending: pendingTokens } = await useLazyAsyncData(
         watch: [selectedAccount, selectedNetwork],
     },
 );
+
+const currentWallet = useCurrentWallet()
+
 const { data: networkList, pending: pendingNetworks } = await useLazyAsyncData(
     () =>
         new Promise((resolve) => {
             selectedNetwork.value = {};
-            resolve($fetch(`/r/wallet/nft/chains/${selectedAccount.value.ecosystem}`));
+            resolve($fetch(`/r/wallet/${currentWallet.value}/nft/chains/${selectedAccount.value.ecosystem}`));
         }),
     {
         watch: [selectedAccount],

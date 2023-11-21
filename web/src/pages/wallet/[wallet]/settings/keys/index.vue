@@ -38,7 +38,7 @@
                 </div>
                 <div class="flex flex-none items-center gap-x-4">
                     <NuxtLink
-                        :to="'/settings/keys/' + key.keyId.id"
+                        :to="`/wallet/${currentWallet}/settings/keys/${key.keyId.id}`"
                         class="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block"
                     >
                         View key
@@ -59,7 +59,7 @@
                 </p>
 
                 <div class="pt-3 flex justify-end">
-                    <NuxtLink to="/settings/dids">
+                    <NuxtLink :to="`/wallet/${currentWallet}/settings/dids`">
                         <button class="mb-2 border rounded-xl p-2 bg-blue-500 text-white flex flex-row justify-center items-center">
                             <ArrowUturnLeftIcon class="h-5 pr-1" />
                             Return back
@@ -73,9 +73,11 @@
 
 <script lang="ts" setup>
 import CenterMain from "~/components/CenterMain.vue";
-import { InboxArrowDownIcon, KeyIcon } from "@heroicons/vue/24/outline";
+import { InboxArrowDownIcon, KeyIcon, CheckIcon, ArrowUturnLeftIcon } from "@heroicons/vue/24/outline";
 
-const keys = await useLazyFetch("/r/wallet/keys").data;
+const currentWallet = useCurrentWallet()
+
+const keys = await useLazyFetch(`/r/wallet/${currentWallet.value}/keys`).data;
 refreshNuxtData();
 
 function generateKey() {
