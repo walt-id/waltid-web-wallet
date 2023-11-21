@@ -124,8 +124,10 @@ class WalletKitWalletService(accountId: UUID, walletId: UUID) : WalletService(ac
 
     /* WalletCredentials */
 
-    override suspend fun listCredentials() = authenticatedJsonGet("/api/wallet/credentials/list")
-        .body<JsonObject>()["list"]!!.jsonArray.toList().map { Credential(it.jsonObject, it.toString()) }
+    override fun listCredentials() = runBlocking {
+        authenticatedJsonGet("/api/wallet/credentials/list")
+            .body<JsonObject>()["list"]!!.jsonArray.toList().map { Credential(it.jsonObject, it.toString()) }
+    }
 
     override suspend fun listRawCredentials(): List<String> {
         TODO("Not yet implemented")
@@ -326,7 +328,7 @@ class WalletKitWalletService(accountId: UUID, walletId: UUID) : WalletService(ac
 // TODO
 //fun infoAboutOfferRequest
 
-    override suspend fun getHistory(limit: Int, offset: Int): List<WalletOperationHistory> = transaction {
+    override fun getHistory(limit: Int, offset: Int): List<WalletOperationHistory> = transaction {
         WalletOperationHistories
             .select { WalletOperationHistories.account eq walletId.toJavaUUID() }
             .orderBy(WalletOperationHistories.timestamp)
