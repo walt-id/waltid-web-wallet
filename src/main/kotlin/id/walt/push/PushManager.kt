@@ -9,7 +9,7 @@ import nl.martijndwars.webpush.PushAsyncService
 
 object PushManager {
 
-    val pushConfig = ConfigManager.getConfig<PushConfig>()
+    val pushConfig by lazy { ConfigManager.getConfig<PushConfig>() }
 
     val pushService = PushAsyncService(
         pushConfig.pushPublicKey, pushConfig.pushPrivateKey.value, "mailto:dev@walt.id"
