@@ -17,6 +17,8 @@ import id.walt.oid4vc.providers.TokenTarget
 import id.walt.oid4vc.requests.AuthorizationRequest
 import id.walt.oid4vc.requests.TokenRequest
 import id.walt.service.SSIKit2WalletService
+import id.walt.service.SessionAttributes.HACK_outsideMappedSelectedCredentialsPerSession
+import id.walt.service.SessionAttributes.HACK_outsideMappedSelectedDisclosuresPerSession
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -105,9 +107,13 @@ class TestCredentialWallet(
 
     override fun generatePresentationForVPToken(session: VPresentationSession, tokenRequest: TokenRequest): PresentationResult {
         println("=== GENERATING PRESENTATION FOR VP TOKEN - Session: $session")
-        val selectedCredential = session.selectedCredentialIds.toList()
 
-       val matchedCredentials = walletService.getCredentialsByIds(selectedCredential)
+        val selectedCredentials =
+            HACK_outsideMappedSelectedCredentialsPerSession[session.authorizationRequest!!.state + session.authorizationRequest.presentationDefinition]!!
+        val selectedDisclosures =
+            HACK_outsideMappedSelectedDisclosuresPerSession[session.authorizationRequest!!.state + session.authorizationRequest.presentationDefinition]!!
+
+        val matchedCredentials = walletService.getCredentialsByIds(selectedCredentials)
 
         val vp = Json.encodeToString(
             mapOf(

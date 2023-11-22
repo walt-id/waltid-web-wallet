@@ -220,14 +220,14 @@
 
                     <div v-if="disclosures">
                         <hr class="my-5" />
-                        <div class="text-gray-500 mb-4 font-bold">Selectively disclosure-able attributes</div>
+                        <div class="text-gray-500 mb-4 font-bold">Selectively disclosable attributes</div>
                         <ul v-if="disclosures.length > 0">
                             <li class="md:flex text-gray-500 mb-3 md:mb-1" v-for="disclosure in disclosures">
                                 <div class="min-w-[19vw]">Attribute "{{ disclosure[1] }}"</div>
                                 <div class="font-bold">{{ disclosure[2] }}</div>
                             </li>
                         </ul>
-                        <div v-else>No disclosure-able attributes!</div>
+                        <div v-else>No disclosable attributes!</div>
                     </div>
 
                     <hr class="mt-5 mb-3" />

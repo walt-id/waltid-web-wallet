@@ -60,33 +60,68 @@
                     >
                         <div class="mr-3 pt-2 flex h-6 items-center">
                             <input :id="`credential-${credential.id}`" v-model="selection[credential.id]"
-                                   :name="`credential-${credential.id}`" class="h-6 w-6 rounded border-gray-300 text-primary-400 focus:ring-primary-400"
+                                   :name="`credential-${credential.id}`"
+                                   class="h-6 w-6 rounded border-gray-300 text-primary-400 focus:ring-primary-400"
                                    type="checkbox"
                             />
                         </div>
 
                         <div class="min-w-0 flex-1 text-sm leading-6">
-                            <label :for="`credential-${credential.id}`" class="select-none font-medium text-gray-900">
+                            <div class="font-medium select-none text-gray-900">
+                                <label :for="`credential-${credential.id}`">
 
-                                <!--                                <div class="flex items-center gap-1">-->
-                                <!--                                <CredentialIcon :credentialType="credential.parsedDocument.type.at(-1)" class="h-6 w-6 flex-none rounded-full bg-gray-50"></CredentialIcon>-->
-                                <!--                                {{ credential.parsedDocument.type.at(-1) }}-->
-                                <!--                                </div>-->
+                                    <!--                                <div class="flex items-center gap-1">-->
+                                    <!--                                <CredentialIcon :credentialType="credential.parsedDocument.type.at(-1)" class="h-6 w-6 flex-none rounded-full bg-gray-50"></CredentialIcon>-->
+                                    <!--                                {{ credential.parsedDocument.type.at(-1) }}-->
+                                    <!--                                </div>-->
 
-                                <!--                                <div class="min-w-0 items-center">-->
-                                <!--                                    <p class="text-lg font-semibold leading-6 text-gray-900">{{ credential?.parsedDocument?.name }}</p>-->
-                                <!--                                    <p class="ml-1 truncate text-sm leading-5 text-gray-800">{{ credential.id }}</p>-->
-                                <!--                                </div>-->
+                                    <!--                                <div class="min-w-0 items-center">-->
+                                    <!--                                    <p class="text-lg font-semibold leading-6 text-gray-900">{{ credential?.parsedDocument?.name }}</p>-->
+                                    <!--                                    <p class="ml-1 truncate text-sm leading-5 text-gray-800">{{ credential.id }}</p>-->
+                                    <!--                                </div>-->
 
-                                <VerifiableCredentialCard
-                                    :class="[selection[credential.id] == true ? 'shadow-xl shadow-primary-400' : 'shadow-2xl']"
-                                    :credential="credential.parsedDocument"
-                                    :show-id="true"
-                                />
+                                    <VerifiableCredentialCard
+                                        :class="[selection[credential.id] == true ? 'shadow-xl shadow-primary-400' : 'shadow-2xl']"
+                                        :credential="credential.parsedDocument"
+                                        :show-id="true"
+                                    />
 
-                                <div v-if="credential.disclosures">Debug: SD Disclosures = {{ parseDisclosures(credential.disclosures) }}</div>
+                                </label>
+                            </div>
+                            <div v-if="credential.disclosures" class="mt-3">
+                                <fieldset>
+                                    <legend class="text-base font-semibold leading-6 text-gray-900">Selectively disclosable attributes
+                                    </legend>
+                                    <div class="mt-1 divide-y divide-gray-200 border-b border-t border-gray-200">
+                                        <div v-for="(disclosure, disclosureIdx) in parseDisclosures(credential.disclosures)"
+                                             :key="disclosureIdx" class="relative flex items-start py-1"
+                                        >
+                                            <div class="min-w-0 flex-1 text-sm leading-6">
+                                                <label :for="`disclosure-${credential.id}-${disclosure[0]}`"
+                                                       class="select-none font-medium text-gray-900"
+                                                >
+                                                    <div class="md:flex text-gray-500 mb-3 md:mb-1">
+                                                        <div class="min-w-[19vw]">{{ disclosureIdx + 1 }}. <span class="font-semibold">{{ disclosure[1] }}</span></div>
+                                                        <div class="grow-0">
+                                                            {{ disclosure[2] }}
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            <div class="ml-3 flex h-6 items-center">
+                                                <input :id="`disclosure-${credential.id}-${disclosure[0]}`"
+                                                       :name="`disclosure-${disclosure[0]}`"
+                                                       class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                                       type="checkbox"
+                                                       @click="$event.target.checked ? addDisclosure(credential.id, disclosure) : removeDisclosure(credential.id, disclosure) "
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
 
-                            </label>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -206,6 +241,20 @@ const selectedCredentialIds = computed(() => {
 
     return _selectedCredentialIds;
 });
+
+const disclosures = ref({});
+
+function addDisclosure(credentialId: string, disclosure: string) {
+    if (disclosures.value[credentialId] === undefined) {
+        disclosures.value[credentialId] = []
+    }
+
+    disclosures.value[credentialId].push(disclosure)
+}
+
+function removeDisclosure(credentialId: string, disclosure: string) {
+    disclosures.value[credentialId] = disclosures.value[credentialId].filter((elem) => elem[0] != disclosure[0])
+}
 
 async function acceptPresentation() {
     const req = {

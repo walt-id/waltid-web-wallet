@@ -178,10 +178,12 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
     ) : IllegalArgumentException(message)
 
 
+
+
     /**
      * @return redirect uri
      */
-    override suspend fun usePresentationRequest(request: String, did: String, selectedCredentialIds: List<String>): Result<String?> {
+    override suspend fun usePresentationRequest(request: String, did: String, selectedCredentialIds: List<String>, disclosures: Map<String, List<String>>): Result<String?> {
         val credentialWallet = getCredentialWallet(did)
 
         val authReq = AuthorizationRequest.fromHttpQueryString(Url(request).encodedQuery)
@@ -189,7 +191,11 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
 
         println("USING PRESENTATION REQUEST, SELECTED CREDENTIALS: $selectedCredentialIds")
 
+        SessionAttributes.HACK_outsideMappedSelectedCredentialsPerSession[authReq.state + authReq.presentationDefinition] = selectedCredentialIds
+        SessionAttributes.HACK_outsideMappedSelectedDisclosuresPerSession[authReq.state + authReq.presentationDefinition] = disclosures
+
         val presentationSession = credentialWallet.initializeAuthorization(authReq, 60.seconds, selectedCredentialIds.toSet())
+        println("Initialized authorization (VPPresentationSession): $presentationSession")
 
         println("Resolved presentation definition: ${presentationSession.authorizationRequest!!.presentationDefinition!!.toJSONString()}")
 

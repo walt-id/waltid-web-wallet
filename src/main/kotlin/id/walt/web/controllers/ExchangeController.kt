@@ -108,7 +108,7 @@ fun Application.exchange() = walletRoute {
             // TODO -> ?: auto matching
 
 
-            val result = wallet.usePresentationRequest(request, did, selectedCredentialIds)
+            val result = wallet.usePresentationRequest(request, did, selectedCredentialIds, emptyMap()) // TODO add disclosures here
 
             if (result.isSuccess) {
                 wallet.addOperationHistory(
