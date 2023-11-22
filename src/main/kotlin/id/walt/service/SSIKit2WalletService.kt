@@ -328,12 +328,14 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
         val addableCredentials: List<WalletCredential> = credentialResponses.map { credentialResp ->
             val credential = credentialResp.credential!!.jsonPrimitive.content
 
-            val credentialJwt = credential.decodeJws()
+            val credentialJwt = credential.decodeJws(withSignature = true)
 
             when (val typ = credentialJwt.header["typ"]?.jsonPrimitive?.content?.lowercase()) {
                 "jwt" -> {
                     val credentialId = credentialJwt.payload["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
                         ?: randomUUID()
+
+                    println("Got JWT credential: $credentialJwt")
 
                     WalletCredential(
                         wallet = walletId,
@@ -348,7 +350,11 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
                     val credentialId = credentialJwt.payload["id"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
                         ?: randomUUID()
 
+                    println("Got SD-JWT credential: $credentialJwt")
+
                     val disclosures = credentialJwt.signature.split("~").drop(1)
+                    println("Disclosures (${disclosures.size}): $disclosures")
+
                     val disclosuresString = disclosures.joinToString("~")
 
                     WalletCredential(
