@@ -189,8 +189,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
 
         println("USING PRESENTATION REQUEST, SELECTED CREDENTIALS: $selectedCredentialIds")
 
-        val presentationSession = credentialWallet.initializeAuthorization(authReq, 60.seconds)
-            .copy(selectedCredentialIds = selectedCredentialIds.toSet())
+        val presentationSession = credentialWallet.initializeAuthorization(authReq, 60.seconds, selectedCredentialIds.toSet())
 
         println("Resolved presentation definition: ${presentationSession.authorizationRequest!!.presentationDefinition!!.toJSONString()}")
 

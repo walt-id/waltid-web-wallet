@@ -32,6 +32,7 @@ import kotlinx.uuid.UUID
 import kotlinx.uuid.generateUUID
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 const val WALLET_PORT = 8001
@@ -244,5 +245,15 @@ class TestCredentialWallet(
 
     fun parsePresentationRequest(request: String): AuthorizationRequest {
         return resolveVPAuthorizationParameters(AuthorizationRequest.fromHttpQueryString(Url(request).encodedQuery))
+    }
+
+    fun initializeAuthorization(
+        authorizationRequest: AuthorizationRequest,
+        expiresIn: Duration,
+        selectedCredentials: Set<String>
+    ): VPresentationSession {
+        return super.initializeAuthorization(authorizationRequest, expiresIn).copy(selectedCredentialIds = selectedCredentials).also {
+            putSession(it.id, it)
+        }
     }
 }
