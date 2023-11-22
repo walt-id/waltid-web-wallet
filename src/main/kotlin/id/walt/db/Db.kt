@@ -3,6 +3,7 @@ package id.walt.db
 import id.walt.config.ConfigManager
 import id.walt.config.DatasourceConfiguration
 import id.walt.db.models.*
+import id.walt.db.models.todo.Issuers
 import id.walt.service.account.AccountsService
 import id.walt.web.model.EmailAccountRequest
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -49,6 +50,7 @@ object Db {
             addLogger(StdOutSqlLogger)
 
             SchemaUtils.drop(
+                Issuers,
                 WalletOperationHistories,
                 WalletDids,
                 WalletKeys,
@@ -68,7 +70,8 @@ object Db {
                 WalletCredentials,
                 WalletKeys,
                 WalletDids,
-                WalletOperationHistories
+                WalletOperationHistories,
+                Issuers
             )
 
             runBlocking {
