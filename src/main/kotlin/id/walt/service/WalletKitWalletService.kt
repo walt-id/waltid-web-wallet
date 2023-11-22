@@ -2,10 +2,7 @@ package id.walt.service
 
 import id.walt.config.ConfigManager
 import id.walt.config.RemoteWalletConfig
-import id.walt.db.models.Accounts
-import id.walt.db.models.WalletDid
-import id.walt.db.models.WalletOperationHistories
-import id.walt.db.models.WalletOperationHistory
+import id.walt.db.models.*
 import id.walt.service.dids.DidsService
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
@@ -23,6 +20,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -138,9 +136,15 @@ class WalletKitWalletService(accountId: UUID, walletId: UUID) : WalletService(ac
     override suspend fun deleteCredential(id: String) =
         authenticatedJsonDelete("/api/wallet/credentials/delete/$id").status.isSuccess()
 
-    override suspend fun getCredential(credentialId: String): String =
-        /*prettyJson.encodeToString(*/
-        listCredentials().first { it.parsedCredential["id"]?.jsonPrimitive?.content == credentialId }.toString()//)
+    override suspend fun getCredential(credentialId: String) = WalletCredential(
+        wallet = walletId,
+        id = credentialId,
+        document = listCredentials().first { it.parsedCredential["id"]?.jsonPrimitive?.content == credentialId }.toString(),
+        disclosures = null,
+        addedOn = Instant.DISTANT_PAST
+    )
+    /*prettyJson.encodeToString(*/
+    //)
     /* override suspend fun getCredential(credentialId: String): String =
          authenticatedJsonGet("/api/wallet/credentials/$credentialId")
              .bodyAsText()*/

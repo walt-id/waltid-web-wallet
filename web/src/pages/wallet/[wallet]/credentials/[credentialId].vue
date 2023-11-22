@@ -4,27 +4,30 @@
         <LoadingIndicator v-if="pending">Loading credential...</LoadingIndicator>
         <div v-else>
             <div class="flex justify-center items-center my-10">
-                <div class="bg-white p-6 rounded-2xl shadow-2xl h-full w-[350px]">
-                    <div class="flex justify-end">
-                        <div
-                            :class="jwtJson?.expirationDate ? (new Date(jwtJson?.expirationDate).getTime() > new Date().getTime() ? 'bg-cyan-50' : 'bg-red-50') : 'bg-cyan-50'"
-                            class="rounded-lg px-3 mb-2"
-                        >
-                            <div :class="jwtJson?.expirationDate ? (new Date(jwtJson?.expirationDate).getTime() > new Date().getTime() ? 'text-cyan-900' : 'text-orange-900') : 'text-cyan-900'">
-                                {{ jwtJson?.expirationDate ? (new Date(jwtJson?.expirationDate).getTime() > new Date().getTime() ? "Valid" : "Expired") : "Valid" }}
-                            </div>
-                        </div>
-                    </div>
-                    <h2 class="text-2xl font-bold mb-2 text-gray-900 bold mb-8">
-                        {{ jwtJson?.type[jwtJson?.type.length - 1].replace(/([a-z0-9])([A-Z])/g, "$1 $2") }}
-                    </h2>
-                    <div v-if="jwtJson?.issuer" class="flex items-center">
-                        <img :src="jwtJson?.issuer?.image?.id ? jwtJson?.issuer?.image?.id : jwtJson?.issuer?.image" class="w-12" />
-                        <div class="text-natural-600 ml-2 w-32">
-                            {{ jwtJson?.issuer?.name }}
-                        </div>
-                    </div>
-                </div>
+                <!--                <div class="bg-white p-6 rounded-2xl shadow-2xl h-full w-[350px]">
+                                    <div class="flex justify-end">
+                                        <div
+                                            :class="jwtJson?.expirationDate ? (new Date(jwtJson?.expirationDate).getTime() > new Date().getTime() ? 'bg-cyan-50' : 'bg-red-50') : 'bg-cyan-50'"
+                                            class="rounded-lg px-3 mb-2"
+                                        >
+                                            <div
+                                                :class="jwtJson?.expirationDate ? (new Date(jwtJson?.expirationDate).getTime() > new Date().getTime() ? 'text-cyan-900' : 'text-orange-900') : 'text-cyan-900'"
+                                            >
+                                                {{ jwtJson?.expirationDate ? (new Date(jwtJson?.expirationDate).getTime() > new Date().getTime() ? "Valid" : "Expired") : "Valid" }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <h2 class="text-2xl font-bold mb-2 text-gray-900 bold mb-8">
+                                        {{ jwtJson?.type[jwtJson?.type.length - 1].replace(/([a-z0-9])([A-Z])/g, "$1 $2") }}
+                                    </h2>
+                                    <div v-if="jwtJson?.issuer" class="flex items-center">
+                                        <img :src="jwtJson?.issuer?.image?.id ? jwtJson?.issuer?.image?.id : jwtJson?.issuer?.image" class="w-12" />
+                                        <div class="text-natural-600 ml-2 w-32">
+                                            {{ jwtJson?.issuer?.name }}
+                                        </div>
+                                    </div>
+                                </div>-->
+                <VerifiableCredentialCard :credential="jwtJson" />
             </div>
             <div class="px-7 py-1">
                 <div class="text-gray-600 font-bold">
@@ -214,6 +217,19 @@
                             {{ jwtJson?.issuer?.id ?? jwtJson?.issuer }}
                         </div>
                     </div>
+
+                    <div v-if="disclosures">
+                        <hr class="my-5" />
+                        <div class="text-gray-500 mb-4 font-bold">Selectively disclosure-able attributes</div>
+                        <ul v-if="disclosures.length > 0">
+                            <li class="md:flex text-gray-500 mb-3 md:mb-1" v-for="disclosure in disclosures">
+                                <div class="min-w-[19vw]">Attribute "{{ disclosure[1] }}"</div>
+                                <div class="font-bold">{{ disclosure[2] }}</div>
+                            </li>
+                        </ul>
+                        <div v-else>No disclosure-able attributes!</div>
+                    </div>
+
                     <hr class="mt-5 mb-3" />
                     <div class="text-gray-600 flex justify-between">
                         <div>
@@ -266,36 +282,37 @@
                     </div>-->
                 <div class="shadow p-3 mt-2 font-mono overflow-scroll">
                     <h3 class="font-semibold mb-2">JWT</h3>
-                    <pre v-if="credential && credential.length">{{
-                        /*JSON.stringify(JSON.parse(*/
-                        credential /*), null, 2)*/ ?? ""
-                    }}</pre>
+                    <pre v-if="credential && credential?.document">{{
+                            /*JSON.stringify(JSON.parse(*/
+                            credential.document /*), null, 2)*/ ?? ""
+                        }}</pre>
                 </div>
                 <div class="shadow p-3 mt-2 font-mono overflow-scroll">
                     <h3 class="font-semibold mb-2">JSON</h3>
-                    <pre v-if="credential && credential.length">{{ jwtJson }} </pre>
+                    <pre v-if="credential && credential?.document">{{ jwtJson }} </pre>
                 </div>
             </div>
         </div>
     </CenterMain>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import CenterMain from "~/components/CenterMain.vue";
 import BackButton from "~/components/buttons/BackButton.vue";
 import { ref } from "vue";
 import { decodeBase64ToUtf8 } from "~/composables/base64";
+import VerifiableCredentialCard from "~/components/credentials/VerifiableCredentialCard.vue";
 
 const route = useRoute();
-const credentialId = route.params.credentialId;
-const currentWallet = useCurrentWallet()
+const credentialId = route.params.credentialId as string;
+const currentWallet = useCurrentWallet();
 
 let showCredentialJson = ref(false);
 
 const jwtJson = computed(() => {
     if (credential.value) {
-        const vcData = credential.value.split(".")[1];
+        const vcData = credential.value.document.split(".")[1];
         console.log("Credential is: ", vcData);
 
         const vcBase64 = vcData.replaceAll("-", "+").replaceAll("_", "/");
@@ -308,17 +325,36 @@ const jwtJson = computed(() => {
 
         if (parsed.vc) return parsed.vc;
         else return parsed;
-    } else return "";
+    } else return null;
 });
 
-const { data: credential, pending, refresh, error } = await useLazyFetch(`/r/wallet/${currentWallet.value}/credentials/${encodeURIComponent(credentialId)}`);
+const disclosures = computed(() => {
+    if (credential.value && credential.value.disclosures) {
+        try {
+            return credential.value.disclosures.split("~").map((elem) => JSON.parse(decodeBase64ToUtf8(elem)));
+        } catch (e) {
+            console.error(e);
+            return [];
+        }
+    } else return null;
+});
+
+type WalletCredential = {
+    wallet: string,
+    id: string,
+    document: string,
+    disclosures: string | null,
+    addedOn: string,
+}
+
+const { data: credential, pending, refresh, error } = await useLazyFetch<WalletCredential>(`/r/wallet/${currentWallet.value}/credentials/${encodeURIComponent(credentialId)}`);
 refreshNuxtData();
 
 useHead({ title: "View credential - walt.id" });
 
 async function deleteCredential() {
     await $fetch(`/r/wallet/${currentWallet.value}/credentials/${encodeURIComponent(credentialId)}`, {
-        method: "DELETE",
+        method: "DELETE"
     });
     await navigateTo({ path: "/" });
 }

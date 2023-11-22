@@ -1,5 +1,6 @@
 package id.walt.service
 
+import id.walt.db.models.WalletCredential
 import id.walt.db.models.WalletDid
 import id.walt.db.models.WalletOperationHistory
 import id.walt.service.dto.LinkedWalletDataTransferObject
@@ -15,7 +16,7 @@ abstract class WalletService(val accountId: UUID, val walletId: UUID) {
     abstract fun listCredentials(): List<Credential>
     abstract suspend fun listRawCredentials(): List<String>
     abstract suspend fun deleteCredential(id: String): Boolean
-    abstract suspend fun getCredential(credentialId: String): String
+    abstract suspend fun getCredential(credentialId: String): WalletCredential
 
     // SIOP
     abstract suspend fun usePresentationRequest(request: String, did: String): Result<String?>

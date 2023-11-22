@@ -1,5 +1,6 @@
 package id.walt.web.controllers
 
+import id.walt.db.models.WalletCredential
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -45,7 +46,7 @@ fun Application.credentials() = walletRoute {
                 summary = "View a credential"
                 response {
                     HttpStatusCode.OK to {
-                        body<String> {
+                        body<WalletCredential> {
                             description =
                                 "WalletCredential in JWT (String starting with 'ey' or JSON_LD (JSON with proof) format"
                         }

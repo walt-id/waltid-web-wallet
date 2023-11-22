@@ -38,34 +38,7 @@
                         class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white shadow w-[96%] transform hover:scale-105 cursor-pointer duration-200"
                     >
                         <NuxtLink :to="`/wallet/${walletId}/credentials/` + encodeURIComponent(credential.id)">
-                            <div class="bg-white p-6 rounded-2xl shadow-2xl h-full">
-                                <div class="flex justify-end">
-                                    <div
-                                        :class="credential.expirationDate ? (new Date(credential.expirationDate).getTime() > new Date().getTime() ? 'bg-cyan-50' : 'bg-red-50') : 'bg-cyan-50'"
-                                        class="rounded-lg px-3 mb-2"
-                                    >
-                                        <span
-                                            :class="
-                                                credential.expirationDate
-                                                    ? new Date(credential.expirationDate).getTime() > new Date().getTime()
-                                                        ? 'text-cyan-900'
-                                                        : 'text-orange-900'
-                                                    : 'text-cyan-900'
-                                            "
-                                            >{{ credential.expirationDate ? (new Date(credential.expirationDate).getTime() > new Date().getTime() ? "Valid" : "Expired") : "Valid" }}</span
-                                        >
-                                    </div>
-                                </div>
-                                <h2 class="text-2xl font-bold mb-2 text-gray-900 bold mb-8">
-                                    {{ credential.type[credential.type.length - 1].replace(/([a-z0-9])([A-Z])/g, "$1 $2") }}
-                                </h2>
-                                <div v-if="credential.issuer" class="flex items-center">
-                                    <img :src="credential.issuer?.image?.id ? credential.issuer?.image?.id : credential.issuer?.image" class="w-12" />
-                                    <div class="text-natural-600 ml-2 w-32">
-                                        {{ credential.issuer?.name }}
-                                    </div>
-                                </div>
-                            </div>
+                            <VerifiableCredentialCard :credential="credential"/>
                         </NuxtLink>
                     </li>
                 </ul>
@@ -79,6 +52,7 @@ import { PlusIcon } from "@heroicons/vue/24/outline";
 import WalletPageHeader from "~/components/WalletPageHeader.vue";
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import CenterMain from "~/components/CenterMain.vue";
+import VerifiableCredentialCard from "~/components/credentials/VerifiableCredentialCard.vue";
 
 const config = useRuntimeConfig();
 
