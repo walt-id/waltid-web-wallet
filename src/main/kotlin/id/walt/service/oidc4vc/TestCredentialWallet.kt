@@ -111,11 +111,24 @@ class TestCredentialWallet(
         val selectedCredentials =
             HACK_outsideMappedSelectedCredentialsPerSession[session.authorizationRequest!!.state + session.authorizationRequest.presentationDefinition]!!
         val selectedDisclosures =
-            HACK_outsideMappedSelectedDisclosuresPerSession[session.authorizationRequest!!.state + session.authorizationRequest.presentationDefinition]!!
+            HACK_outsideMappedSelectedDisclosuresPerSession[session.authorizationRequest!!.state + session.authorizationRequest.presentationDefinition]
 
         println("Selected credentials: $selectedCredentials")
         val matchedCredentials = walletService.getCredentialsByIds(selectedCredentials)
         println("Matched credentials: $matchedCredentials")
+
+        println("Using disclosures: $selectedDisclosures")
+
+        val credentialsPresented = matchedCredentials.map {
+            if (selectedDisclosures?.containsKey(it.id) == true) {
+                it.document + "~${selectedDisclosures[it.id]!!.joinToString("~") }"
+            } else {
+                it.document
+            }
+        }
+
+        println("Credentials presented: $credentialsPresented")
+
 
         val vp = Json.encodeToString(
             mapOf(
@@ -130,7 +143,7 @@ class TestCredentialWallet(
                     "type" to listOf("VerifiablePresentation"),
                     "id" to "urn:uuid:${UUID.generateUUID().toString().lowercase()}",
                     "holder" to this.did,
-                    "verifiableCredential" to matchedCredentials.map { it.document }
+                    "verifiableCredential" to credentialsPresented
                 )
             ).toJsonElement()
         )

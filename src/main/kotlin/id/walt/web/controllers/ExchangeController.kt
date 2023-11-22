@@ -106,9 +106,10 @@ fun Application.exchange() = walletRoute {
                 ?: throw IllegalArgumentException("No DID to use supplied")
             val selectedCredentialIds = req.selectedCredentials
             // TODO -> ?: auto matching
+            val disclosures = req.disclosures
 
 
-            val result = wallet.usePresentationRequest(request, did, selectedCredentialIds, emptyMap()) // TODO add disclosures here
+            val result = wallet.usePresentationRequest(request, did, selectedCredentialIds, disclosures) // TODO add disclosures here
 
             if (result.isSuccess) {
                 wallet.addOperationHistory(

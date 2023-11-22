@@ -22,7 +22,7 @@ abstract class WalletService(val accountId: UUID, val walletId: UUID) {
     abstract fun matchCredentialsByPresentationDefinition(presentationDefinition: PresentationDefinition): List<WalletCredential>
 
     // SIOP
-    abstract suspend fun usePresentationRequest(request: String, did: String, selectedCredentialIds: List<String>, disclosures: Map<String, List<String>>): Result<String?>
+    abstract suspend fun usePresentationRequest(request: String, did: String, selectedCredentialIds: List<String>, disclosures: Map<String, List<String>>?): Result<String?>
     abstract suspend fun resolvePresentationRequest(request: String): String
     abstract suspend fun useOfferRequest(offer: String, did: String)
 
