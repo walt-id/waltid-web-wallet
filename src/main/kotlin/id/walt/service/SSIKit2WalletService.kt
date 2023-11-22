@@ -193,7 +193,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
 
         println("Resolved presentation definition: ${presentationSession.authorizationRequest!!.presentationDefinition!!.toJSONString()}")
 
-        val tokenResponse = credentialWallet.processTokenRequest(TokenRequest(GrantType.implicit, clientId = presentationSession.authorizationRequest.clientId))
+        val tokenResponse = credentialWallet.processImplicitFlowAuthorization(presentationSession.authorizationRequest!!)
         val resp = ktorClient.submitForm(presentationSession.authorizationRequest!!.responseUri!!,
             parameters {
                 tokenResponse.toHttpParameters().forEach { entry ->
