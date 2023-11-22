@@ -303,6 +303,7 @@ import BackButton from "~/components/buttons/BackButton.vue";
 import { ref } from "vue";
 import { decodeBase64ToUtf8 } from "~/composables/base64";
 import VerifiableCredentialCard from "~/components/credentials/VerifiableCredentialCard.vue";
+import { parseDisclosures } from "~/composables/disclosures";
 
 const route = useRoute();
 const credentialId = route.params.credentialId as string;
@@ -330,12 +331,7 @@ const jwtJson = computed(() => {
 
 const disclosures = computed(() => {
     if (credential.value && credential.value.disclosures) {
-        try {
-            return credential.value.disclosures.split("~").map((elem) => JSON.parse(decodeBase64ToUtf8(elem)));
-        } catch (e) {
-            console.error(e);
-            return [];
-        }
+        return parseDisclosures(credential.value.disclosures)
     } else return null;
 });
 

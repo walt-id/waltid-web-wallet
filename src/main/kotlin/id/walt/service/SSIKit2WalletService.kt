@@ -191,6 +191,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
 
         val presentationSession = credentialWallet.initializeAuthorization(authReq, 60.seconds)
             .copy(selectedCredentialIds = selectedCredentialIds.toSet())
+
         println("Resolved presentation definition: ${presentationSession.authorizationRequest!!.presentationDefinition!!.toJSONString()}")
 
         val tokenResponse = credentialWallet.processImplicitFlowAuthorization(presentationSession.authorizationRequest!!)

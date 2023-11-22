@@ -84,6 +84,8 @@
                                     :show-id="true"
                                 />
 
+                                <div v-if="credential.disclosures">Debug: SD Disclosures = {{ parseDisclosures(credential.disclosures) }}</div>
+
                             </label>
                         </div>
                     </div>
@@ -138,6 +140,7 @@ import { useTitle } from "@vueuse/core";
 import VerifiableCredentialCard from "~/components/credentials/VerifiableCredentialCard.vue";
 
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
+import { parseDisclosures } from "../../../../composables/disclosures";
 
 
 const currentWallet = useCurrentWallet();
