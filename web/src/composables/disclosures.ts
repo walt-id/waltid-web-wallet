@@ -10,5 +10,5 @@ export function parseDisclosures(disclosureString: string) {
 }
 
 export function encodeDisclosure(disclosure: any[]): string {
-    return encodeUtf8ToBase64(JSON.stringify(disclosure))
+    return encodeUtf8ToBase64(JSON.stringify(disclosure)).replaceAll("=", "")
 }

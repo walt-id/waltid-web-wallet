@@ -391,10 +391,12 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
 
                     val disclosuresString = disclosures.joinToString("~")
 
+                    val credentialWithoutDisclosures = credential.substringBefore("~")
+
                     WalletCredential(
                         wallet = walletId,
                         id = credentialId,
-                        document = credential,
+                        document = credentialWithoutDisclosures,
                         disclosures = disclosuresString,
                         addedOn = Clock.System.now()
                     )

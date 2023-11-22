@@ -69,17 +69,6 @@
                         <div class="min-w-0 flex-1 text-sm leading-6">
                             <div class="font-medium select-none text-gray-900">
                                 <label :for="`credential-${credential.id}`">
-
-                                    <!--                                <div class="flex items-center gap-1">-->
-                                    <!--                                <CredentialIcon :credentialType="credential.parsedDocument.type.at(-1)" class="h-6 w-6 flex-none rounded-full bg-gray-50"></CredentialIcon>-->
-                                    <!--                                {{ credential.parsedDocument.type.at(-1) }}-->
-                                    <!--                                </div>-->
-
-                                    <!--                                <div class="min-w-0 items-center">-->
-                                    <!--                                    <p class="text-lg font-semibold leading-6 text-gray-900">{{ credential?.parsedDocument?.name }}</p>-->
-                                    <!--                                    <p class="ml-1 truncate text-sm leading-5 text-gray-800">{{ credential.id }}</p>-->
-                                    <!--                                </div>-->
-
                                     <VerifiableCredentialCard
                                         :class="[selection[credential.id] == true ? 'shadow-xl shadow-primary-400' : 'shadow-2xl']"
                                         :credential="credential.parsedDocument"
@@ -88,7 +77,7 @@
 
                                 </label>
                             </div>
-                            <div v-if="credential.disclosures" class="mt-3">
+                            <div v-if="credential.disclosures && selection[credential.id]" class="mt-6 border rounded-xl p-2">
                                 <fieldset>
                                     <legend class="text-base font-semibold leading-6 text-gray-900">Selectively disclosable attributes
                                     </legend>
@@ -111,7 +100,7 @@
                                             <div class="ml-3 flex h-6 items-center">
                                                 <input :id="`disclosure-${credential.id}-${disclosure[0]}`"
                                                        :name="`disclosure-${disclosure[0]}`"
-                                                       class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                                       class="h-4 w-4 rounded border-gray-300 text-primary-400 focus:ring-primary-500"
                                                        type="checkbox"
                                                        @click="$event.target.checked ? addDisclosure(credential.id, disclosure) : removeDisclosure(credential.id, disclosure) "
                                                 />
@@ -127,7 +116,6 @@
                 </div>
             </fieldset>
 
-
             <Disclosure>
                 <DisclosureButton class="py-2">
                     <ButtonsWaltButton class="bg-gray-50 text-black">View presentation definition JSON</ButtonsWaltButton>
@@ -137,30 +125,6 @@
                 </DisclosurePanel>
             </Disclosure>
 
-            <!--
-                        <ul>
-                            <li v-for="credential of matchedCredentials">
-                                - {{ credential }}
-                            </li>
-                        </ul>
-
-                        <div aria-label="Credential list" class="h-full overflow-y-auto shadow-xl">
-                            <div v-for="group in groupedCredentialTypes.keys()" :key="group.id" class="relative">
-                                <div class="sticky top-0 z-10 border-y border-b-gray-200 border-t-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-900">
-                                    <h3>{{ group }}s:</h3>
-                                </div>
-                                <ul class="divide-y divide-gray-100" role="list">
-                                    <li v-for="credential in groupedCredentialTypes.get(group)" :key="credential" class="flex gap-x-4 px-3 py-5">
-                                        <CredentialIcon :credentialType="credential.name" class="h-6 w-6 flex-none rounded-full bg-gray-50"></CredentialIcon>
-
-                                        <div class="min-w-0 flex flex-row items-center">
-                                            <span class="text-lg font-semibold leading-6 text-gray-900">{{ credential.id }}.</span>
-                                            <span class="ml-1 truncate text-sm leading-5 text-gray-800">{{ credential.name }}</span>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>-->
         </CenterMain>
     </div>
 </template>
@@ -175,7 +139,7 @@ import { useTitle } from "@vueuse/core";
 import VerifiableCredentialCard from "~/components/credentials/VerifiableCredentialCard.vue";
 
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
-import { parseDisclosures } from "../../../../composables/disclosures";
+import { encodeDisclosure, parseDisclosures } from "../../../../composables/disclosures";
 
 
 const currentWallet = useCurrentWallet();
@@ -231,18 +195,27 @@ const matchedCredentials = await $fetch(`/r/wallet/${currentWallet.value}/exchan
 });
 
 const selection = ref({});
-const selectedCredentialIds = computed(() => {
-    const _selectedCredentialIds = [];
-
-    for (let credentialId in selection.value) {
-        if (selection.value[credentialId] === true)
-            _selectedCredentialIds.push(credentialId);
-    }
-
-    return _selectedCredentialIds;
-});
+const selectedCredentialIds = computed(() => Object.entries(selection.value).filter((it) => it[1]).map((it) => it[0]))
 
 const disclosures = ref({});
+//const encodedDisclosures = computed(() => Object.keys(disclosures.value).map((cred) => disclosures.values[cred].map((disclosure) => encodeDisclosure(disclosure))))
+const encodedDisclosures = computed(() => {
+    if (JSON.stringify(disclosures.value) === "{}") return null
+
+    const m = {}
+    for (let credId in disclosures.value) {
+        if (m[credId] === undefined) {
+            m[credId] = []
+        }
+
+        for (let disclosure of disclosures.value[credId]) {
+            console.log("DISC ", disclosure)
+            m[credId].push(encodeDisclosure(disclosure))
+        }
+    }
+
+    return m
+})
 
 function addDisclosure(credentialId: string, disclosure: string) {
     if (disclosures.value[credentialId] === undefined) {
@@ -258,9 +231,10 @@ function removeDisclosure(credentialId: string, disclosure: string) {
 
 async function acceptPresentation() {
     const req = {
-        //did: String,
+        //did: String, // todo: choose DID of shared credential
+        presentationRequest: request,
         selectedCredentials: selectedCredentialIds.value,
-        presentationRequest: request
+        disclosures: encodedDisclosures.value
     };
 
     const response = await fetch(`/r/wallet/${currentWallet.value}/exchange/usePresentationRequest`, {
@@ -292,7 +266,7 @@ async function acceptPresentation() {
         failMessage.value = error.message;
 
         console.log("Error response: " + JSON.stringify(error));
-        // window.alert(error.message)
+        window.alert(error.errorMessage)
 
         if (error.redirectUri != null) {
             navigateTo(error.redirectUri as string, {

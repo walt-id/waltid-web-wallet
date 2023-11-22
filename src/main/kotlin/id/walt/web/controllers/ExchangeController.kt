@@ -177,6 +177,8 @@ fun Application.exchange() = walletRoute {
 @Serializable
 data class UsePresentationRequest(
     val did: String? = null,
-    val selectedCredentials: List<String>,
-    val presentationRequest: String
+    val presentationRequest: String,
+
+    val selectedCredentials: List<String>, // todo: automatically choose matching
+    val disclosures: Map<String, List<String>>? = null,
 )

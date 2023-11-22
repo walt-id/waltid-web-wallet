@@ -113,7 +113,9 @@ class TestCredentialWallet(
         val selectedDisclosures =
             HACK_outsideMappedSelectedDisclosuresPerSession[session.authorizationRequest!!.state + session.authorizationRequest.presentationDefinition]!!
 
+        println("Selected credentials: $selectedCredentials")
         val matchedCredentials = walletService.getCredentialsByIds(selectedCredentials)
+        println("Matched credentials: $matchedCredentials")
 
         val vp = Json.encodeToString(
             mapOf(
