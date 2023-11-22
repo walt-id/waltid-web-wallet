@@ -22,7 +22,7 @@
                 </span>
             </div>
 
-            <div class="rounded-lg px-3 mb-2 bg-cyan-100">
+            <div class="rounded-lg px-3 mb-2 bg-cyan-100" v-if="credential._sd">
                 <span>SD</span>
             </div>
         </div>
