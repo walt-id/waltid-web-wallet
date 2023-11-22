@@ -18,6 +18,7 @@ import id.walt.did.helpers.WaltidServices
 import id.walt.did.utils.EnumUtils.enumValueIgnoreCase
 import id.walt.oid4vc.data.GrantType
 import id.walt.oid4vc.data.OpenIDProviderMetadata
+import id.walt.oid4vc.data.dif.PresentationDefinition
 import id.walt.oid4vc.providers.OpenIDClientConfig
 import id.walt.oid4vc.providers.SIOPProviderConfig
 import id.walt.oid4vc.requests.*
@@ -68,24 +69,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
         }
     }
 
-    override fun listCredentials(): List<Credential> = CredentialsService.list(walletId).mapNotNull {
-        val credentialId = it.id
-        runCatching {
-            val cred = it.document
-            val parsedCred = when {
-                cred.startsWith("{") -> Json.parseToJsonElement(cred).jsonObject
-                cred.startsWith("ey") -> cred.decodeJws().payload
-                    .run { jsonObject["vc"]?.jsonObject ?: jsonObject }
-
-                else -> throw IllegalArgumentException("Unknown credential format")
-            }
-            Credential(parsedCred, cred)
-        }.onFailure { it.printStackTrace() }.getOrNull()?.let { cred ->
-            Credential(JsonObject(cred.parsedCredential.toMutableMap().also {
-                it.putIfAbsent("id", JsonPrimitive(credentialId))
-            }), cred.rawCredential)
-        }
-    }
+    override fun listCredentials(): List<WalletCredential> = CredentialsService.list(walletId)
 
     override suspend fun listRawCredentials(): List<String> = CredentialsService.list(walletId).map {
         it.document
@@ -96,6 +80,44 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
     override suspend fun getCredential(credentialId: String): WalletCredential =
         CredentialsService.get(walletId, credentialId)
             ?: throw IllegalArgumentException("WalletCredential not found for credentialId: $credentialId")
+
+    override fun matchCredentialsByPresentationDefinition(presentationDefinition: PresentationDefinition): List<WalletCredential> {
+        val credentialList = listCredentials()
+
+        println("WalletCredential list is: ${credentialList.map { it.parsedDocument?.get("type")!!.jsonArray }}")
+
+        data class TypeFilter(val path: String, val type: String? = null, val pattern: String)
+
+        val filters = presentationDefinition.inputDescriptors.mapNotNull {
+            it.constraints?.fields?.map {
+                val path = it.path.first().removePrefix("$.")
+                val filterType = it.filter?.get("type")?.jsonPrimitive?.content
+                val filterPattern = it.filter?.get("pattern")?.jsonPrimitive?.content
+                    ?: throw IllegalArgumentException("No filter pattern in presentation definition constraint")
+
+                TypeFilter(path, filterType, filterPattern)
+            }
+        }
+        println("Using filters: $filters")
+
+        val matchedCredentials = credentialList.filter { credential ->
+            filters.any { fields ->
+                fields.all { typeFilter ->
+                    val credField = credential.parsedDocument!![typeFilter.path] ?: return@all false
+
+                    when (credField) {
+                        is JsonPrimitive -> credField.jsonPrimitive.content == typeFilter.pattern
+                        is JsonArray -> credField.jsonArray.last().jsonPrimitive.content == typeFilter.pattern
+                        else -> false
+                    }
+                }
+            }
+        }
+        println("Matched credentials: $matchedCredentials")
+
+
+        return matchedCredentials
+    }
 
     private fun getQueryParams(url: String): Map<String, MutableList<String>> {
         val params: MutableMap<String, MutableList<String>> = HashMap()
@@ -155,18 +177,24 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
         val redirectUri: String?
     ) : IllegalArgumentException(message)
 
+
     /**
      * @return redirect uri
      */
-    override suspend fun usePresentationRequest(request: String, did: String): Result<String?> {
+    override suspend fun usePresentationRequest(request: String, did: String, selectedCredentialIds: List<String>): Result<String?> {
         val credentialWallet = getCredentialWallet(did)
 
         val authReq = AuthorizationRequest.fromHttpQueryString(Url(request).encodedQuery)
         println("Auth req: $authReq")
-        val walletSession = credentialWallet.initializeAuthorization(authReq, 60.seconds)
-        println("Resolved presentation definition: ${walletSession.authorizationRequest!!.presentationDefinition!!.toJSONString()}")
-        val tokenResponse = credentialWallet.processImplicitFlowAuthorization(walletSession.authorizationRequest!!)
-        val resp = ktorClient.submitForm(walletSession.authorizationRequest!!.responseUri!!,
+
+        println("USING PRESENTATION REQUEST, SELECTED CREDENTIALS: $selectedCredentialIds")
+
+        val presentationSession = credentialWallet.initializeAuthorization(authReq, 60.seconds)
+            .copy(selectedCredentialIds = selectedCredentialIds.toSet())
+        println("Resolved presentation definition: ${presentationSession.authorizationRequest!!.presentationDefinition!!.toJSONString()}")
+
+        val tokenResponse = credentialWallet.processImplicitFlowAuthorization(presentationSession.authorizationRequest!!)
+        val resp = ktorClient.submitForm(presentationSession.authorizationRequest!!.responseUri!!,
             parameters {
                 tokenResponse.toHttpParameters().forEach { entry ->
                     entry.value.forEach { append(entry.key, it) }
@@ -174,7 +202,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
             })
         val httpResponseBody = runCatching { resp.bodyAsText() }.getOrNull()
         val isResponseRedirectUrl =
-            httpResponseBody != null && httpResponseBody.take(8).lowercase().let {
+            httpResponseBody != null && httpResponseBody.take(10).lowercase().let {
                 @Suppress("HttpUrlsUsage")
                 it.startsWith("http://") || it.startsWith("https://")
             }
@@ -544,6 +572,11 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
 
     override suspend fun getIssuer(name: String): IssuerDataTransferObject =
         IssuersService.get(walletId, name) ?: throw IllegalArgumentException("Issuer: $name not found for: $walletId")
+
+    override fun getCredentialsByIds(credentialIds: List<String>): List<WalletCredential> {
+        // todo: select by SQL
+        return listCredentials().filter { it.id in credentialIds }
+    }
 
     private fun getDidOptions(method: String, args: Map<String, JsonPrimitive>) = when (method.lowercase()) {
         "key" -> DidKeyCreateOptions(

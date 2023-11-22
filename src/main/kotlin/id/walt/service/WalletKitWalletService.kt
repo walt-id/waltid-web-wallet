@@ -3,6 +3,7 @@ package id.walt.service
 import id.walt.config.ConfigManager
 import id.walt.config.RemoteWalletConfig
 import id.walt.db.models.*
+import id.walt.oid4vc.data.dif.PresentationDefinition
 import id.walt.service.dids.DidsService
 import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
@@ -124,7 +125,7 @@ class WalletKitWalletService(accountId: UUID, walletId: UUID) : WalletService(ac
 
     override fun listCredentials() = runBlocking {
         authenticatedJsonGet("/api/wallet/credentials/list")
-            .body<JsonObject>()["list"]!!.jsonArray.toList().map { Credential(it.jsonObject, it.toString()) }
+            .body<JsonObject>()["list"]!!.jsonArray.toList().map { WalletCredential(walletId, it.jsonObject["id"]!!.jsonPrimitive.content, it.toString(), null, Instant.DISTANT_PAST) }
     }
 
     override suspend fun listRawCredentials(): List<String> {
@@ -139,10 +140,14 @@ class WalletKitWalletService(accountId: UUID, walletId: UUID) : WalletService(ac
     override suspend fun getCredential(credentialId: String) = WalletCredential(
         wallet = walletId,
         id = credentialId,
-        document = listCredentials().first { it.parsedCredential["id"]?.jsonPrimitive?.content == credentialId }.toString(),
+        document = listCredentials().first { it.parsedDocument?.get("id")?.jsonPrimitive?.content == credentialId }.toString(),
         disclosures = null,
         addedOn = Instant.DISTANT_PAST
     )
+
+    override fun matchCredentialsByPresentationDefinition(presentationDefinition: PresentationDefinition): List<WalletCredential> {
+        TODO("Not yet implemented")
+    }
     /*prettyJson.encodeToString(*/
     //)
     /* override suspend fun getCredential(credentialId: String): String =
@@ -195,7 +200,7 @@ class WalletKitWalletService(accountId: UUID, walletId: UUID) : WalletService(ac
         val state: String?
     )
 
-    override suspend fun usePresentationRequest(request: String, did: String): Result<String?> {
+    override suspend fun usePresentationRequest(request: String, did: String, selectedCredentialIds: List<String>): Result<String?> {
         val decoded = URLDecoder.decode(request, Charset.defaultCharset())
         val queryParams = getQueryParams(decoded)
         val redirectUri = queryParams["redirect_uri"]?.first()
@@ -369,6 +374,10 @@ class WalletKitWalletService(accountId: UUID, walletId: UUID) : WalletService(ac
     }
 
     override suspend fun getIssuer(name: String): IssuerDataTransferObject {
+        TODO("Not yet implemented")
+    }
+
+    override fun getCredentialsByIds(credentialIds: List<String>): List<WalletCredential> {
         TODO("Not yet implemented")
     }
 }

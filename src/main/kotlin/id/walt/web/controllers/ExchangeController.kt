@@ -1,6 +1,7 @@
 package id.walt.web.controllers
 
 import id.walt.db.models.WalletOperationHistory
+import id.walt.oid4vc.data.dif.PresentationDefinition
 import id.walt.service.SSIKit2WalletService
 import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.post
@@ -9,6 +10,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 fun Application.exchange() = walletRoute {
@@ -49,12 +51,33 @@ fun Application.exchange() = walletRoute {
             context.respond(HttpStatusCode.OK)
         }
 
+        post("matchCredentialsForPresentationDefinition", {
+            summary = "Returns the credentials stored in the wallet that match the passed presentation definition"
+
+            request {
+                body<PresentationDefinition> { description = "Presentation definition to match credentials against" }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    body<List<JsonObject>> {
+                        description = "Credentials that match the presentation definition"
+                    }
+                }
+            }
+        }) {
+            val presentationDefinition = PresentationDefinition.fromJSON(context.receive<JsonObject>())
+
+            val wallet = getWalletService()
+            val matchedCredentials = wallet.matchCredentialsByPresentationDefinition(presentationDefinition)
+
+            context.respond(matchedCredentials)
+        }
+
         post("usePresentationRequest", {
             summary = "Present credential(s) to a Relying Party"
 
             request {
-                queryParameter<String>("did") { description = "The DID to present the credential(s) from" }
-                body<String> { description = "Presentation request" }
+                body<UsePresentationRequest>()
             }
             response {
                 HttpStatusCode.OK to {
@@ -73,14 +96,19 @@ fun Application.exchange() = walletRoute {
         }) {
             val wallet = getWalletService()
 
-            val did = call.request.queryParameters["did"]
+            val req = call.receive<UsePresentationRequest>()
+            println("req: $req")
+
+            val request = req.presentationRequest
+
+            val did = req.did
                 ?: wallet.listDids().firstOrNull()?.did
                 ?: throw IllegalArgumentException("No DID to use supplied")
+            val selectedCredentialIds = req.selectedCredentials
+            // TODO -> ?: auto matching
 
-            val request = call.receiveText()
 
-            val result = wallet.usePresentationRequest(request, did)
-
+            val result = wallet.usePresentationRequest(request, did, selectedCredentialIds)
 
             if (result.isSuccess) {
                 wallet.addOperationHistory(
@@ -89,6 +117,7 @@ fun Application.exchange() = walletRoute {
                         mapOf(
                             "did" to did,
                             "request" to request,
+                            "selected-credentials" to selectedCredentialIds.joinToString(),
                             "success" to "true",
                             "redirect" to result.getOrThrow()
                         ) // change string true to bool
@@ -144,3 +173,10 @@ fun Application.exchange() = walletRoute {
         }
     }
 }
+
+@Serializable
+data class UsePresentationRequest(
+    val did: String? = null,
+    val selectedCredentials: List<String>,
+    val presentationRequest: String
+)

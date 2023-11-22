@@ -21,7 +21,7 @@
             </h1>
         </template>
 
-        <template v-slot:menu>
+        <template v-slot:menu v-if="currentWallet">
             <NuxtLink
                 class="inline-flex focus:outline focus:outline-blue-600 focus:outline-offset-2 items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                 :to="`/wallet/${currentWallet}/settings/issuers`"

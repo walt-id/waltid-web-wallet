@@ -34,7 +34,9 @@
                         @click="acceptPresentation"
                     />
                     <!-- tooltip -->
-                    <span v-if="failed" class="group-hover:opacity-100 transition-opacity bg-gray-800 px-1 text-sm text-gray-100 rounded-md absolute -translate-x-1/2 opacity-0 m-4 mx-auto">
+                    <span v-if="failed"
+                          class="group-hover:opacity-100 transition-opacity bg-gray-800 px-1 text-sm text-gray-100 rounded-md absolute -translate-x-1/2 opacity-0 m-4 mx-auto"
+                    >
                         {{ failMessage }}
                     </span>
                 </div>
@@ -43,27 +45,85 @@
         <CenterMain>
             <h1 class="text-2xl font-semibold mb-2">Presentation</h1>
 
-            <LoadingIndicator v-if="immediateAccept" class="my-6 mb-12 w-full"> Presenting credential(s)... </LoadingIndicator>
+            <LoadingIndicator v-if="immediateAccept" class="my-6 mb-12 w-full"> Presenting credential(s)...</LoadingIndicator>
 
-            <p class="mb-1">The following credentials will be presented:</p>
+            <!--            <p class="mb-1">The following credentials will be presented:</p>-->
 
-            <div aria-label="Credential list" class="h-full overflow-y-auto shadow-xl">
-                <div v-for="group in groupedCredentialTypes.keys()" :key="group.id" class="relative">
-                    <div class="sticky top-0 z-10 border-y border-b-gray-200 border-t-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-900">
-                        <h3>{{ group }}s:</h3>
+            <fieldset class="mt-3">
+                <legend class="text-base font-semibold leading-6 text-gray-900">Select credentials to present:</legend>
+
+                <div>Selected: {{ selectedCredentialIds.length }}</div>
+
+                <div class="mt-2 divide-y divide-gray-200 border-b border-t border-gray-200">
+                    <div v-for="(credential, credentialIdx) in matchedCredentials" :key="credentialIdx"
+                         class="relative flex items-start py-4"
+                    >
+                        <div class="mr-3 pt-2 flex h-6 items-center">
+                            <input :id="`credential-${credential.id}`" v-model="selection[credential.id]"
+                                   :name="`credential-${credential.id}`" class="h-6 w-6 rounded border-gray-300 text-primary-400 focus:ring-primary-400"
+                                   type="checkbox"
+                            />
+                        </div>
+
+                        <div class="min-w-0 flex-1 text-sm leading-6">
+                            <label :for="`credential-${credential.id}`" class="select-none font-medium text-gray-900">
+
+                                <!--                                <div class="flex items-center gap-1">-->
+                                <!--                                <CredentialIcon :credentialType="credential.parsedDocument.type.at(-1)" class="h-6 w-6 flex-none rounded-full bg-gray-50"></CredentialIcon>-->
+                                <!--                                {{ credential.parsedDocument.type.at(-1) }}-->
+                                <!--                                </div>-->
+
+                                <!--                                <div class="min-w-0 items-center">-->
+                                <!--                                    <p class="text-lg font-semibold leading-6 text-gray-900">{{ credential?.parsedDocument?.name }}</p>-->
+                                <!--                                    <p class="ml-1 truncate text-sm leading-5 text-gray-800">{{ credential.id }}</p>-->
+                                <!--                                </div>-->
+
+                                <VerifiableCredentialCard
+                                    :class="[selection[credential.id] == true ? 'shadow-xl shadow-primary-400' : 'shadow-2xl']"
+                                    :credential="credential.parsedDocument"
+                                    :show-id="true"
+                                />
+
+                            </label>
+                        </div>
                     </div>
-                    <ul class="divide-y divide-gray-100" role="list">
-                        <li v-for="credential in groupedCredentialTypes.get(group)" :key="credential" class="flex gap-x-4 px-3 py-5">
-                            <CredentialIcon :credentialType="credential.name" class="h-6 w-6 flex-none rounded-full bg-gray-50"></CredentialIcon>
-
-                            <div class="min-w-0 flex flex-row items-center">
-                                <span class="text-lg font-semibold leading-6 text-gray-900">{{ credential.id }}.</span>
-                                <span class="ml-1 truncate text-sm leading-5 text-gray-800">{{ credential.name }}</span>
-                            </div>
-                        </li>
-                    </ul>
                 </div>
-            </div>
+            </fieldset>
+
+
+            <Disclosure>
+                <DisclosureButton class="py-2">
+                    <ButtonsWaltButton class="bg-gray-50 text-black">View presentation definition JSON</ButtonsWaltButton>
+                </DisclosureButton>
+                <DisclosurePanel class="text-gray-500 overflow-x-scroll pb-2">
+                    <pre>{{ presentationDefinition }}</pre>
+                </DisclosurePanel>
+            </Disclosure>
+
+            <!--
+                        <ul>
+                            <li v-for="credential of matchedCredentials">
+                                - {{ credential }}
+                            </li>
+                        </ul>
+
+                        <div aria-label="Credential list" class="h-full overflow-y-auto shadow-xl">
+                            <div v-for="group in groupedCredentialTypes.keys()" :key="group.id" class="relative">
+                                <div class="sticky top-0 z-10 border-y border-b-gray-200 border-t-gray-100 bg-gray-50 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-900">
+                                    <h3>{{ group }}s:</h3>
+                                </div>
+                                <ul class="divide-y divide-gray-100" role="list">
+                                    <li v-for="credential in groupedCredentialTypes.get(group)" :key="credential" class="flex gap-x-4 px-3 py-5">
+                                        <CredentialIcon :credentialType="credential.name" class="h-6 w-6 flex-none rounded-full bg-gray-50"></CredentialIcon>
+
+                                        <div class="min-w-0 flex flex-row items-center">
+                                            <span class="text-lg font-semibold leading-6 text-gray-900">{{ credential.id }}.</span>
+                                            <span class="ml-1 truncate text-sm leading-5 text-gray-800">{{ credential.name }}</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>-->
         </CenterMain>
     </div>
 </template>
@@ -71,13 +131,16 @@
 <script lang="ts" setup>
 import CenterMain from "~/components/CenterMain.vue";
 import PageHeader from "~/components/PageHeader.vue";
-import CredentialIcon from "~/components/CredentialIcon.vue";
 import ActionButton from "~/components/buttons/ActionButton.vue";
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import { groupBy } from "~/composables/groupings";
 import { useTitle } from "@vueuse/core";
+import VerifiableCredentialCard from "~/components/credentials/VerifiableCredentialCard.vue";
 
-const currentWallet = useCurrentWallet()
+import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/vue";
+
+
+const currentWallet = useCurrentWallet();
 
 async function resolvePresentationRequest(request) {
     try {
@@ -90,6 +153,7 @@ async function resolvePresentationRequest(request) {
         throw e;
     }
 }
+
 
 const query = useRoute().query;
 
@@ -113,7 +177,7 @@ let groupedCredentialTypes = groupBy(
     inputDescriptors.map((item) => {
         return { id: ++i, name: item.id };
     }),
-    (c) => c.name,
+    (c) => c.name
 );
 console.log("groupedCredentialTypes: ", groupedCredentialTypes);
 
@@ -122,11 +186,38 @@ const immediateAccept = ref(false);
 const failed = ref(false);
 const failMessage = ref("Unknown error occurred.");
 
+
+const matchedCredentials = await $fetch(`/r/wallet/${currentWallet.value}/exchange/matchCredentialsForPresentationDefinition`, {
+    method: "POST",
+    body: presentationDefinition
+});
+
+const selection = ref({});
+const selectedCredentialIds = computed(() => {
+    const _selectedCredentialIds = [];
+
+    for (let credentialId in selection.value) {
+        if (selection.value[credentialId] === true)
+            _selectedCredentialIds.push(credentialId);
+    }
+
+    return _selectedCredentialIds;
+});
+
 async function acceptPresentation() {
+    const req = {
+        //did: String,
+        selectedCredentials: selectedCredentialIds.value,
+        presentationRequest: request
+    };
+
     const response = await fetch(`/r/wallet/${currentWallet.value}/exchange/usePresentationRequest`, {
         method: "POST",
-        body: request,
+        body: JSON.stringify(req),
         redirect: "manual",
+        headers: {
+            "Content-Type": "application/json"
+        }
     });
 
     if (response.ok) {
@@ -135,12 +226,12 @@ async function acceptPresentation() {
 
         if (parsedResponse.redirectUri) {
             navigateTo(parsedResponse.redirectUri, {
-                external: true,
+                external: true
             });
         } else {
-            window.alert("Presentation successful, no redirect URL supplied.")
+            window.alert("Presentation successful, no redirect URL supplied.");
             navigateTo(`/wallet/${currentWallet.value}`, {
-                external: true,
+                external: true
             });
         }
     } else {
@@ -153,7 +244,7 @@ async function acceptPresentation() {
 
         if (error.redirectUri != null) {
             navigateTo(error.redirectUri as string, {
-                external: true,
+                external: true
             });
         }
         //console.log("Policy verification failed: ", err)

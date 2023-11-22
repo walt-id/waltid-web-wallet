@@ -10,14 +10,12 @@ import id.walt.oid4vc.data.dif.DescriptorMapping
 import id.walt.oid4vc.data.dif.PresentationDefinition
 import id.walt.oid4vc.data.dif.PresentationSubmission
 import id.walt.oid4vc.data.dif.VCFormat
-import id.walt.oid4vc.errors.PresentationError
 import id.walt.oid4vc.interfaces.PresentationResult
 import id.walt.oid4vc.providers.SIOPCredentialProvider
 import id.walt.oid4vc.providers.SIOPProviderConfig
 import id.walt.oid4vc.providers.TokenTarget
 import id.walt.oid4vc.requests.AuthorizationRequest
 import id.walt.oid4vc.requests.TokenRequest
-import id.walt.oid4vc.responses.TokenErrorCode
 import id.walt.service.SSIKit2WalletService
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -45,7 +43,8 @@ class TestCredentialWallet(
     val did: String
 ) : SIOPCredentialProvider<VPresentationSession>(WALLET_BASE_URL, config) {
 
-    private val sessionCache = mutableMapOf<String, VPresentationSession>()
+    private val sessionCache = mutableMapOf<String, VPresentationSession>() // TODO not stateless because of oidc4vc library
+
     private val ktorClient = HttpClient(CIO) {
         install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
             json()
@@ -104,54 +103,10 @@ class TestCredentialWallet(
     }
 
     override fun generatePresentationForVPToken(session: VPresentationSession, tokenRequest: TokenRequest): PresentationResult {
-        // find credential(s) matching the presentation definition
-        // for this test wallet implementation, present all credentials in the wallet
+        println("=== GENERATING PRESENTATION FOR VP TOKEN - Session: $session")
+        val selectedCredential = session.selectedCredentialIds.toList()
 
-        val credentialList = runBlocking { walletService.listCredentials() }
-        println("WalletCredential list is: ${credentialList.map { it.parsedCredential["type"]!!.jsonArray }}")
-
-        val presentationDefinition = session.presentationDefinition ?: throw PresentationError(
-            TokenErrorCode.invalid_request,
-            tokenRequest,
-            session.presentationDefinition
-        )
-
-        data class TypeFilter(val path: String, val type: String? = null, val pattern: String)
-
-        val filters = presentationDefinition.inputDescriptors.mapNotNull {
-            it.constraints?.fields?.map {
-                val path = it.path.first().removePrefix("$.")
-                val filterType = it.filter?.get("type")?.jsonPrimitive?.content
-                val filterPattern = it.filter?.get("pattern")?.jsonPrimitive?.content
-                    ?: throw IllegalArgumentException("No filter pattern in presentation definition constraint")
-
-                TypeFilter(path, filterType, filterPattern)
-            }
-        }
-        println("Using filters: $filters")
-
-        val matchedCredentials = credentialList.filter { credential ->
-            filters.any { fields ->
-                fields.all { typeFilter ->
-                    val credField = credential.parsedCredential[typeFilter.path] ?: return@all false
-
-                    when (credField) {
-                        is JsonPrimitive -> credField.jsonPrimitive.content == typeFilter.pattern
-                        is JsonArray -> credField.jsonArray.last().jsonPrimitive.content == typeFilter.pattern
-                        else -> false
-                    }
-                }
-            }
-        }
-        println("Matched credentials: $matchedCredentials")
-
-        /*val filterString = presentationDefinition.inputDescriptors.flatMap { it.constraints?.fields ?: listOf() }
-            .firstOrNull { field -> field.path.any { it.contains("type") } }?.filter?.jsonObject.toString()
-        println("Filter string is: $filterString")
-        val credentials =
-            credentialList.filter { filterString.contains(it.parsedCredential["type"]!!.jsonArray.last().jsonPrimitive.content) }
-        println("Will use credentials: ${credentials.map { it.parsedCredential["type"]!!.jsonArray }}")*/
-
+       val matchedCredentials = walletService.getCredentialsByIds(selectedCredential)
 
         val vp = Json.encodeToString(
             mapOf(
@@ -166,7 +121,7 @@ class TestCredentialWallet(
                     "type" to listOf("VerifiablePresentation"),
                     "id" to "urn:uuid:${UUID.generateUUID().toString().lowercase()}",
                     "holder" to this.did,
-                    "verifiableCredential" to matchedCredentials.map { it.rawCredential }
+                    "verifiableCredential" to matchedCredentials.map { it.document }
                 )
             ).toJsonElement()
         )
@@ -200,8 +155,8 @@ class TestCredentialWallet(
         return PresentationResult(
             listOf(JsonPrimitive(signed)), PresentationSubmission(
                 id = "submission 1",
-                definitionId = presentationDefinition.id,
-                descriptorMap = matchedCredentials.map { it.rawCredential }.mapIndexed { index, vcJwsStr ->
+                definitionId = session.presentationDefinition?.id ?: "",
+                descriptorMap = matchedCredentials.map { it.document }.mapIndexed { index, vcJwsStr ->
                     val vcJws = vcJwsStr.base64UrlToBase64().decodeJws()
                     val type =
                         vcJws.payload["vc"]?.jsonObject?.get("type")?.jsonArray?.last()?.jsonPrimitive?.contentOrNull
@@ -290,66 +245,4 @@ class TestCredentialWallet(
     fun parsePresentationRequest(request: String): AuthorizationRequest {
         return resolveVPAuthorizationParameters(AuthorizationRequest.fromHttpQueryString(Url(request).encodedQuery))
     }
-    /*
-    fun start() {
-        embeddedServer(Netty, port = WALLET_PORT) {
-            install(ContentNegotiation) {
-                json()
-            }
-            routing {
-                get("/.well-known/openid-configuration") {
-                    call.respond(metadata.toJSON())
-                }
-                get("/authorize") {
-                    val authReq = AuthorizationRequest.fromHttpParameters(call.parameters.toMap())
-                    try {
-                        if (authReq.responseType != ResponseType.vp_token.name) {
-                            throw AuthorizationError(
-                                authReq,
-                                AuthorizationErrorCode.unsupported_response_type,
-                                "Only response type vp_token is supported"
-                            )
-                        }
-                        val tokenResponse = processImplicitFlowAuthorization(authReq)
-                        val redirectLocation = if (authReq.responseMode == ResponseMode.direct_post) {
-                            ktorClient.submitForm(
-                                authReq.responseUri ?: throw AuthorizationError(
-                                    authReq,
-                                    AuthorizationErrorCode.invalid_request,
-                                    "No response_uri parameter found for direct_post response mode"
-                                ),
-                                parametersOf(tokenResponse.toHttpParameters())
-                            ).body<JsonObject>().let { AuthorizationDirectPostResponse.fromJSON(it) }.redirectUri
-                        } else {
-                            tokenResponse.toRedirectUri(
-                                authReq.redirectUri ?: throw AuthorizationError(
-                                    authReq,
-                                    AuthorizationErrorCode.invalid_request,
-                                    "No redirect uri found on authorization request"
-                                ),
-                                authReq.responseMode ?: ResponseMode.fragment
-                            )
-                        }
-                        if (!redirectLocation.isNullOrEmpty()) {
-                            call.response.apply {
-                                status(HttpStatusCode.Found)
-                                header(HttpHeaders.Location, redirectLocation)
-                            }
-                        }
-                    } catch (authExc: AuthorizationError) {
-                        call.response.apply {
-                            status(HttpStatusCode.Found)
-                            header(HttpHeaders.Location, URLBuilder(authExc.authorizationRequest.redirectUri!!).apply {
-                                parameters.appendAll(
-                                    parametersOf(
-                                        authExc.toAuthorizationErrorResponse().toHttpParameters()
-                                    )
-                                )
-                            }.buildString())
-                        }
-                    }
-                }
-            }
-        }.start()
-    }*/
 }

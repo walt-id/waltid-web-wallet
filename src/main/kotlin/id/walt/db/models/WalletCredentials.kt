@@ -1,8 +1,13 @@
 package id.walt.db.models
 
+import id.walt.crypto.utils.JwsUtils.decodeJws
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
 import kotlinx.uuid.UUID
 import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.ResultRow
@@ -28,7 +33,47 @@ data class WalletCredential(
     val document: String,
     val disclosures: String?,
     val addedOn: Instant,
+
+    val parsedDocument: JsonObject? = parseDocument(document, id)
 ) {
+
+    companion object {
+        fun parseDocument(document: String, id: String) =
+            runCatching {
+                when {
+                    document.startsWith("{") -> Json.parseToJsonElement(document).jsonObject
+                    document.startsWith("ey") -> document.decodeJws().payload
+                        .run { jsonObject["vc"]?.jsonObject ?: jsonObject }
+
+                    else -> throw IllegalArgumentException("Unknown credential format")
+                }.toMutableMap().also {
+                    it.putIfAbsent("id", JsonPrimitive(id))
+                }.let {
+                    JsonObject(it)
+                }
+            }.onFailure { it.printStackTrace() }
+                .getOrNull()
+    }
+
+    /*
+    val parsedDocument: JsonObject?
+        get() =
+            runCatching {
+                when {
+                    document.startsWith("{") -> Json.parseToJsonElement(document).jsonObject
+                    document.startsWith("ey") -> document.decodeJws().payload
+                        .run { jsonObject["vc"]?.jsonObject ?: jsonObject }
+
+                    else -> throw IllegalArgumentException("Unknown credential format")
+                }.toMutableMap().also {
+                    it.putIfAbsent("id", JsonPrimitive(id))
+                }.let {
+                    JsonObject(it)
+                }
+            }.onFailure { it.printStackTrace() }
+                .getOrNull()*/
+
+
     constructor(result: ResultRow) : this(
         wallet = result[WalletCredentials.wallet].value.toKotlinUUID(),
         id = result[WalletCredentials.id],

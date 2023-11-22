@@ -10,7 +10,6 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import kotlinx.serialization.json.JsonObject
-import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Application.credentials() = walletRoute {
     route("credentials", {
@@ -25,7 +24,7 @@ fun Application.credentials() = walletRoute {
                 }
             }
         }) {
-            context.respond(getWalletService().run { transaction { listCredentials() } }.map { it.parsedCredential })
+            context.respond(getWalletService().listCredentials().map { it.parsedDocument })
         }
 
         put({
