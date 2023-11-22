@@ -9,6 +9,8 @@ import CenterMain from "~/components/CenterMain.vue";
 import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import { encodeRequest, fixRequest } from "~/composables/siop-requests";
 
+const currentWallet = useCurrentWallet()
+
 if (process.client) {
     let request = encodeURI(decodeURI(fixRequest("openid://" + window.location.search)));
     console.log("Fixed request: ", request);
@@ -16,7 +18,7 @@ if (process.client) {
     const encoded = encodeRequest(request);
     console.log("Encoded request: ", encoded);
 
-    navigateTo({ path: "/exchange/presentation", query: { request: encoded } });
+    navigateTo({ path: `/wallet/${currentWallet.value}/exchange/presentation`, query: { request: encoded } });
 }
 </script>
 

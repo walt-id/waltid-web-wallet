@@ -8,26 +8,31 @@ import kotlinx.uuid.UUID
 import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
 
 object CredentialsService {
-    fun get(wallet: UUID, credentialId: String): WalletCredential? =
+    fun get(wallet: UUID, credentialId: String): WalletCredential? = transaction {
         WalletCredentials.select { (WalletCredentials.wallet eq wallet.toJavaUUID()) and (WalletCredentials.id eq credentialId) }
             .singleOrNull()?.let { WalletCredential(it) }
+    }
 
-    fun list(wallet: UUID) = WalletCredentials.select { WalletCredentials.wallet eq wallet.toJavaUUID() }
-        .map { WalletCredential(it) }
+    fun list(wallet: UUID) = transaction {
+        WalletCredentials.select { WalletCredentials.wallet eq wallet.toJavaUUID() }
+            .map { WalletCredential(it) }
+    }
 
-    fun add(wallet: UUID, credential: WalletCredential): String =
-        WalletCredentials.insert {
-            it[WalletCredentials.wallet] = wallet.toJavaUUID()
-            it[id] = credential.id
-            it[document] = credential.document
-            it[disclosures] = credential.disclosures
-            it[addedOn] = Clock.System.now().toJavaInstant()
-        }[WalletCredentials.id]
+    fun add(wallet: UUID, vararg credentials: WalletCredential) = addAll(wallet, credentials.toList())
+    fun addAll(wallet: UUID, credentials: List<WalletCredential>): List<String> =
+        WalletCredentials.batchInsert(credentials) { credential: WalletCredential ->
+            this[WalletCredentials.wallet] = wallet.toJavaUUID()
+            this[WalletCredentials.id] = credential.id
+            this[WalletCredentials.document] = credential.document
+            this[WalletCredentials.disclosures] = credential.disclosures
+            this[WalletCredentials.addedOn] = Clock.System.now().toJavaInstant()
+        }.map { it[WalletCredentials.id] }
 
     fun delete(wallet: UUID, credentialId: String): Boolean =
         WalletCredentials.deleteWhere { (WalletCredentials.wallet eq wallet.toJavaUUID()) and (id eq credentialId) } > 0

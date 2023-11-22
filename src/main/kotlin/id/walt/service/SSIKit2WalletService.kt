@@ -55,7 +55,6 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.net.URLDecoder
-import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -92,7 +91,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
         it.document
     }
 
-    override suspend fun deleteCredential(id: String) = CredentialsService.delete(walletId, id)
+    override suspend fun deleteCredential(id: String) = transaction { CredentialsService.delete(walletId, id) }
 
     override suspend fun getCredential(credentialId: String): String =
         CredentialsService.get(walletId, credentialId)?.document
@@ -225,7 +224,6 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
     private val testCIClientConfig = OpenIDClientConfig("test-client", null, redirectUri = "http://blank")
 
 
-    @OptIn(ExperimentalEncodingApi::class)
     override suspend fun useOfferRequest(offer: String, did: String) {
         val credentialWallet = getCredentialWallet(did)
 
@@ -327,9 +325,8 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
             throw IllegalStateException("No credential was returned from credentialEndpoint: $credentialResponses")
         }
 
-        credentialResponses.forEachIndexed { index, credentialResp ->
+        val addableCredentials: List<WalletCredential> = credentialResponses.map { credentialResp ->
             val credential = credentialResp.credential!!.jsonPrimitive.content
-            println(">>> $index. CREDENTIAL IS: $credential")
 
             val credentialJwt = credential.decodeJws()
 
@@ -338,17 +335,13 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
                     val credentialId = credentialJwt.payload["vc"]!!.jsonObject["id"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() }
                         ?: randomUUID()
 
-                    CredentialsService.add(
+                    WalletCredential(
                         wallet = walletId,
-                        WalletCredential(
-                            wallet = walletId,
-                            id = credentialId,
-                            document = credential,
-                            disclosures = null,
-                            addedOn = Clock.System.now()
-                        )
+                        id = credentialId,
+                        document = credential,
+                        disclosures = null,
+                        addedOn = Clock.System.now()
                     )
-                    println(">>> $index. CREDENTIAL stored with Id: $credentialId")
                 }
 
                 "vc+sd-jwt" -> {
@@ -358,22 +351,25 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
                     val disclosures = credentialJwt.signature.split("~").drop(1)
                     val disclosuresString = disclosures.joinToString("~")
 
-                    CredentialsService.add(
+                    WalletCredential(
                         wallet = walletId,
-                        WalletCredential(
-                            wallet = walletId,
-                            id = credentialId,
-                            document = credential,
-                            disclosures = disclosuresString,
-                            addedOn = Clock.System.now()
-                        )
+                        id = credentialId,
+                        document = credential,
+                        disclosures = disclosuresString,
+                        addedOn = Clock.System.now()
                     )
-                    println(">>> $index. CREDENTIAL stored with Id: $credentialId")
                 }
 
                 null -> throw IllegalArgumentException("WalletCredential JWT does not have \"typ\"")
                 else -> throw IllegalArgumentException("Invalid credential \"typ\": $typ")
             }
+        }
+
+        transaction {
+            CredentialsService.addAll(
+                wallet = walletId,
+                credentials = addableCredentials
+            )
         }
     }
 
@@ -404,7 +400,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
         return result.did
     }
 
-    override suspend fun listDids() = DidsService.list(walletId)
+    override suspend fun listDids() = transaction { DidsService.list(walletId) }
 
     override suspend fun loadDid(did: String): JsonObject = DidsService.get(walletId, did)?.let {
         Json.parseToJsonElement(it.document).jsonObject
@@ -518,6 +514,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
         transaction {
             WalletOperationHistories.insert {
                 it[account] = operationHistory.account.toJavaUUID()
+                it[wallet] = operationHistory.wallet.toJavaUUID()
                 it[timestamp] = operationHistory.timestamp.toJavaInstant()
                 it[operation] = operationHistory.operation
                 it[data] = Json.encodeToString(operationHistory.data)

@@ -16,7 +16,7 @@
                     display-text="Reject"
                     icon="heroicons:x-mark"
                     type="button"
-                    @click="navigateTo('/')"
+                    @click="navigateTo(`/wallet/${currentWallet.value}`)"
                 />
 
                 <div class="group flex">
@@ -138,7 +138,8 @@ async function acceptPresentation() {
                 external: true,
             });
         } else {
-            navigateTo("", {
+            window.alert("Presentation successful, no redirect URL supplied.")
+            navigateTo(`/wallet/${currentWallet.value}`, {
                 external: true,
             });
         }

@@ -3,7 +3,10 @@ package id.walt.db
 import id.walt.config.ConfigManager
 import id.walt.config.DatasourceConfiguration
 import id.walt.db.models.*
+import id.walt.service.account.AccountsService
+import id.walt.web.model.EmailAccountRequest
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
@@ -67,6 +70,10 @@ object Db {
                 WalletDids,
                 WalletOperationHistories
             )
+
+            runBlocking {
+                AccountsService.register(EmailAccountRequest("Max Mustermann", "string@string.string", "string"))
+            }
         }
 
     }

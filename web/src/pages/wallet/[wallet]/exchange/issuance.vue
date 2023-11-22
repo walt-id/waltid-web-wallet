@@ -19,7 +19,7 @@
                     display-text="Reject"
                     icon="heroicons:x-mark"
                     type="button"
-                    @click="navigateTo('/')"
+                    @click="navigateTo(`/wallet/${currentWallet.value}`)"
                 />
 
                 <div class="group flex">
@@ -150,10 +150,10 @@ import LoadingIndicator from "~/components/loading/LoadingIndicator.vue";
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { useTitle } from "@vueuse/core";
-import { Ref } from "vue";
+import { ref } from "vue";
 
 const currentWallet = useCurrentWallet()
-const { data: dids, pending: pendingDids } = await useLazyAsyncData(() => $fetch(`/r/wallet/${currentWallet}/dids`));
+const { data: dids, pending: pendingDids } = await useLazyAsyncData(() => $fetch(`/r/wallet/${currentWallet.value}/dids`));
 
 const selectedDid: Ref<Object | null> = ref(null);
 
@@ -212,6 +212,7 @@ const credentialList = issuanceParamsJson["credentials"];
 let credentialTypes: String[] = [];
 
 for (let credentialListElement of credentialList) {
+    console.log(`Processing: ${credentialListElement}`)
     const typeList = credentialListElement["types"] as Array<String>;
     const lastType = typeList[typeList.length - 1] as String;
 
@@ -246,7 +247,7 @@ async function acceptCredential() {
             method: "POST",
             body: request,
         });
-        navigateTo("/");
+        navigateTo(`/wallet/${currentWallet.value}`);
     } catch (e) {
         failed.value = true;
         failMessage.value = JSON.stringify(e);

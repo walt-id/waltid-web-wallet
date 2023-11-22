@@ -8,11 +8,13 @@ import kotlinx.uuid.UUID
 import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.transactions.transaction
 
 object DidsService {
-    fun get(wallet: UUID, did: String): WalletDid? =
+    fun get(wallet: UUID, did: String): WalletDid? = transaction {
         WalletDids.select { (WalletDids.wallet eq wallet.toJavaUUID()) and (WalletDids.did eq did) }
             .singleOrNull()?.let { WalletDid(it) }
+    }
 
     fun list(wallet: UUID): List<WalletDid> = WalletDids.select { WalletDids.wallet eq wallet.toJavaUUID() }.map { WalletDid(it) }
 
@@ -34,12 +36,14 @@ object DidsService {
 
 
     fun makeDidDefault(wallet: UUID, newDefaultDid: String) {
-        WalletDids.update({ (WalletDids.wallet eq wallet.toJavaUUID()) and (WalletDids.default eq true) }) {
-            it[default] = false
-        }
+        transaction {
+            WalletDids.update({ (WalletDids.wallet eq wallet.toJavaUUID()) and (WalletDids.default eq true) }) {
+                it[default] = false
+            }
 
-        WalletDids.update({ (WalletDids.wallet eq wallet.toJavaUUID()) and (WalletDids.did eq newDefaultDid) }) {
-            it[default] = true
+            WalletDids.update({ (WalletDids.wallet eq wallet.toJavaUUID()) and (WalletDids.did eq newDefaultDid) }) {
+                it[default] = true
+            }
         }
     }
 

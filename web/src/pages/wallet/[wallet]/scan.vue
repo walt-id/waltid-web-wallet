@@ -25,6 +25,8 @@ import CenterMain from "~/components/CenterMain.vue";
 import ManualRequestEntry from "~/components/scan/ManualRequestEntry.vue";
 import { encodeRequest, fixRequest } from "~/composables/siop-requests";
 
+const currentWallet = useCurrentWallet()
+
 async function startRequest(request) {
     console.log("Start request:", request);
     request = fixRequest(request);
@@ -34,12 +36,12 @@ async function startRequest(request) {
     console.log("Using encoded request:", encoded);
 
     if (type === SiopRequestType.ISSUANCE) {
-        await navigateTo({ path: "/exchange/issuance", query: { request: encoded } });
+        await navigateTo({ path: `/wallet/${currentWallet.value}/exchange/issuance`, query: { request: encoded } });
     } else if (type === SiopRequestType.PRESENTATION) {
-        await navigateTo({ path: "/exchange/presentation", query: { request: encoded } });
+        await navigateTo({ path: `/wallet/${currentWallet.value}/exchange/presentation`, query: { request: encoded } });
     } else {
         console.error("Unknown SIOP request type");
-        await navigateTo({ path: "/exchange/error", query: { message: btoa("Unknown request type") } });
+        await navigateTo({ path: `/wallet/${currentWallet.value}/exchange/error`, query: { message: btoa("Unknown request type") } });
     }
 }
 </script>
