@@ -7,17 +7,15 @@ import id.walt.db.repositories.AccountCredentialsRepository
 import id.walt.db.repositories.CredentialsRepository
 import id.walt.db.repositories.DbAccountCredentials
 import id.walt.db.repositories.DbCredential
-import id.walt.service.dids.DidUpdateDataObject
 import org.jetbrains.exposed.sql.innerJoin
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
-import java.net.URLEncoder
 import java.util.*
 
 //TODO: replace DbCredential with a dto
 object CredentialsService {
-    fun get(account: UUID, credentialId: String): DbCredential? =
-        list(account).singleOrNull { it.credentialId == credentialId }
+    fun get(account: UUID, id: String): DbCredential? =
+        list(account).singleOrNull { it.id == UUID.fromString(id) }
 
     fun list(account: UUID): List<DbCredential> = join(account).let {
         AccountCredentialsRepository.query(it) {
@@ -29,21 +27,27 @@ object CredentialsService {
         }
     }
 
-    fun add(account: UUID, credential: DbCredential): UUID =
-        getOrInsert(credential.credentialId, credential.document).let { cid ->
-            join(account, credential.credentialId).let {
-                AccountCredentialsRepository.query(it) {
-                    it[AccountCredentials.id]
-                }
-            }.takeIf { it.isNotEmpty() }?.single()?.value ?: let {
-                AccountCredentialsRepository.insert(DbAccountCredentials(
+    fun add(account: UUID, credential: DbCredential): UUID = CredentialsRepository.insert(
+        DbCredential(
+            credentialId = credential.credentialId,
+            document = credential.document,
+        )
+    ).let { cid ->
+        join(account, cid).let {
+            AccountCredentialsRepository.query(it) {
+                it[AccountCredentials.id]
+            }
+        }.takeIf { it.isNotEmpty() }?.single()?.value ?: let {
+            AccountCredentialsRepository.insert(
+                DbAccountCredentials(
                     account = account,
                     credential = cid,
-                ))
-            }
+                )
+            )
         }
+    }
 
-    fun delete(account: UUID, credentialId: String): Boolean = join(account, credentialId).let {
+    fun delete(account: UUID, id: String): Boolean = join(account, UUID.fromString(id)).let {
         AccountCredentialsRepository.query(it) {
             it[AccountCredentials.id]
         }.singleOrNull()?.value
@@ -51,11 +55,11 @@ object CredentialsService {
         AccountCredentialsRepository.delete(it)
     }?.let { it > 0 } ?: false
 
-    fun update(account: UUID, did: DidUpdateDataObject): Boolean {
+    fun update(account: UUID, credential: DbCredential): Boolean {
         TODO()
     }
 
-    private fun join(account: UUID, credentialId: String? = null) = Accounts.innerJoin(AccountCredentials,
+    private fun join(account: UUID, id: UUID? = null) = Accounts.innerJoin(AccountCredentials,
         onColumn = { Accounts.id },
         otherColumn = { AccountCredentials.account },
         additionalConstraint = {
@@ -63,9 +67,9 @@ object CredentialsService {
         }).innerJoin(Credentials,
         onColumn = { Credentials.id },
         otherColumn = { AccountCredentials.credential },
-        additionalConstraint = credentialId?.let {
+        additionalConstraint = id?.let {
             {
-                Credentials.credentialId eq credentialId
+                Credentials.id eq id
             }
         }).selectAll()
 
