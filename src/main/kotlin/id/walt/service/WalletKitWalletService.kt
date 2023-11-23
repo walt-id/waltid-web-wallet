@@ -128,7 +128,7 @@ class WalletKitWalletService(accountId: UUID) : WalletService(accountId) {
     /* Credentials */
 
     override suspend fun listCredentials() = authenticatedJsonGet("/api/wallet/credentials/list")
-        .body<JsonObject>()["list"]!!.jsonArray.toList().map { Credential(it.jsonObject, it.toString()) }
+        .body<JsonObject>()["list"]!!.jsonArray.toList().map { Credential("null", it.jsonObject, it.toString()) }
 
     override suspend fun listRawCredentials(): List<String> {
         TODO("Not yet implemented")

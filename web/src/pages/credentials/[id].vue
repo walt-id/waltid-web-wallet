@@ -332,7 +332,7 @@ import {ref} from "vue";
 import {decodeBase64ToUtf8} from "~/composables/base64";
 
 const route = useRoute();
-const credentialId = route.params.credentialId;
+const credentialId = route.params.id;
 
 let showCredentialJson = ref(false);
 

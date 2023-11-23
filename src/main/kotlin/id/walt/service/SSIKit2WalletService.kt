@@ -91,9 +91,9 @@ class SSIKit2WalletService(accountId: UUID) : WalletService(accountId) {
                 Base64.UrlSafe.decode(cred.split(".")[1]).decodeToString()
             ).jsonObject["vc"]!!.jsonObject
             else throw IllegalArgumentException("Unknown credential format")
-            Credential(parsedCred, cred)
+            Credential(it.id.toString(), parsedCred, cred)
         }.onFailure { it.printStackTrace() }.getOrNull()?.let { cred ->
-            Credential(JsonObject(cred.parsedCredential.toMutableMap().also {
+            Credential(it.id.toString(), JsonObject(cred.parsedCredential.toMutableMap().also {
                 it.putIfAbsent("id", JsonPrimitive(credentialId))
             }), cred.rawCredential)
         }
