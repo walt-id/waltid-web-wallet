@@ -37,12 +37,12 @@
               <div class="bg-white p-6 rounded-2xl shadow-2xl h-full">
                 <div class="flex justify-end">
                   <div
-                    :class="credential.expirationDate ? new Date(credential.expirationDate).getTime() > new Date().getTime() ? 'bg-cyan-50' : 'bg-red-50' : 'bg-cyan-50'"
+                    :class="credential.parsedCredential.expirationDate ? new Date(credential.parsedCredential.expirationDate).getTime() > new Date().getTime() ? 'bg-cyan-50' : 'bg-red-50' : 'bg-cyan-50'"
                     class="rounded-lg px-3 mb-2">
                     <span
-                      :class="credential.expirationDate ? new Date(credential.expirationDate).getTime() > new Date().getTime() ? 'text-cyan-900' : 'text-orange-900' : 'text-cyan-900'">{{
-                        credential.expirationDate
-                        ? new Date(credential.expirationDate).getTime() >
+                      :class="credential.parsedCredential.expirationDate ? new Date(credential.parsedCredential.expirationDate).getTime() > new Date().getTime() ? 'text-cyan-900' : 'text-orange-900' : 'text-cyan-900'">{{
+                        credential.parsedCredential.expirationDate
+                        ? new Date(credential.parsedCredential.expirationDate).getTime() >
                           new Date().getTime()
                           ? "Valid"
                           : "Expired"
@@ -51,19 +51,19 @@
                 </div>
                 <h2 class="text-2xl font-bold mb-2 text-gray-900 bold mb-8">
                   {{
-                    credential.type[credential.type.length - 1].replace(
+                    credential.parsedCredential.type[credential.parsedCredential.type.length - 1].replace(
                       /([a-z0-9])([A-Z])/g,
                       "$1 $2"
                     )
                   }}
                 </h2>
-                <div v-if="credential.issuer" class="flex items-center">
-                  <img class="w-12" :src="credential.issuer?.image?.id
-                        ? credential.issuer?.image?.id
-                        : credential.issuer?.image
+                <div v-if="credential.parsedCredential.issuer" class="flex items-center">
+                  <img class="w-12" :src="credential.parsedCredential.issuer?.image?.id
+                        ? credential.parsedCredential.issuer?.image?.id
+                        : credential.parsedCredential.issuer?.image
                       " />
                   <div class="text-natural-600 ml-2 w-32">
-                    {{ credential.issuer?.name }}
+                    {{ credential.parsedCredential.issuer?.name }}
                   </div>
                 </div>
               </div>
