@@ -1,4 +1,8 @@
 services:
+  # postgresdb:  # Uncomment to connect a Postgres DB
+  #   image: postgres
+  #   environment:
+  #     POSTGRES_PASSWORD: secret
   wallet-backend:
     image: waltid/wallet-backend:latest
     volumes:
