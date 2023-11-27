@@ -23,6 +23,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.*
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.uuid.UUID
@@ -66,21 +67,18 @@ fun Application.configureSecurity() {
 
     install(Authentication) {
 
-        bearer {
-            bearer("authenticated-bearer") {
-                authenticate { tokenCredential ->
-                    if (securityUserTokenMapping.contains(tokenCredential.token)) {
-                        UserIdPrincipal(securityUserTokenMapping[tokenCredential.token].toString())
-                    } else {
-                        null
-                    }
+        bearer("authenticated-bearer") {
+            authenticate { tokenCredential ->
+                if (securityUserTokenMapping.contains(tokenCredential.token)) {
+                    UserIdPrincipal(securityUserTokenMapping[tokenCredential.token].toString())
+                } else {
+                    null
                 }
             }
         }
 
         session<LoginTokenSession>("authenticated-session") {
             validate { session ->
-                //println("Validating: $session, [$securityUserTokenMapping]")
                 if (securityUserTokenMapping.contains(session.token)) {
                     UserIdPrincipal(securityUserTokenMapping[session.token].toString())
                 } else {
@@ -90,7 +88,13 @@ fun Application.configureSecurity() {
             }
 
             challenge {
-                call.respond(HttpStatusCode.Unauthorized, "Login to continue.")
+                call.respond(
+                    HttpStatusCode.Unauthorized, JsonObject(
+                        mapOf(
+                            "message" to JsonPrimitive("Login Required")
+                        )
+                    )
+                )
             }
         }
     }
@@ -210,14 +214,14 @@ fun Application.auth() {
     }
 }
 
-
-fun PipelineContext<Unit, ApplicationCall>.getUserId() = call.principal<UserIdPrincipal>("authenticated-session")
-    ?: call.principal<UserIdPrincipal>("authenticated-bearer")
-    ?: throw UnauthorizedException("Could not retrieve authorized user.")
+fun PipelineContext<Unit, ApplicationCall>.getUserId() =
+    call.principal<UserIdPrincipal>("authenticated-session")
+        ?: call.principal<UserIdPrincipal>("authenticated-bearer")
+        ?: call.principal<UserIdPrincipal>() // bearer is registered with no name for some reason
+        ?: throw UnauthorizedException("Could not find user authorization within request.")
 
 fun PipelineContext<Unit, ApplicationCall>.getUserUUID() =
-    runCatching { UUID(getUserId().name) }
-        .getOrNull() ?: throw IllegalArgumentException("Invalid user id")
+    runCatching { UUID(getUserId().name) }.getOrElse { throw IllegalArgumentException("Invalid user id: $it") }
 
 fun PipelineContext<Unit, ApplicationCall>.getWalletId() =
     runCatching {
@@ -231,8 +235,8 @@ fun PipelineContext<Unit, ApplicationCall>.getWalletService() =
     WalletServiceManager.getWalletService(getUserUUID(), getWalletId())
 
 fun PipelineContext<Unit, ApplicationCall>.getUsersSessionToken(): String? =
-    call.sessions.get(LoginTokenSession::class)?.token ?: call.request.authorization()
-        ?.removePrefix("Bearer ")
+    call.sessions.get(LoginTokenSession::class)?.token
+        ?: call.request.authorization()?.removePrefix("Bearer ")
 
 fun getNftService() = WalletServiceManager.getNftService()
 
