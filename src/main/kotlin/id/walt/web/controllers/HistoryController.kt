@@ -1,6 +1,5 @@
 package id.walt.web.controllers
 
-import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.server.application.*

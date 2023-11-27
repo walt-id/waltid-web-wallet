@@ -1,7 +1,6 @@
 package id.walt.web.controllers
 
 import id.walt.crypto.keys.KeyType
-import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.post

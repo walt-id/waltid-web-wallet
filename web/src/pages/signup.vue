@@ -171,7 +171,7 @@ async function submit() {
         password: passwordInput,
         type: "email",
     };
-    await $fetch("/r/auth/create", {
+    await $fetch("/wallet-api/auth/create", {
         method: "POST",
         body: user,
     })

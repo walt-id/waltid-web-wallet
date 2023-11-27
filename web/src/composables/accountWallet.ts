@@ -14,7 +14,7 @@ export type WalletListings = {
 }
 
 export async function listWallets() {
-    const {data} = useFetch<WalletListings>("/r/wallet/accounts/wallets")
+    const {data} = useFetch<WalletListings>("/wallet-api/wallet/accounts/wallets")
     return data
 }
 

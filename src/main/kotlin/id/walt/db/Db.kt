@@ -76,6 +76,7 @@ object Db {
 
             runBlocking {
                 AccountsService.register(EmailAccountRequest("Max Mustermann", "string@string.string", "string"))
+                AccountsService.register(EmailAccountRequest("Max Mustermann", "user@email.com", "password"))
             }
         }
 

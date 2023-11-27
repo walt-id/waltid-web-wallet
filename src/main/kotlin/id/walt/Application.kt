@@ -2,12 +2,10 @@ package id.walt
 
 import id.walt.config.ConfigManager
 import id.walt.db.Db
-import id.walt.push.PushController.push
 import id.walt.web.Administration.configureAdministration
-import id.walt.web.Notifications.notifications
-import id.walt.web.auth
-import id.walt.web.configureSecurity
 import id.walt.web.controllers.*
+import id.walt.web.controllers.NotificationController.notifications
+import id.walt.web.controllers.PushController.push
 import id.walt.web.plugins.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
@@ -66,7 +64,6 @@ fun Application.module() {
     keys()
     exchange()
     history()
-    wallets()
     web3accounts()
     accounts()
     nfts()

@@ -1,4 +1,4 @@
-package id.walt.push
+package id.walt.service.push
 
 import id.walt.config.ConfigManager
 import id.walt.config.PushConfig

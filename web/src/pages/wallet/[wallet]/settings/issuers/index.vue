@@ -47,7 +47,7 @@ import CenterMain from "~/components/CenterMain.vue";
 import { InboxArrowDownIcon } from "@heroicons/vue/24/outline";
 
 const currentWallet = useCurrentWallet()
-const issuers = await useLazyFetch(`/r/wallet/${currentWallet.value}/issuers`).data;
+const issuers = await useLazyFetch(`/wallet-api/wallet/${currentWallet.value}/issuers`).data;
 refreshNuxtData();
 
 function importIssuer() {}

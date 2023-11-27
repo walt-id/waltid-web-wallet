@@ -343,13 +343,13 @@ type WalletCredential = {
     addedOn: string,
 }
 
-const { data: credential, pending, refresh, error } = await useLazyFetch<WalletCredential>(`/r/wallet/${currentWallet.value}/credentials/${encodeURIComponent(credentialId)}`);
+const { data: credential, pending, refresh, error } = await useLazyFetch<WalletCredential>(`/wallet-api/wallet/${currentWallet.value}/credentials/${encodeURIComponent(credentialId)}`);
 refreshNuxtData();
 
 useHead({ title: "View credential - walt.id" });
 
 async function deleteCredential() {
-    await $fetch(`/r/wallet/${currentWallet.value}/credentials/${encodeURIComponent(credentialId)}`, {
+    await $fetch(`/wallet-api/wallet/${currentWallet.value}/credentials/${encodeURIComponent(credentialId)}`, {
         method: "DELETE"
     });
     await navigateTo({ path: "/" });

@@ -1,4 +1,4 @@
-package id.walt.push
+package id.walt.service.push
 
 import id.walt.crypto.utils.Base64Utils.base64Decode
 import kotlinx.serialization.Serializable

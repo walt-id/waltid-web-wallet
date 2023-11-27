@@ -1,4 +1,4 @@
-package id.walt.web
+package id.walt.web.controllers
 
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.ktor.http.*
@@ -6,14 +6,14 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.JsonPrimitive
 
-private const val DidKeyMethodName = "key"
-private const val DidJwkMethodName = "jwk"
-private const val DidWebMethodName = "web"
-private const val DidEbsiMethodName = "ebsi"
-private const val DidCheqdMethodName = "cheqd"
-private const val DidIotaMethodName = "iota"
-
 object DidCreation {
+
+    private const val DidKeyMethodName = "key"
+    private const val DidJwkMethodName = "jwk"
+    private const val DidWebMethodName = "web"
+    private const val DidEbsiMethodName = "ebsi"
+    private const val DidCheqdMethodName = "cheqd"
+    private const val DidIotaMethodName = "iota"
 
     fun Route.didCreate() {
         post(DidKeyMethodName, {

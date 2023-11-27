@@ -1,7 +1,6 @@
 package id.walt.web.controllers
 
-import id.walt.web.DidCreation.didCreate
-import id.walt.web.getWalletService
+import id.walt.web.controllers.DidCreation.didCreate
 import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.post

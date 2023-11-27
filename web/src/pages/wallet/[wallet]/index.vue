@@ -61,7 +61,7 @@ const currentWallet = useCurrentWallet()
 
 const walletId = route.params.wallet
 
-const { data: credentials, pending, refresh, error } = await useLazyFetch(`/r/wallet/${walletId}/credentials`);
+const { data: credentials, pending, refresh, error } = await useLazyFetch(`/wallet-api/wallet/${walletId}/credentials`);
 refreshNuxtData();
 
 function credentialTypeOf(credential) {
@@ -160,7 +160,7 @@ if (process.client) {
         var key = subscription.getKey ? subscription.getKey("p256dh") : "";
         var auth = subscription.getKey ? subscription.getKey("auth") : "";
 
-        return fetch("/r/push/subscription", {
+        return fetch("/wallet-api/push/subscription", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

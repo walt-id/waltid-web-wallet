@@ -4,7 +4,6 @@ import id.walt.service.issuers.CredentialDataTransferObject
 import id.walt.service.issuers.IssuerCredentialsDataTransferObject
 import id.walt.service.issuers.IssuerDataTransferObject
 import id.walt.service.issuers.IssuersService
-import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*

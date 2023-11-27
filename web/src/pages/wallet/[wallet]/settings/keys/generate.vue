@@ -62,7 +62,7 @@ async function generateKey(type: String) {
     loading.value = true;
 
     console.log(type);
-    response.value = await $fetch(`/r/wallet/${currentWallet.value}/keys/generate`, {
+    response.value = await $fetch(`/wallet-api/wallet/${currentWallet.value}/keys/generate`, {
         method: "POST",
         params: {
             type: type,

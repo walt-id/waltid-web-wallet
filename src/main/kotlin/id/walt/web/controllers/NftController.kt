@@ -2,7 +2,6 @@ package id.walt.web.controllers
 
 import id.walt.service.dto.*
 import id.walt.service.nft.fetchers.parameters.*
-import id.walt.web.getNftService
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*

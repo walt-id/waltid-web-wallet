@@ -1,9 +1,14 @@
-package id.walt.web
+package id.walt.web.controllers
 
 //import id.walt.web.model.LoginRequestJson
+import id.walt.db.models.AccountWalletMappings
+import id.walt.db.models.AccountWalletPermissions
 import id.walt.service.WalletServiceManager
 import id.walt.service.account.AccountsService
 import id.walt.utils.RandomUtils
+import id.walt.web.InsufficientPermissionsException
+import id.walt.web.UnauthorizedException
+import id.walt.web.WebBaseRoutes.webWalletRoute
 import id.walt.web.model.AccountRequest
 import id.walt.web.model.EmailAccountRequest
 import id.walt.web.model.LoginRequestJson
@@ -16,12 +21,15 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.uuid.UUID
+import kotlinx.uuid.toJavaUUID
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.collections.set
 import kotlin.time.Duration.Companion.days
 
@@ -93,8 +101,8 @@ val securityUserTokenMapping = HashMap<String, UUID>() // Token -> UUID
 
 
 fun Application.auth() {
-    routing {
-        route("r/auth", {
+    webWalletRoute {
+        route("auth", {
             tags = listOf("Authentication")
         }) {
             post("login", {
@@ -227,3 +235,24 @@ fun PipelineContext<Unit, ApplicationCall>.getUsersSessionToken(): String? =
         ?.removePrefix("Bearer ")
 
 fun getNftService() = WalletServiceManager.getNftService()
+
+fun PipelineContext<Unit, ApplicationCall>.ensurePermissionsForWallet(required: AccountWalletPermissions): Boolean {
+    val userId = getUserUUID().toJavaUUID()
+    val walletId = getWalletId().toJavaUUID()
+
+    val permissions = transaction {
+        (AccountWalletMappings.select { (AccountWalletMappings.account eq userId) and (AccountWalletMappings.wallet eq walletId) }
+            .firstOrNull()
+            ?: throw UnauthorizedException("This account does not have access to the specified wallet.")
+                )[AccountWalletMappings.permissions]
+    }
+
+    if (permissions.power >= required.power) {
+        return true
+    } else {
+        throw InsufficientPermissionsException(
+            minimumRequired = required,
+            current = permissions
+        )
+    }
+}

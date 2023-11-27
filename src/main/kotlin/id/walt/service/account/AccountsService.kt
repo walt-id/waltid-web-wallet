@@ -4,7 +4,7 @@ import id.walt.db.models.*
 import id.walt.db.models.todo.AccountIssuers
 import id.walt.db.models.todo.Issuers
 import id.walt.service.WalletServiceManager
-import id.walt.web.generateToken
+import id.walt.web.controllers.generateToken
 import id.walt.web.model.AccountRequest
 import id.walt.web.model.AddressAccountRequest
 import id.walt.web.model.EmailAccountRequest
@@ -34,7 +34,8 @@ object AccountsService {
         val walletService = WalletServiceManager.getWalletService(registeredUserId, createdInitialWalletId)
 
         // Add default data:
-        walletService.createDid("key", mapOf("alias" to JsonPrimitive("Onboarding")))
+        val createdDid = walletService.createDid("key", mapOf("alias" to JsonPrimitive("Onboarding")))
+        walletService.setDefault(createdDid)
 
         transaction {
             queryDefaultIssuer("walt.id")?.let { defaultIssuer ->

@@ -147,7 +147,7 @@ const currentWallet = useCurrentWallet();
 async function resolvePresentationRequest(request) {
     try {
         console.log("RESOLVING request", request);
-        const response = await $fetch(`/r/wallet/${currentWallet.value}/exchange/resolvePresentationRequest`, { method: "POST", body: request });
+        const response = await $fetch(`/wallet-api/wallet/${currentWallet.value}/exchange/resolvePresentationRequest`, { method: "POST", body: request });
         console.log(response);
         return response;
     } catch (e) {
@@ -189,7 +189,7 @@ const failed = ref(false);
 const failMessage = ref("Unknown error occurred.");
 
 
-const matchedCredentials = await $fetch(`/r/wallet/${currentWallet.value}/exchange/matchCredentialsForPresentationDefinition`, {
+const matchedCredentials = await $fetch(`/wallet-api/wallet/${currentWallet.value}/exchange/matchCredentialsForPresentationDefinition`, {
     method: "POST",
     body: presentationDefinition
 });
@@ -237,7 +237,7 @@ async function acceptPresentation() {
         disclosures: encodedDisclosures.value
     };
 
-    const response = await fetch(`/r/wallet/${currentWallet.value}/exchange/usePresentationRequest`, {
+    const response = await fetch(`/wallet-api/wallet/${currentWallet.value}/exchange/usePresentationRequest`, {
         method: "POST",
         body: JSON.stringify(req),
         redirect: "manual",

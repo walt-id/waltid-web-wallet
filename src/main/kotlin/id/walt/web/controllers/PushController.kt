@@ -1,5 +1,8 @@
-package id.walt.push
+package id.walt.web.controllers
 
+import id.walt.service.push.PushManager
+import id.walt.service.push.Subscription
+import id.walt.web.WebBaseRoutes.webWalletRoute
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
@@ -7,14 +10,13 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import io.ktor.server.routing.*
 
 object PushController {
 
     fun Application.push() {
-        routing {
-            route("r/push", {
-                tags = listOf("Notifications / Push controlling")
+        webWalletRoute { // todo: unauthenticated
+            route("push", {
+                tags = listOf("NotificationController / Push controlling")
             }) {
                 post("subscription", {
                     summary = "Subscribe to push notifications [Experimental: Push notification system]"

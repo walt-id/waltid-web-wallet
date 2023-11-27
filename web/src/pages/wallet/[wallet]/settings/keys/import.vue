@@ -36,7 +36,7 @@ const keyText = ref("");
 const currentWallet = useCurrentWallet()
 
 async function importKey() {
-    await $fetch(`/r/wallet/${currentWallet.value}/keys/import`, {
+    await $fetch(`/wallet-api/wallet/${currentWallet.value}/keys/import`, {
         method: "POST",
         body: keyText.value,
     });

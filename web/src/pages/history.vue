@@ -81,7 +81,7 @@ const groupedHistoryElements = ref({});
 const currentWallet = useCurrentWallet()
 
 console.log("Loading history...");
-const { data: history, pending: pending, refresh, error } = await useLazyFetch(`/r/wallet/${currentWallet.value}/history`);
+const { data: history, pending: pending, refresh, error } = await useLazyFetch(`/wallet-api/wallet/${currentWallet.value}/history`);
 refreshNuxtData();
 
 watch(history, () => {

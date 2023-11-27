@@ -153,7 +153,7 @@ import { useTitle } from "@vueuse/core";
 import { ref } from "vue";
 
 const currentWallet = useCurrentWallet()
-const { data: dids, pending: pendingDids } = await useLazyAsyncData(() => $fetch(`/r/wallet/${currentWallet.value}/dids`));
+const { data: dids, pending: pendingDids } = await useLazyAsyncData(() => $fetch(`/wallet-api/wallet/${currentWallet.value}/dids`));
 
 const selectedDid: Ref<Object | null> = ref(null);
 
@@ -243,7 +243,7 @@ async function acceptCredential() {
     }
     console.log("Issue to: " + did);
     try {
-        await $fetch(`/r/wallet/${currentWallet.value}/exchange/useOfferRequest?did=${did}`, {
+        await $fetch(`/wallet-api/wallet/${currentWallet.value}/exchange/useOfferRequest?did=${did}`, {
             method: "POST",
             body: request,
         });

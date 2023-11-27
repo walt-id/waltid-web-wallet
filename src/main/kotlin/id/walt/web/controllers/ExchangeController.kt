@@ -3,7 +3,6 @@ package id.walt.web.controllers
 import id.walt.db.models.WalletOperationHistory
 import id.walt.oid4vc.data.dif.PresentationDefinition
 import id.walt.service.SSIKit2WalletService
-import id.walt.web.getWalletService
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*

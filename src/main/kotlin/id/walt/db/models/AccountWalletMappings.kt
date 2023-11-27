@@ -6,10 +6,11 @@ import kotlinx.uuid.UUID
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.timestamp
 
-enum class AccountWalletPermissions {
-    ADMINISTRATE,
-    USE,
-    READ_ONLY
+@Serializable
+enum class AccountWalletPermissions(val power: Int) {
+    ADMINISTRATE(9999),
+    USE(100),
+    READ_ONLY(10)
 }
 
 object AccountWalletMappings : Table("account_wallet_mapping") {

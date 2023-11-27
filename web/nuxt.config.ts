@@ -24,7 +24,7 @@ export default defineNuxtConfig({
     },
 
     auth: {
-        baseURL: "/r/auth",
+        baseURL: "/wallet-api/auth",
 
         provider: {
             type: "local",
@@ -183,7 +183,7 @@ export default defineNuxtConfig({
     nitro: {
         compressPublicAssets: true,
         devProxy: {
-            "/r/": "http://localhost:4545/r"
+            "/wallet-api/": "http://localhost:4545/wallet-api"
         }
     },
     ssr: false,

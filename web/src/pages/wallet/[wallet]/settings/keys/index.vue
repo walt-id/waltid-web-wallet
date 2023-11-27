@@ -77,7 +77,7 @@ import { InboxArrowDownIcon, KeyIcon, CheckIcon, ArrowUturnLeftIcon } from "@her
 
 const currentWallet = useCurrentWallet()
 
-const keys = await useLazyFetch(`/r/wallet/${currentWallet.value}/keys`).data;
+const keys = await useLazyFetch(`/wallet-api/wallet/${currentWallet.value}/keys`).data;
 refreshNuxtData();
 
 function generateKey() {

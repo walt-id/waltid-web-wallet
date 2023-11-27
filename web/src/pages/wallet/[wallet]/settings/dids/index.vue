@@ -54,7 +54,7 @@ const dids = ref("");
 const currentWallet = useCurrentWallet()
 
 async function loadDids() {
-    dids.value = await useLazyFetch(`/r/wallet/${currentWallet.value}/dids`).data;
+    dids.value = await useLazyFetch(`/wallet-api/wallet/${currentWallet.value}/dids`).data;
     refreshNuxtData();
 }
 

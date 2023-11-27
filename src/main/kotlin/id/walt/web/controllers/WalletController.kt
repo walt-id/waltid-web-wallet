@@ -1,30 +1,24 @@
 package id.walt.web.controllers
 
+import id.walt.web.WebBaseRoutes.authenticatedWebWalletRoute
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.routing.*
 
 fun Application.walletRoute(build: Route.() -> Unit) {
-    routing {
-        authenticate("authenticated-session", "authenticated-bearer") {
-            route("r/wallet/{wallet}", {
-                // tags = listOf("wallet")
-            }) {
-                build.invoke(this)
+    authenticatedWebWalletRoute {
+        route("wallet/{wallet}", {
+            request {
+                pathParameter<String>("wallet") {
+                    required = true
+                    allowEmptyValue = false
+                    description = "Wallet ID"
+                }
             }
+            // tags = listOf("wallet")
+        }) {
+            build.invoke(this)
         }
     }
 }
 
-fun Application.wallets() {
-    routing {
-        authenticate("authenticated-session", "authenticated-bearer") {
-            route("r/wallet", {
-                tags = listOf("wallet")
-            }) {
-
-            }
-        }
-    }
-}

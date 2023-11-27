@@ -80,11 +80,11 @@ const didId = route.params.didId;
 
 const currentWallet = useCurrentWallet()
 
-const { data: didDoc, pending, refresh, error } = await useLazyFetch(`/r/wallet/${currentWallet.value}/dids/${didId}`);
+const { data: didDoc, pending, refresh, error } = await useLazyFetch(`/wallet-api/wallet/${currentWallet.value}/dids/${didId}`);
 refreshNuxtData();
 
 async function deleteDid() {
-    await $fetch(`/r/wallet/${currentWallet.value}/dids/${didId}`, {
+    await $fetch(`/wallet-api/wallet/${currentWallet.value}/dids/${didId}`, {
         method: "DELETE",
     }).finally(() => {
         navigateTo(`/wallet/${currentWallet.value}/settings/dids`);
@@ -92,7 +92,7 @@ async function deleteDid() {
 }
 
 async function setDefault() {
-    await $fetch(`/r/wallet/${currentWallet.value}/dids/default?did=${didId}`, {
+    await $fetch(`/wallet-api/wallet/${currentWallet.value}/dids/default?did=${didId}`, {
         method: "POST",
     });
 }

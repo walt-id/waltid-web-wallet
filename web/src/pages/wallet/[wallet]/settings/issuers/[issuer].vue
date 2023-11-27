@@ -44,7 +44,7 @@ const issuer = route.params.issuer;
 
 const currentWallet = useCurrentWallet()
 
-const issuerCredentials = await $fetch(`/r/wallet/${currentWallet.value}/issuers/${issuer}/credentials`);
+const issuerCredentials = await $fetch(`/wallet-api/wallet/${currentWallet.value}/issuers/${issuer}/credentials`);
 refreshNuxtData();
 
 useHead({

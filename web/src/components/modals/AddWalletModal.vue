@@ -78,7 +78,7 @@ const selectedEcosystem = ref("");
 let addressInput = "";
 
 // TODO: fetch from backend
-// const {data: ecosystems, pending} = await useLazyFetch(`/r/wallet/${currentWallet.value}/web3/ecosystems`)
+// const {data: ecosystems, pending} = await useLazyFetch(`/wallet-api/wallet/${currentWallet.value}/web3/ecosystems`)
 // refreshNuxtData()
 const ecosystems = ["ethereum", "tezos", "flow", "near", "algorand"];
 
@@ -86,7 +86,7 @@ const currentWallet = useCurrentWallet()
 
 async function addWallet() {
     console.log(`addWallet: ${addressInput} - ${selectedEcosystem.value}`);
-    await $fetch(`/r/wallet/${currentWallet.value}/web3accounts/link`, {
+    await $fetch(`/wallet-api/wallet/${currentWallet.value}/web3accounts/link`, {
         method: "POST",
         body: {
             address: addressInput,

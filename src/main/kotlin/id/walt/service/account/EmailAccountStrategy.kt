@@ -2,7 +2,7 @@ package id.walt.service.account
 
 import de.mkammerer.argon2.Argon2Factory
 import id.walt.db.models.Accounts
-import id.walt.web.ByteLoginRequest
+import id.walt.web.controllers.ByteLoginRequest
 import id.walt.web.UnauthorizedException
 import id.walt.web.model.EmailAccountRequest
 import kotlinx.datetime.Clock

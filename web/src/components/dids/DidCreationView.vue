@@ -119,7 +119,7 @@ async function createDid() {
 
     const query = new URLSearchParams(merged).toString();
 
-    response.value = await $fetch(`/r/wallet/${currentWallet.value}/dids/create/${props.method}?${query}`, {
+    response.value = await $fetch(`/wallet-api/wallet/${currentWallet.value}/dids/create/${props.method}?${query}`, {
         method: "POST",
     });
     loading.value = false;

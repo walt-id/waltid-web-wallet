@@ -113,7 +113,7 @@ if (process.client) {
         const key = subscription.getKey ? subscription.getKey("p256dh") : "";
         const auth = subscription.getKey ? subscription.getKey("auth") : "";
 
-        return fetch("/r/push/subscription", {
+        return fetch("/wallet-api/push/subscription", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

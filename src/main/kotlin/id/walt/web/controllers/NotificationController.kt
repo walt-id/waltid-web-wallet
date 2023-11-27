@@ -1,6 +1,6 @@
-package id.walt.web
+package id.walt.web.controllers
 
-import id.walt.push.PushManager
+import id.walt.service.push.PushManager
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
@@ -17,7 +17,7 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
 
-object Notifications {
+object NotificationController {
 
     /*
     fun splitQuery(url: URI): Map<String?, List<String?>?> {
@@ -39,7 +39,7 @@ object Notifications {
     fun Application.notifications() {
         routing {
             route("/api/notifications", {
-                tags = listOf("Notifications")
+                tags = listOf("NotificationController")
             }) {
                 post("send", {
                     summary = "Experimental: Push notification system"
