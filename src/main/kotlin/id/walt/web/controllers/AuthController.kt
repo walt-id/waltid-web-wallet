@@ -6,6 +6,7 @@ import id.walt.db.models.AccountWalletPermissions
 import id.walt.service.WalletServiceManager
 import id.walt.service.account.AccountsService
 import id.walt.utils.RandomUtils
+import id.walt.web.ForbiddenException
 import id.walt.web.InsufficientPermissionsException
 import id.walt.web.UnauthorizedException
 import id.walt.web.WebBaseRoutes.webWalletRoute
@@ -26,6 +27,7 @@ import io.ktor.util.pipeline.*
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.uuid.SecureRandom
 import kotlinx.uuid.UUID
 import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.and
@@ -47,12 +49,17 @@ fun generateToken() = RandomUtils.randomBase64UrlString(256)
 
 data class LoginTokenSession(val token: String) : Principal
 
+object AuthKeys {
+    private val secureRandom = SecureRandom
+
+    // TODO make statically configurable for HA deployments
+    val encryptionKey = secureRandom.nextBytes(16)
+    val signKey = secureRandom.nextBytes(16)
+}
+
 fun Application.configureSecurity() {
 
     install(Sessions) {
-        val encryptionKey = "uv4phoozeefoom7l".toByteArray()
-        val signKey = "faungeenah5aewiL".toByteArray()
-
         cookie<LoginTokenSession>("login") {
             //cookie.encoding = CookieEncoding.BASE64_ENCODING
 
@@ -61,7 +68,7 @@ fun Application.configureSecurity() {
             // TODO cookie.secure = true
             cookie.maxAge = 1.days
             cookie.extensions["SameSite"] = "Strict"
-            transform(SessionTransportTransformerEncrypt(encryptionKey, signKey))
+            transform(SessionTransportTransformerEncrypt(AuthKeys.encryptionKey, AuthKeys.signKey))
         }
     }
 
@@ -247,7 +254,7 @@ fun PipelineContext<Unit, ApplicationCall>.ensurePermissionsForWallet(required: 
     val permissions = transaction {
         (AccountWalletMappings.select { (AccountWalletMappings.account eq userId) and (AccountWalletMappings.wallet eq walletId) }
             .firstOrNull()
-            ?: throw UnauthorizedException("This account does not have access to the specified wallet.")
+            ?: throw ForbiddenException("This account does not have access to the specified wallet.")
                 )[AccountWalletMappings.permissions]
     }
 

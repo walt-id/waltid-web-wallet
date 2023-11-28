@@ -7,9 +7,10 @@ import kotlinx.serialization.SerialName
 sealed class WebException(val status: HttpStatusCode, message: String) : Exception(message)
 
 class UnauthorizedException(message: String) : WebException(HttpStatusCode.Unauthorized, message)
+class ForbiddenException(message: String) : WebException(HttpStatusCode.Forbidden, message)
 
 @SerialName("InsufficientPermissions")
 class InsufficientPermissionsException(
     minimumRequired: AccountWalletPermissions,
     current: AccountWalletPermissions,
-) : WebException(HttpStatusCode.Unauthorized, "You do not have enough permissions to access this action. Minimum required permissions: $minimumRequired, your current permissions: $current")
+) : WebException(HttpStatusCode.Forbidden, "You do not have enough permissions to access this action. Minimum required permissions: $minimumRequired, your current permissions: $current")
