@@ -5,8 +5,6 @@ import id.walt.db.models.Web3Wallets
 import id.walt.web.model.AddressAccountRequest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaInstant
-import kotlinx.uuid.toJavaUUID
-import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -22,10 +20,10 @@ object Web3WalletAccountStrategy : AccountStrategy<AddressAccountRequest> {
             val accountId = Accounts.insert {
                 it[Accounts.name] = name
                 it[createdOn] = Clock.System.now().toJavaInstant()
-            }[Accounts.id].value.toKotlinUUID()
+            }[Accounts.id].value
 
             Web3Wallets.insert {
-                it[account] = accountId.toJavaUUID()
+                it[account] = accountId
                 it[address] = request.address
                 it[ecosystem] = request.ecosystem
                 it[owner] = false

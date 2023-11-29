@@ -51,7 +51,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import kotlinx.uuid.UUID
-import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -201,8 +200,9 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
 
         println("Resolved presentation definition: ${presentationSession.authorizationRequest!!.presentationDefinition!!.toJSONString()}")
 
-        val tokenResponse = credentialWallet.processImplicitFlowAuthorization(presentationSession.authorizationRequest!!)
-        val resp = ktorClient.submitForm(presentationSession.authorizationRequest!!.responseUri!!,
+        val tokenResponse = credentialWallet.processImplicitFlowAuthorization(presentationSession.authorizationRequest)
+        val resp = ktorClient.submitForm(
+            presentationSession.authorizationRequest.responseUri!!,
             parameters {
                 tokenResponse.toHttpParameters().forEach { entry ->
                     entry.value.forEach { append(entry.key, it) }
@@ -504,7 +504,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
         transaction {
             WalletKeys.insert {
                 it[WalletKeys.keyId] = keyId
-                it[wallet] = walletId.toJavaUUID()
+                it[wallet] = walletId
                 it[document] = KeySerialization.serializeKey(key)
                 it[createdOn] = Clock.System.now().toJavaInstant()
             }
@@ -547,7 +547,7 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
 
     override fun getHistory(limit: Int, offset: Int): List<WalletOperationHistory> =
         WalletOperationHistories
-            .select { WalletOperationHistories.wallet eq walletId.toJavaUUID() }
+            .select { WalletOperationHistories.wallet eq walletId }
             .orderBy(WalletOperationHistories.timestamp)
             .limit(10)
             .map { row ->
@@ -557,8 +557,8 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
     override suspend fun addOperationHistory(operationHistory: WalletOperationHistory) {
         transaction {
             WalletOperationHistories.insert {
-                it[account] = operationHistory.account.toJavaUUID()
-                it[wallet] = operationHistory.wallet.toJavaUUID()
+                it[account] = operationHistory.account
+                it[wallet] = operationHistory.wallet
                 it[timestamp] = operationHistory.timestamp.toJavaInstant()
                 it[operation] = operationHistory.operation
                 it[data] = Json.encodeToString(operationHistory.data)

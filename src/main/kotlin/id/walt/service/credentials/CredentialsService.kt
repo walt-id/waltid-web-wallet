@@ -5,7 +5,6 @@ import id.walt.db.models.WalletCredentials
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaInstant
 import kotlinx.uuid.UUID
-import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.batchInsert
@@ -15,19 +14,19 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object CredentialsService {
     fun get(wallet: UUID, credentialId: String): WalletCredential? = transaction {
-        WalletCredentials.select { (WalletCredentials.wallet eq wallet.toJavaUUID()) and (WalletCredentials.id eq credentialId) }
+        WalletCredentials.select { (WalletCredentials.wallet eq wallet) and (WalletCredentials.id eq credentialId) }
             .singleOrNull()?.let { WalletCredential(it) }
     }
 
     fun list(wallet: UUID) = transaction {
-        WalletCredentials.select { WalletCredentials.wallet eq wallet.toJavaUUID() }
+        WalletCredentials.select { WalletCredentials.wallet eq wallet }
             .map { WalletCredential(it) }
     }
 
     fun add(wallet: UUID, vararg credentials: WalletCredential) = addAll(wallet, credentials.toList())
     fun addAll(wallet: UUID, credentials: List<WalletCredential>): List<String> =
         WalletCredentials.batchInsert(credentials) { credential: WalletCredential ->
-            this[WalletCredentials.wallet] = wallet.toJavaUUID()
+            this[WalletCredentials.wallet] = wallet
             this[WalletCredentials.id] = credential.id
             this[WalletCredentials.document] = credential.document
             this[WalletCredentials.disclosures] = credential.disclosures
@@ -35,7 +34,7 @@ object CredentialsService {
         }.map { it[WalletCredentials.id] }
 
     fun delete(wallet: UUID, credentialId: String): Boolean =
-        WalletCredentials.deleteWhere { (WalletCredentials.wallet eq wallet.toJavaUUID()) and (id eq credentialId) } > 0
+        WalletCredentials.deleteWhere { (WalletCredentials.wallet eq wallet) and (id eq credentialId) } > 0
 
     /*fun update(account: UUID, did: DidUpdateDataObject): Boolean {
         TO-DO

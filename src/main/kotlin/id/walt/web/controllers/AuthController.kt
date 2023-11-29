@@ -29,7 +29,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.uuid.SecureRandom
 import kotlinx.uuid.UUID
-import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -248,8 +247,8 @@ fun PipelineContext<Unit, ApplicationCall>.getUsersSessionToken(): String? =
 fun getNftService() = WalletServiceManager.getNftService()
 
 fun PipelineContext<Unit, ApplicationCall>.ensurePermissionsForWallet(required: AccountWalletPermissions): Boolean {
-    val userId = getUserUUID().toJavaUUID()
-    val walletId = getWalletId().toJavaUUID()
+    val userId = getUserUUID()
+    val walletId = getWalletId()
 
     val permissions = transaction {
         (AccountWalletMappings.select { (AccountWalletMappings.account eq userId) and (AccountWalletMappings.wallet eq walletId) }

@@ -12,8 +12,6 @@ import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.uuid.UUID
-import kotlinx.uuid.toJavaUUID
-import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
@@ -40,7 +38,7 @@ object AccountsService {
         transaction {
             queryDefaultIssuer("walt.id")?.let { defaultIssuer ->
                 AccountIssuers.insert {
-                    it[account] = registeredUserId.toJavaUUID()
+                    it[account] = registeredUserId
                     it[issuer] = defaultIssuer
                 }
             }
@@ -75,10 +73,10 @@ object AccountsService {
         AccountWalletListing(account, wallets =
         transaction {
             AccountWalletMappings.innerJoin(Wallets)
-                .select { AccountWalletMappings.account eq account.toJavaUUID() }
+                .select { AccountWalletMappings.account eq account }
                 .map {
                     AccountWalletListing.WalletListing(
-                        id = it[AccountWalletMappings.wallet].value.toKotlinUUID(),
+                        id = it[AccountWalletMappings.wallet].value,
                         name = it[Wallets.name],
                         createdOn = it[Wallets.createdOn].toKotlinInstant(),
                         addedOn = it[AccountWalletMappings.addedOn].toKotlinInstant(),
@@ -104,7 +102,7 @@ object AccountsService {
                 .map { Account(it) }
         }
 
-    fun getNameFor(account: UUID) = Accounts.select { Accounts.id eq account.toJavaUUID() }.single()[Accounts.email]
+    fun getNameFor(account: UUID) = Accounts.select { Accounts.id eq account }.single()[Accounts.email]
 }
 
 @Serializable

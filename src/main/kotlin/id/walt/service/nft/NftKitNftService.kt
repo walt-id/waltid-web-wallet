@@ -9,7 +9,6 @@ import id.walt.service.dto.*
 import id.walt.service.nft.fetchers.DataFetcher
 import id.walt.service.nft.fetchers.parameters.*
 import kotlinx.uuid.UUID
-import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -83,7 +82,7 @@ class NftKitNftService : NftService {
     private fun getWalletById(accountId: String) = getWalletById(UUID(accountId))
 
     private fun getWalletById(accountId: UUID) =
-        transaction { Web3Wallets.select { Web3Wallets.account eq accountId.toJavaUUID() }.firstOrNull() }?.let {
+        transaction { Web3Wallets.select { Web3Wallets.account eq accountId }.firstOrNull() }?.let {
             WalletDataTransferObject(address = it[Web3Wallets.address], ecosystem = it[Web3Wallets.ecosystem])
         }
 }

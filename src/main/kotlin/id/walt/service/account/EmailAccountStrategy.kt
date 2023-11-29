@@ -2,12 +2,11 @@ package id.walt.service.account
 
 import de.mkammerer.argon2.Argon2Factory
 import id.walt.db.models.Accounts
-import id.walt.web.controllers.ByteLoginRequest
 import id.walt.web.UnauthorizedException
+import id.walt.web.controllers.ByteLoginRequest
 import id.walt.web.model.EmailAccountRequest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaInstant
-import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -29,7 +28,7 @@ object EmailAccountStrategy : AccountStrategy<EmailAccountRequest> {
                 it[Accounts.email] = email
                 it[password] = hash
                 it[createdOn] = Clock.System.now().toJavaInstant()
-            }[Accounts.id].value.toKotlinUUID()
+            }[Accounts.id].value
         }
 
         RegistrationResult(createdAccountId)
@@ -58,7 +57,7 @@ object EmailAccountStrategy : AccountStrategy<EmailAccountRequest> {
         }
 
         if (passwordMatches) {
-            val id = matchedAccount[Accounts.id].value.toKotlinUUID()
+            val id = matchedAccount[Accounts.id].value
             return AuthenticatedUser(id, req.username)
         } else {
             throw UnauthorizedException("Invalid password for \"${req.username}\"!")

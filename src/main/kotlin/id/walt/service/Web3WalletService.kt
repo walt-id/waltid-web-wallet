@@ -5,8 +5,6 @@ import id.walt.service.dto.LinkedWalletDataTransferObject
 import id.walt.service.dto.WalletDataTransferObject
 import kotlinx.uuid.UUID
 import kotlinx.uuid.generateUUID
-import kotlinx.uuid.toJavaUUID
-import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -20,8 +18,8 @@ object Web3WalletService {
      */
     fun link(accountId: UUID, wallet: WalletDataTransferObject): LinkedWalletDataTransferObject =
         Web3Wallets.insert {
-            it[account] = accountId.toJavaUUID()
-            it[id] = UUID.generateUUID().toJavaUUID()
+            it[account] = accountId
+            it[id] = UUID.generateUUID()
             it[address] = wallet.address
             it[ecosystem] = wallet.ecosystem
             it[owner] = false
@@ -34,7 +32,7 @@ object Web3WalletService {
      * @return true - if operation succeeded, false - otherwise
      */
     fun unlink(accountId: UUID, walletId: UUID): Boolean = transaction {
-        Web3Wallets.deleteWhere { (account eq accountId.toJavaUUID()) and (id eq walletId.toJavaUUID()) }
+        Web3Wallets.deleteWhere { (account eq accountId) and (id eq walletId) }
     } == 1
 
     /**
@@ -71,9 +69,9 @@ object Web3WalletService {
          * === 2 different accounts exist, which the user should have access to (merged) when logging in with web3-address
          */
         transaction {
-            Web3Wallets.select { Web3Wallets.account eq accountId.toJavaUUID() }.map {
+            Web3Wallets.select { Web3Wallets.account eq accountId }.map {
                 LinkedWalletDataTransferObject(
-                    it[Web3Wallets.id].toKotlinUUID(),
+                    it[Web3Wallets.id],
                     it[Web3Wallets.address],
                     it[Web3Wallets.ecosystem],
                     it[Web3Wallets.owner]
@@ -83,7 +81,7 @@ object Web3WalletService {
 
     private fun setIsOwner(accountId: UUID, walletId: UUID, isOwner: Boolean) = transaction {
         Web3Wallets.update(
-            { (Web3Wallets.account eq accountId.toJavaUUID()) and (Web3Wallets.id eq walletId.toJavaUUID()) }
+            { (Web3Wallets.account eq accountId) and (Web3Wallets.id eq walletId) }
         ) {
             it[owner] = isOwner
         }

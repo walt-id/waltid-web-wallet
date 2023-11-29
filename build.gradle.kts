@@ -85,6 +85,7 @@ dependencies {
 
     // UUID
     implementation("app.softwork:kotlinx-uuid-core:0.0.22")
+    implementation("app.softwork:kotlinx-uuid-exposed:0.0.22")
 
     /* -- Security -- */
     // Bouncy Castle
@@ -106,11 +107,11 @@ dependencies {
     implementation("io.github.reactivecircus.cache4k:cache4k:0.11.0")
 
     // DB
-    implementation("org.jetbrains.exposed:exposed-core:0.44.0")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.44.0")
-    implementation("org.jetbrains.exposed:exposed-dao:0.44.0")
-    implementation("org.jetbrains.exposed:exposed-java-time:0.44.0")
-    implementation("org.jetbrains.exposed:exposed-json:0.44.0")
+    implementation("org.jetbrains.exposed:exposed-core:0.44.1")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.44.1")
+    implementation("org.jetbrains.exposed:exposed-dao:0.44.1")
+    implementation("org.jetbrains.exposed:exposed-java-time:0.44.1")
+    implementation("org.jetbrains.exposed:exposed-json:0.44.1")
     implementation("org.xerial:sqlite-jdbc:3.42.0.0")
     implementation("org.postgresql:postgresql:42.6.0")
     // migration

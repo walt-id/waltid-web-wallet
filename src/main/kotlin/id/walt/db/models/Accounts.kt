@@ -4,18 +4,17 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
 import kotlinx.uuid.UUID
-import kotlinx.uuid.toKotlinUUID
-import org.jetbrains.exposed.dao.id.UUIDTable
+import kotlinx.uuid.exposed.KotlinxUUIDTable
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.javatime.timestamp
 
-object Accounts : UUIDTable("accounts") {
+object Accounts : KotlinxUUIDTable("accounts") {
     val name = varchar("name", 128).nullable()
 
     val email = varchar("email", 128).nullable().uniqueIndex()
     val password = varchar("password", 200).nullable()
 
-   // val loginWeb3Wallet = uuid("web3wallet").nullable()
+    // val loginWeb3Wallet = kotlinxUUID("web3wallet").nullable()
 
     val createdOn = timestamp("createdOn")
 
@@ -38,10 +37,10 @@ data class Account(
     val createdOn: Instant
 ) {
     constructor(result: ResultRow) : this(
-        id = result[Accounts.id].value.toKotlinUUID(),
+        id = result[Accounts.id].value,
         name = result[Accounts.name],
         email = result[Accounts.email],
-        //loginWeb3Wallet = result[Accounts.loginWeb3Wallet]?.toKotlinUUID(),
+        //loginWeb3Wallet = result[Accounts.loginWeb3Wallet]?,
         createdOn = result[Accounts.createdOn].toKotlinInstant()
     )
 }

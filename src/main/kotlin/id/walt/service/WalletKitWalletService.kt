@@ -27,7 +27,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import kotlinx.uuid.UUID
-import kotlinx.uuid.toJavaUUID
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -60,7 +59,7 @@ class WalletKitWalletService(accountId: UUID, walletId: UUID) : WalletService(ac
 
     private val userEmail: String by lazy {
         transaction {
-            Accounts.select { Accounts.id eq this@WalletKitWalletService.walletId.toJavaUUID() }
+            Accounts.select { Accounts.id eq this@WalletKitWalletService.walletId }
                 .single()[Accounts.email]
         } ?: throw IllegalArgumentException("No such account: ${this.walletId}")
     }
@@ -339,7 +338,7 @@ class WalletKitWalletService(accountId: UUID, walletId: UUID) : WalletService(ac
 
     override fun getHistory(limit: Int, offset: Int): List<WalletOperationHistory> = transaction {
         WalletOperationHistories
-            .select { WalletOperationHistories.account eq walletId.toJavaUUID() }
+            .select { WalletOperationHistories.account eq walletId }
             .orderBy(WalletOperationHistories.timestamp)
             .limit(10)
             .map { WalletOperationHistory(it) }
@@ -348,8 +347,8 @@ class WalletKitWalletService(accountId: UUID, walletId: UUID) : WalletService(ac
     override suspend fun addOperationHistory(operationHistory: WalletOperationHistory) {
         transaction {
             WalletOperationHistories.insert {
-                it[wallet] = walletId.toJavaUUID()
-                it[account] = accountId.toJavaUUID()
+                it[wallet] = walletId
+                it[account] = accountId
                 it[timestamp] = operationHistory.timestamp.toJavaInstant()
                 it[operation] = operationHistory.operation
                 it[data] = Json.encodeToString(operationHistory.data)

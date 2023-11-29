@@ -9,8 +9,6 @@ import id.walt.service.nft.NftService
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toJavaInstant
 import kotlinx.uuid.UUID
-import kotlinx.uuid.toJavaUUID
-import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import java.util.concurrent.ConcurrentHashMap
@@ -31,12 +29,12 @@ object WalletServiceManager {
         val walletId = Wallets.insert {
             it[name] = "Wallet of $accountName"
             it[createdOn] = Clock.System.now().toJavaInstant()
-        }[Wallets.id].value.toKotlinUUID()
+        }[Wallets.id].value
 
         println("Creating wallet mapping: $forAccount -> $walletId")
         AccountWalletMappings.insert {
-            it[account] = forAccount.toJavaUUID()
-            it[wallet] = walletId.toJavaUUID()
+            it[account] = forAccount
+            it[wallet] = walletId
             it[permissions] = AccountWalletPermissions.ADMINISTRATE
             it[addedOn] = Clock.System.now().toJavaInstant()
         }
@@ -46,8 +44,8 @@ object WalletServiceManager {
 
     @Deprecated(replaceWith = ReplaceWith("AccountsService.getAccountWalletMappings(account)", "id.walt.service.account.AccountsService"), message = "depreacted")
     fun listWallets(account: UUID): List<UUID> =
-        AccountWalletMappings.innerJoin(Wallets).select { AccountWalletMappings.account eq account.toJavaUUID() }.map {
-            it[Wallets.id].value.toKotlinUUID()
+        AccountWalletMappings.innerJoin(Wallets).select { AccountWalletMappings.account eq account }.map {
+            it[Wallets.id].value
         }
 
     fun getNftService(): NftService = NftKitNftService()

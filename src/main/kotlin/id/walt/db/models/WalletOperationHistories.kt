@@ -8,13 +8,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.uuid.UUID
+import kotlinx.uuid.exposed.KotlinxUUIDTable
 import kotlinx.uuid.generateUUID
-import kotlinx.uuid.toKotlinUUID
-import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.javatime.timestamp
 
-object WalletOperationHistories : UUIDTable("wallet_operation_histories") {
+object WalletOperationHistories : KotlinxUUIDTable("wallet_operation_histories") {
     val account = reference("account", Accounts)
     val wallet = reference("wallet", Wallets)
     val timestamp = timestamp("timestamp")
@@ -32,9 +31,9 @@ data class WalletOperationHistory(
     val data: String,
 ) {
     constructor(result: ResultRow) : this(
-        id = result[WalletOperationHistories.id].value.toKotlinUUID(),
-        account = result[WalletOperationHistories.account].value.toKotlinUUID(),
-        wallet = result[WalletOperationHistories.wallet].value.toKotlinUUID(),
+        id = result[WalletOperationHistories.id].value,
+        account = result[WalletOperationHistories.account].value,
+        wallet = result[WalletOperationHistories.wallet].value,
         timestamp = result[WalletOperationHistories.timestamp].toKotlinInstant(),
         operation = result[WalletOperationHistories.operation],
         data = result[WalletOperationHistories.data],

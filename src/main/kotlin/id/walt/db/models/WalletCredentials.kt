@@ -9,7 +9,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.uuid.UUID
-import kotlinx.uuid.toKotlinUUID
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.timestamp
@@ -75,7 +74,7 @@ data class WalletCredential(
 
 
     constructor(result: ResultRow) : this(
-        wallet = result[WalletCredentials.wallet].value.toKotlinUUID(),
+        wallet = result[WalletCredentials.wallet].value,
         id = result[WalletCredentials.id],
         document = result[WalletCredentials.document],
         disclosures = result[WalletCredentials.disclosures],
