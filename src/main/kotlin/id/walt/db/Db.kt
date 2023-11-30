@@ -61,7 +61,7 @@ object Db {
                 Accounts,
                 Web3Wallets
             )
-            /*SchemaUtils.create(
+            SchemaUtils.create(
                 Web3Wallets,
                 Accounts,
                 //AccountWeb3WalletMappings,
@@ -72,9 +72,9 @@ object Db {
                 WalletDids,
                 WalletOperationHistories,
                 Issuers
-            )*/
+            )
 
-            SchemaUtils.create(Web3Wallets)
+            /*SchemaUtils.create(Web3Wallets)
             SchemaUtils.create(Accounts)
             //AccountWeb3WalletMappings,
             SchemaUtils.create(Wallets)
@@ -83,8 +83,7 @@ object Db {
             SchemaUtils.create(WalletKeys)
             SchemaUtils.create(WalletDids)
             SchemaUtils.create(WalletOperationHistories)
-            SchemaUtils.create(Issuers)
-
+            SchemaUtils.create(Issuers)*/
 
             runBlocking {
                 AccountsService.register(EmailAccountRequest("Max Mustermann", "string@string.string", "string"))

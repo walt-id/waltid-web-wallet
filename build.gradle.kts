@@ -112,7 +112,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-dao:0.44.1")
     implementation("org.jetbrains.exposed:exposed-java-time:0.44.1")
     implementation("org.jetbrains.exposed:exposed-json:0.44.1")
-    implementation("org.xerial:sqlite-jdbc:3.42.0.0")
+    implementation("org.xerial:sqlite-jdbc:3.44.1.0")
     implementation("org.postgresql:postgresql:42.6.0")
     // migration
     implementation("org.flywaydb:flyway-core:9.22.2")

@@ -3,7 +3,7 @@
         <div class="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 lg:bg-white lg:bg-opacity-50">
             <div class="mx-auto w-full max-w-sm lg:w-96 p-3 lg:backdrop-blur-md lg:rounded-3xl lg:shadow lg:bg-neutral-100 lg:bg-opacity-40">
                 <div class="">
-                    <img alt="walt.id logo" class="h-24 lg:h-16 w-auto mx-auto mt-2" src="/svg/waltid.svg" />
+                    <img alt="walt.id logo" class="h-24 lg:h-16 w-auto mx-auto mt-2" :src="logoImg" />
                     <h2 class="mt-4 text-3xl font-bold tracking-tight text-gray-800">Sign up for your SSI wallet</h2>
                 </div>
 
@@ -123,11 +123,11 @@
                 :class="[isProgress ? 'zoom-in' : 'zoom-out']"
                 alt=""
                 class="absolute inset-0 h-full w-full object-cover hidden lg:block -z-10"
-                src="/images/start-page-background.png"
+                :src="bgImg"
             />
         </div>
 
-        <div :class="[isProgress ? 'animate-spin' : '']" :style="cardStyle" class="absolute bottom-3.5 right-3.5 w-10 lg:w-16 h-10 lg:h-16 overflow-hidden">
+        <div v-if="showWaltidLoadingSpinner" :class="[isProgress ? 'animate-spin' : '']" :style="cardStyle" class="absolute bottom-3.5 right-3.5 w-10 lg:w-16 h-10 lg:h-16 overflow-hidden">
             <img class="overflow-hidden" src="/svg/walt-s.svg" />
         </div>
     </div>
@@ -137,6 +137,13 @@
 import { ArrowRightOnRectangleIcon, EnvelopeIcon, IdentificationIcon, KeyIcon } from "@heroicons/vue/20/solid";
 import ActionResultModal from "~/components/modals/ActionResultModal.vue";
 import useModalStore from "~/stores/useModalStore";
+import { useTenant } from "~/composables/tenants";
+
+const tenant = await (useTenant()).value
+const bgImg = tenant?.bgImage
+const name = tenant?.name
+const logoImg = tenant?.logoImage
+const showWaltidLoadingSpinner = tenant?.showWaltidLoadingSpinner
 
 const isProgress = ref(false);
 const success = ref(false);

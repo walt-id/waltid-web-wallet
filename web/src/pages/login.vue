@@ -3,12 +3,11 @@
         <div class="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24 lg:bg-white lg:bg-opacity-50">
             <div class="mx-auto w-full max-w-sm lg:w-96 p-3 lg:backdrop-blur-md lg:rounded-3xl lg:shadow lg:bg-neutral-100 lg:bg-opacity-40">
                 <div class="">
-                    <img alt="walt.id logo" class="h-24 lg:h-16 w-auto mx-auto mt-2" src="/svg/waltid.svg" />
+                    <img alt="walt.id logo" class="h-24 lg:h-16 w-auto mx-auto mt-2" :src="logoImg" />
                     <h2 class="mt-4 text-3xl font-bold tracking-tight text-gray-800">Sign in to your SSI wallet</h2>
                     <p class="mt-2 text-sm text-gray-600">
                         Or {{ " " }}
-                        <NuxtLink class="font-medium text-blue-600 hover:text-blue-500" to="/signup">sign up for your SSI wallet </NuxtLink>
-                        !
+                        <NuxtLink class="font-medium text-blue-600 hover:text-blue-500" to="/signup">sign up for your SSI wallet</NuxtLink>!
                     </p>
                 </div>
 
@@ -129,7 +128,7 @@
             </div>
         </div>
         <div class="overflow-hidden max-h-screen absolute left-0 w-full h-full -z-10 hidden lg:block">
-            <img ref="container" :class="[isLoggingIn ? 'zoom-in' : 'zoom-out']" alt="" class="absolute inset-0 h-full w-full object-cover hidden lg:block -z-10" src="/images/start-page-background.png" />
+            <img ref="container" :class="[isLoggingIn ? 'zoom-in' : 'zoom-out']" alt="" class="absolute inset-0 h-full w-full object-cover hidden lg:block -z-10" :src="bgImg" />
             <!-- src="https://images.unsplash.com/photo-1529144415895-6aaf8be872fb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1980&q=80"/> -->
 
             <!--<div class="relative hidden w-0 flex-1 lg:block">-->
@@ -139,7 +138,7 @@
             <!--</div>-->
         </div>
 
-        <div :class="[isLoggingIn ? 'animate-spin' : '']" :style="cardStyle" class="absolute bottom-3.5 right-3.5 w-10 lg:w-16 h-10 lg:h-16 overflow-hidden">
+        <div v-if="showWaltidLoadingSpinner" :class="[isLoggingIn ? 'animate-spin' : '']" :style="cardStyle" class="absolute bottom-3.5 right-3.5 w-10 lg:w-16 h-10 lg:h-16 overflow-hidden">
             <img class="overflow-hidden" src="/svg/walt-s.svg" />
         </div>
 
@@ -213,8 +212,15 @@ import ConnectWalletModal from "~/components/modals/ConnectWalletModal.vue";
 import useModalStore from "~/stores/useModalStore";
 import { useUserStore } from "~/stores/user";
 import { storeToRefs } from "pinia";
+import { useTenant } from "~/composables/tenants";
 
 const store = useModalStore();
+
+const tenant = await (useTenant()).value
+const bgImg = tenant?.bgImage
+const name = tenant?.name
+const logoImg = tenant?.logoImage
+const showWaltidLoadingSpinner = tenant?.showWaltidLoadingSpinner
 
 const isLoggingIn = ref(false);
 const error = ref({});

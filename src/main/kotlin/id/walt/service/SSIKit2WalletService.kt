@@ -10,11 +10,12 @@ import id.walt.db.models.WalletKeys
 import id.walt.db.models.WalletOperationHistories
 import id.walt.db.models.WalletOperationHistory
 import id.walt.did.dids.DidService
+import id.walt.did.dids.registrar.LocalRegistrar
 import id.walt.did.dids.registrar.dids.DidCheqdCreateOptions
 import id.walt.did.dids.registrar.dids.DidJwkCreateOptions
 import id.walt.did.dids.registrar.dids.DidKeyCreateOptions
 import id.walt.did.dids.registrar.dids.DidWebCreateOptions
-import id.walt.did.helpers.WaltidServices
+import id.walt.did.dids.resolver.LocalResolver
 import id.walt.did.utils.EnumUtils.enumValueIgnoreCase
 import id.walt.oid4vc.data.GrantType
 import id.walt.oid4vc.data.OpenIDProviderMetadata
@@ -63,7 +64,13 @@ class SSIKit2WalletService(accountId: UUID, walletId: UUID) : WalletService(acco
     companion object {
         init {
             runBlocking {
-                WaltidServices.init()
+                //WaltidServices.init()
+                DidService.apply {
+                    registerResolver(LocalResolver())
+                    updateResolversForMethods()
+                    registerRegistrar(LocalRegistrar())
+                    updateRegistrarsForMethods()
+                }
             }
         }
     }

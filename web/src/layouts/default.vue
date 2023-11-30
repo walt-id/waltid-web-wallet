@@ -60,14 +60,7 @@
                                 </div>
                             </TransitionChild>
                             <div class="flex flex-shrink-0 items-center px-4">
-                                <svg class="h-14 w-auto border-white border-4 rounded-full" fill="none" height="141" viewBox="0 0 141 141" width="141" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="70.5" cy="70.5" fill="#2563EB" r="70.5" />
-                                    <rect fill="#FFFFFF" height="8.67692" width="30.3692" x="39.0461" y="45.5538" />
-                                    <path
-                                        d="M112.8 74.8385L105.208 73.7538C99.7846 103.038 68.3308 103.038 68.3308 103.038L67.2462 111.715C100.218 112.583 111.354 87.4923 112.8 74.8385Z"
-                                        fill="#FFFFFF"
-                                    />
-                                </svg>
+                                <img alt="" class="h-14 w-auto" :src="inWalletLogoImage" />
                             </div>
 
                             <nav aria-label="Sidebar" class="mt-5 h-full flex-shrink-0 divide-y divide-blue-800 overflow-y-auto">
@@ -112,11 +105,7 @@
             <!-- Sidebar component, swap this element with another sidebar if you like -->
             <div class="flex flex-grow flex-col overflow-y-auto bg-blue-600 pb-4 pt-5" style="color: rgb(37, 99, 235)">
                 <div class="flex flex-shrink-0 items-center px-4">
-                    <svg class="h-14 w-auto border-white rounded-full" fill="none" height="141" style="border-width: 0.225em" viewBox="0 0 141 141" width="141" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="70.5" cy="70.5" fill="#2563EB" r="70.5" />
-                        <rect fill="#FFFFFF" height="8.67692" width="30.3692" x="39.0461" y="45.5538" />
-                        <path d="M112.8 74.8385L105.208 73.7538C99.7846 103.038 68.3308 103.038 68.3308 103.038L67.2462 111.715C100.218 112.583 111.354 87.4923 112.8 74.8385Z" fill="#FFFFFF" />
-                    </svg>
+                    <img alt="" class="h-14 w-auto" :src="inWalletLogoImage" />
                 </div>
                 <nav aria-label="Sidebar" class="mt-5 flex flex-1 flex-col divide-y divide-blue-800 overflow-y-auto">
                     <div class="space-y-1 px-2">
@@ -242,6 +231,12 @@ import { useUserStore } from "~/stores/user";
 import { storeToRefs } from "pinia";
 import * as nearAPI from "near-api-js";
 import { useCurrentWallet } from "~/composables/accountWallet";
+import { useTenant } from "~/composables/tenants";
+
+const tenant = await (useTenant()).value
+const name = tenant?.name
+const logoImg = tenant?.logoImage
+const inWalletLogoImage = tenant?.inWalletLogoImage
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);

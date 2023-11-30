@@ -1,15 +1,7 @@
-<script lang="ts" setup>
-import { InitApp } from "~/utils/initApp";
-import ModalBase from "~/components/modals/ModalBase.vue";
-
-InitApp();
-const locale = useState<string>("locale.i18n");
-</script>
-
 <template>
     <Html :lang="locale" class="h-full">
         <Head>
-            <Link href="/svg/walt-s.svg" rel="icon" type="text/xml" />
+            <Link :href="logoImg" rel="icon" type="text/xml" />
         </Head>
         <!--<head>
           <link rel="icon" type="text/xml" href="/svg/walt-s.svg">
@@ -19,12 +11,29 @@ const locale = useState<string>("locale.i18n");
             <ModalBase />
             <VitePwaManifest />
             <NuxtLoadingIndicator />
+<!--            {{ tenant }}-->
             <NuxtLayout class="h-full">
                 <NuxtPage class="h-full" />
             </NuxtLayout>
         </Body>
     </Html>
 </template>
+
+<script lang="ts" setup>
+import { InitApp } from "~/utils/initApp";
+import ModalBase from "~/components/modals/ModalBase.vue";
+import { $fetch } from "ofetch";
+import { useTenant } from "~/composables/tenants";
+
+InitApp();
+const locale = useState<string>("locale.i18n");
+
+const tenant = await (useTenant()).value
+const bgImg = tenant?.bgImg
+const name = tenant?.name
+const logoImg = tenant?.logoImage
+const showWaltidLoadingSpinner = tenant?.showWaltidLoadingSpinner
+</script>
 
 <style lang="postcss">
 /*body {
