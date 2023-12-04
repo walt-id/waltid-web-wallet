@@ -219,7 +219,7 @@ function validatePassword(): boolean {
 }
 
 definePageMeta({
-    title: "register to your wallet - walt.id",
+    title: "Register for your wallet - walt.id",
     layout: "minimal",
     auth: {
         unauthenticatedOnly: true,
@@ -228,7 +228,7 @@ definePageMeta({
 });
 
 useHead({
-    title: "register to your wallet - walt.id",
+    title: "Register for your wallet - walt.id",
 });
 </script>
 

@@ -1,12 +1,14 @@
 package id.walt.db.models
 
+import id.walt.crypto.utils.JsonUtils.toJsonObject
 import id.walt.service.WalletService
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import kotlinx.uuid.UUID
 import kotlinx.uuid.exposed.KotlinxUUIDTable
 import kotlinx.uuid.generateUUID
@@ -28,7 +30,7 @@ data class WalletOperationHistory(
     val wallet: UUID,
     val timestamp: Instant,
     val operation: String,
-    val data: String,
+    val data: JsonObject,
 ) {
     constructor(result: ResultRow) : this(
         id = result[WalletOperationHistories.id].value,
@@ -36,7 +38,7 @@ data class WalletOperationHistory(
         wallet = result[WalletOperationHistories.wallet].value,
         timestamp = result[WalletOperationHistories.timestamp].toKotlinInstant(),
         operation = result[WalletOperationHistories.operation],
-        data = result[WalletOperationHistories.data],
+        data = Json.parseToJsonElement(result[WalletOperationHistories.data]).jsonObject,
     )
 
     companion object {
@@ -45,7 +47,7 @@ data class WalletOperationHistory(
             wallet = wallet.walletId,
             timestamp = Clock.System.now(),
             operation = operation,
-            data = Json.encodeToString(data)
+            data = data.toJsonObject()
         )
     }
 }

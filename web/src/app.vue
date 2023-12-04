@@ -29,10 +29,8 @@ InitApp();
 const locale = useState<string>("locale.i18n");
 
 const tenant = await (useTenant()).value
-const bgImg = tenant?.bgImg
 const name = tenant?.name
 const logoImg = tenant?.logoImage
-const showWaltidLoadingSpinner = tenant?.showWaltidLoadingSpinner
 </script>
 
 <style lang="postcss">

@@ -4,7 +4,8 @@
             <div class="mx-auto w-full max-w-sm lg:w-96 p-3 lg:backdrop-blur-md lg:rounded-3xl lg:shadow lg:bg-neutral-100 lg:bg-opacity-40">
                 <div class="">
                     <img alt="walt.id logo" class="h-24 lg:h-16 w-auto mx-auto mt-2" :src="logoImg" />
-                    <h2 class="mt-4 text-3xl font-bold tracking-tight text-gray-800">Sign in to your SSI wallet</h2>
+                    <h2 v-if="name?.includes('NEOM')" class="mt-4 text-3xl font-bold tracking-tight text-gray-800 text-center" style="direction: rtl;">تسجيل الدخول إلى محفظة SSI</h2> <!-- TODO: i18n system -->
+                    <h2 v-else class="mt-4 text-3xl font-bold tracking-tight text-gray-800">Sign in to your SSI wallet</h2>
                     <p class="mt-2 text-sm text-gray-600">
                         Or {{ " " }}
                         <NuxtLink class="font-medium text-blue-600 hover:text-blue-500" to="/signup">sign up for your SSI wallet</NuxtLink>!

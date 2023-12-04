@@ -26,6 +26,21 @@ object WalletServiceManager {
     fun createWallet(forAccount: UUID): UUID {
         val accountName = AccountsService.getNameFor(forAccount)
 
+        // TODO: remove testing code / lock behind dev-mode
+        if (accountName?.contains("multi-wallet") == true) {
+            val second = Wallets.insert {
+                it[name] = "ABC Company wallet"
+                it[createdOn] = Clock.System.now().toJavaInstant()
+            }[Wallets.id].value
+
+            AccountWalletMappings.insert {
+                it[account] = forAccount
+                it[wallet] = second
+                it[permissions] = AccountWalletPermissions.READ_ONLY
+                it[addedOn] = Clock.System.now().toJavaInstant()
+            }
+        }
+
         val walletId = Wallets.insert {
             it[name] = "Wallet of $accountName"
             it[createdOn] = Clock.System.now().toJavaInstant()

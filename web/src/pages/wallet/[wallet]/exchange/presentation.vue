@@ -118,7 +118,7 @@
 
             <Disclosure>
                 <DisclosureButton class="py-2">
-                    <ButtonsWaltButton class="bg-gray-50 text-black">View presentation definition JSON</ButtonsWaltButton>
+                    <ButtonsWaltButton class="bg-gray-400 text-white">View presentation definition JSON</ButtonsWaltButton>
                 </DisclosureButton>
                 <DisclosurePanel class="text-gray-500 overflow-x-scroll pb-2">
                     <pre>{{ presentationDefinition }}</pre>
