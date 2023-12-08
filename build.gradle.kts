@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.9.21"
-    id("io.ktor.plugin") version "2.3.4"
+    id("io.ktor.plugin") version "2.3.7"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.21"
 
     id("com.github.ben-manes.versions") version "0.48.0"
@@ -28,7 +28,7 @@ repositories {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
+    kotlinOptions.jvmTarget = "19"
 }
 
 /*java {
@@ -37,12 +37,12 @@ tasks.withType<KotlinCompile> {
 }*/
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(19)
 }
 
 dependencies {
     // nftkit
-    implementation("id.walt:waltid-nftkit:1.2310191239.0") {
+    implementation("id.walt:waltid-nftkit:1.2311291144.0") {
         exclude("com.sksamuel.hoplite", "hoplite-core")
         exclude("com.sksamuel.hoplite", "hoplite-yaml")
         exclude("com.sksamuel.hoplite", "hoplite-hikaricp")
@@ -50,7 +50,7 @@ dependencies {
 
     /* -- KTOR -- */
 
-    val ktorVersion = "2.3.6"
+    val ktorVersion = "2.3.7"
     // Ktor server
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jvm:$ktorVersion")
@@ -69,7 +69,7 @@ dependencies {
     implementation("io.ktor:ktor-server-cio-jvm:$ktorVersion")
 
     // Ktor server external libs
-    implementation("io.github.smiley4:ktor-swagger-ui:2.5.0")
+    implementation("io.github.smiley4:ktor-swagger-ui:2.7.1")
     //implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
 
     // Ktor client
@@ -87,7 +87,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
     // Date
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
@@ -105,26 +105,27 @@ dependencies {
 
 
     // waltid-did
-    implementation("id.walt.did:waltid-did:1.0.1")//id.walt.crypto provided by id.walt.did:waltid-did
+    implementation("id.walt.did:waltid-did:1.1.1")//id.walt.crypto provided by id.walt.did:waltid-did
 
     // OIDC
     implementation("id.walt:waltid-openid4vc:1.2310051536.0")
+    //implementation("id.walt:waltid-openid4vc:1.2311161107.0")
 
     /* -- Misc --*/
 
     // Cache
-    implementation("io.github.reactivecircus.cache4k:cache4k:0.11.0")
+    implementation("io.github.reactivecircus.cache4k:cache4k:0.12.0")
 
     // DB
-    implementation("org.jetbrains.exposed:exposed-core:0.44.1")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.44.1")
-    implementation("org.jetbrains.exposed:exposed-dao:0.44.1")
-    implementation("org.jetbrains.exposed:exposed-java-time:0.44.1")
-    implementation("org.jetbrains.exposed:exposed-json:0.44.1")
+    implementation("org.jetbrains.exposed:exposed-core:0.45.0")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.45.0")
+    implementation("org.jetbrains.exposed:exposed-dao:0.45.0")
+    implementation("org.jetbrains.exposed:exposed-java-time:0.45.0")
+    implementation("org.jetbrains.exposed:exposed-json:0.45.0")
     implementation("org.xerial:sqlite-jdbc:3.44.1.0")
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("org.postgresql:postgresql:42.7.1")
     // migration
-    implementation("org.flywaydb:flyway-core:9.22.2")
+    //implementation("org.flywaydb:flyway-core:9.22.2")
 
     // Web push
     implementation("nl.martijndwars:web-push:5.1.1") // todo: replace with https://github.com/interaso/webpush
@@ -137,7 +138,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     // Logging
-    implementation("io.github.oshai:kotlin-logging-jvm:5.1.0")
+    implementation("io.github.oshai:kotlin-logging-jvm:5.1.1")
     implementation("org.slf4j:slf4j-simple:2.0.9")
     implementation("org.slf4j:jul-to-slf4j:2.0.9")
 
