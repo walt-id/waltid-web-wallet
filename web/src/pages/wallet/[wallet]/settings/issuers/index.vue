@@ -56,5 +56,3 @@ useHead({
     title: "Issuers - walt.id",
 });
 </script>
-
-<style scoped></style>
