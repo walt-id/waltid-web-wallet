@@ -1,3 +1,7 @@
+# MOVED
+The new repo can be found [here](https://github.com/walt-id/waltid-identity/tree/main/waltid-web-wallet).
+
+
 <div align="center">
  <h1>Web Wallet</h1>
  <span>by </span><a href="https://walt.id">walt.id</a>
